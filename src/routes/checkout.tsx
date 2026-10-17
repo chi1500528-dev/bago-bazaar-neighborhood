@@ -36,7 +36,7 @@ function Checkout() {
   const twName = useTownshipName();
   const [method, setMethod] = useState<DeliveryMethod | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", township: township ?? "", address: "", note: "" });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Partial<Record<"name"|"phone"|"township"|"address"|"note", string>>>({});
   const [busy, setBusy] = useState(false);
   const key = useRef<string>("");
 
@@ -59,7 +59,7 @@ function Checkout() {
   const totals = cartTotals(cart, method, s.delivery_fee);
 
   const submit = async () => {
-    const e: Record<string, string> = {};
+    const e: { name?: string; phone?: string; address?: string; township?: string } = {};
     if (!form.name.trim()) e.name = t("checkout.required");
     if (!/^[0-9+\-\s]{6,20}$/.test(form.phone.trim())) e.phone = t("checkout.phone_invalid");
     if (method === "delivery" && !form.address.trim()) e.address = t("checkout.required");

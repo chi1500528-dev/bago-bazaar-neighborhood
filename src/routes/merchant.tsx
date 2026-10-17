@@ -178,7 +178,7 @@ function MerchantProducts({ shop }: { shop: ShopRow }) {
   );
 }
 
-function ProductForm({ shopId, product, onDone }: { shopId: string; product?: ProductRow; onDone: () => void }) {
+function ProductForm({ shopId, product, onDone }: { shopId: string; product?: ProductRow | undefined; onDone: () => void }) {
   const { t, pick } = useApp();
   const qc = useQueryClient();
   const cats = useQuery(categoriesQuery);
