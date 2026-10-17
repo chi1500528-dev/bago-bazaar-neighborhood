@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as MerchantRouteImport } from './routes/merchant'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as OrdersIndexRouteImport } from './routes/orders.index'
@@ -50,6 +51,11 @@ const CategoriesRoute = CategoriesRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MerchantRoute = MerchantRouteImport.update({
+  id: '/merchant',
+  path: '/merchant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
+  '/merchant': typeof MerchantRoute
   '/search': typeof SearchRoute
   '/c/$slug': typeof CSlugRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
+  '/merchant': typeof MerchantRoute
   '/search': typeof SearchRoute
   '/c/$slug': typeof CSlugRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
+  '/merchant': typeof MerchantRoute
   '/search': typeof SearchRoute
   '/c/$slug': typeof CSlugRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/categories'
     | '/checkout'
+    | '/merchant'
     | '/search'
     | '/c/$slug'
     | '/orders/$id'
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/categories'
     | '/checkout'
+    | '/merchant'
     | '/search'
     | '/c/$slug'
     | '/orders/$id'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/categories'
     | '/checkout'
+    | '/merchant'
     | '/search'
     | '/c/$slug'
     | '/orders/$id'
@@ -178,6 +190,7 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CategoriesRoute: typeof CategoriesRoute
   CheckoutRoute: typeof CheckoutRoute
+  MerchantRoute: typeof MerchantRoute
   SearchRoute: typeof SearchRoute
   CSlugRoute: typeof CSlugRoute
   OrdersIdRoute: typeof OrdersIdRoute
@@ -228,6 +241,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/merchant': {
+      id: '/merchant'
+      path: '/merchant'
+      fullPath: '/merchant'
+      preLoaderRoute: typeof MerchantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -282,6 +302,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CategoriesRoute: CategoriesRoute,
   CheckoutRoute: CheckoutRoute,
+  MerchantRoute: MerchantRoute,
   SearchRoute: SearchRoute,
   CSlugRoute: CSlugRoute,
   OrdersIdRoute: OrdersIdRoute,
