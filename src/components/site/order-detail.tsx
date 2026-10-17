@@ -40,7 +40,7 @@ export function OrderDetail({ id, as }: { id: string; as: "customer" | "merchant
     setBusy(true);
     const { error } = await supabase.rpc("update_order_status", { p_order_id: o.id, p_status: s });
     setBusy(false);
-    if (error) return toast.error(t(errorKey(error.message)));
+    if (error) { toast.error(t(errorKey(error.message))); return; }
     qc.invalidateQueries();
   };
 

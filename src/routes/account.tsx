@@ -33,7 +33,7 @@ function Account() {
   }, [session]);
   const save = async () => {
     const { error } = await supabase.from("profiles").update({ ...f, township_id: f.township_id || null }).eq("id", session!.user.id);
-    if (error) return toast.error(t("err.generic"));
+    if (error) { toast.error(t("err.generic")); return; }
     if (f.township_id) setTownship(f.township_id);
     toast.success(t("account.saved"));
   };

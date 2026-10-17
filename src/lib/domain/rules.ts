@@ -82,7 +82,8 @@ export function customerCanCancel(status: OrderStatus) {
 export function errorKey(message: string | undefined) {
   const code = (message ?? "").split(":")[0]!.trim();
   const known = ["SHOP_UNAVAILABLE", "METHOD_UNAVAILABLE", "OUT_OF_STOCK", "PRODUCT_UNAVAILABLE", "INVALID_TRANSITION"];
-  return known.includes(code) ? (`err.${code}` as const) : ("err.generic" as const);
+  type K = "err.SHOP_UNAVAILABLE" | "err.METHOD_UNAVAILABLE" | "err.OUT_OF_STOCK" | "err.PRODUCT_UNAVAILABLE" | "err.INVALID_TRANSITION" | "err.generic";
+  return (known.includes(code) ? `err.${code}` : "err.generic") as K;
 }
 
 export function slugify(s: string) {
