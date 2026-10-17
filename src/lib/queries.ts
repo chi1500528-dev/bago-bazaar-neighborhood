@@ -1,0 +1,57 @@
+import { queryOptions, useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+export const SHOP_FIELDS =
+  "id, slug, name, description, logo_url, cover_url, township_id, category_id, offers_delivery, offers_pickup, delivery_fee, opening_hours, is_food, is_featured, address, phone, pickup_info, delivery_note";
+export const PRODUCT_FIELDS =
+  "id, shop_id, name, description, price, sale_price, stock, images, category_id, created_at, shops!inner(id, name, slug, status, is_active)";
+
+export const townshipsQuery = queryOptions({
+  queryKey: ["townships"],
+  staleTime: 60 * 60 * 1000,
+  queryFn: async () => {
+    const { data, error } = await supabase.from("townships").select("id, slug, name_my, name_en").order("sort");
+    if (error) throw error;
+    return data;
+  },
+});
+
+export const categoriesQuery = queryOptions({
+  queryKey: ["categories"],
+  staleTime: 10 * 60 * 1000,
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("id, parent_id, slug, name_my, name_en, icon, sort, is_active")
+      .eq("is_active", true)
+      .order("sort");
+    if (error) throw error;
+    return data;
+  },
+});
+
+export type Shop = {
+  id: string; slug: string; name: string; description: string | null; logo_url: string | null; cover_url: string | null;
+  township_id: string | null; category_id: string | null; offers_delivery: boolean; offers_pickup: boolean;
+  delivery_fee: number; opening_hours: string | null; is_food: boolean; is_featured: boolean; address: string | null;
+  phone: string | null; pickup_info: string | null; delivery_note: string | null;
+};
+export type Product = {
+  id: string; shop_id: string; name: string; description: string | null; price: number; sale_price: number | null;
+  stock: number; images: string[]; category_id: string | null; created_at: string;
+  shops: { id: string; name: string; slug: string };
+};
+
+export function useCartShop(shopId: string | undefined) {
+  return useQuery({
+    queryKey: ["cart-shop", shopId],
+    enabled: !!shopId,
+    queryFn: async () => {
+      const { data } = await supabase.from("shops")
+        .select("id, name, slug, offers_delivery, offers_pickup, delivery_fee, pickup_info, address, township_id, phone")
+        .eq("id", shopId!).maybeSingle();
+      return data;
+    },
+  });
+}
+
