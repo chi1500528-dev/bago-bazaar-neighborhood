@@ -538,8 +538,6 @@ export type Database = {
         Returns: string
       }
       shop_is_public: { Args: { _shop_id: string }; Returns: boolean }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
       update_order_status: {
         Args: {
           p_order_id: string
