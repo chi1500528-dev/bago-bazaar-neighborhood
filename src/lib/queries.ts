@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export const SHOP_FIELDS =
@@ -41,3 +41,17 @@ export type Product = {
   stock: number; images: string[]; category_id: string | null; created_at: string;
   shops: { id: string; name: string; slug: string };
 };
+
+export function useCartShop(shopId: string | undefined) {
+  return useQuery({
+    queryKey: ["cart-shop", shopId],
+    enabled: !!shopId,
+    queryFn: async () => {
+      const { data } = await supabase.from("shops")
+        .select("id, name, slug, offers_delivery, offers_pickup, delivery_fee, pickup_info, address, township_id, phone")
+        .eq("id", shopId!).maybeSingle();
+      return data;
+    },
+  });
+}
+

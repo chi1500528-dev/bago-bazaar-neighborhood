@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { Minus, Plus, Trash2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useCartShop } from "@/lib/queries";
 import { useApp } from "@/lib/app-state";
 import { cartTotals, formatMMK } from "@/lib/domain/rules";
 import { EmptyState, MediaImg } from "@/components/site/bits";
@@ -18,19 +17,6 @@ export const Route = createFileRoute("/cart")({
   }),
   component: CartPage,
 });
-
-export function useCartShop(shopId: string | undefined) {
-  return useQuery({
-    queryKey: ["cart-shop", shopId],
-    enabled: !!shopId,
-    queryFn: async () => {
-      const { data } = await supabase.from("shops")
-        .select("id, name, slug, offers_delivery, offers_pickup, delivery_fee, pickup_info, address, township_id, phone")
-        .eq("id", shopId!).maybeSingle();
-      return data;
-    },
-  });
-}
 
 function CartPage() {
   const { t, lang, cart, setQty, removeLine } = useApp();
