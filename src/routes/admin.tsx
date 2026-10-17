@@ -103,7 +103,7 @@ function Shops() {
   });
   const upd = async (id: string, patch: Partial<Database["public"]["Tables"]["shops"]["Update"]>) => {
     const { error } = await supabase.from("shops").update(patch).eq("id", id);
-    if (error) return toast.error(t("err.generic"));
+    if (error) { toast.error(t("err.generic")); return; }
     qc.invalidateQueries();
   };
   return (
@@ -207,14 +207,14 @@ function Categories() {
   });
   const all = q.data ?? [];
   const save = async () => {
-    if (!edit?.name_my || !edit.name_en) return toast.error(t("checkout.required"));
+    if (!edit?.name_my || !edit.name_en) { toast.error(t("checkout.required")); return; }
     const payload = {
       name_my: edit.name_my, name_en: edit.name_en, parent_id: edit.parent_id || null, sort: Number(edit.sort) || 0,
       is_active: edit.is_active ?? true, icon: edit.icon || null,
       slug: edit.slug || edit.name_en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 5),
     };
     const { error } = edit.id ? await supabase.from("categories").update(payload).eq("id", edit.id) : await supabase.from("categories").insert(payload);
-    if (error) return toast.error(t("err.generic"));
+    if (error) { toast.error(t("err.generic")); return; }
     setEdit(null);
     qc.invalidateQueries();
   };
@@ -267,14 +267,14 @@ function Promotions() {
     },
   });
   const save = async () => {
-    if (!edit?.title_my || !edit.title_en) return toast.error(t("checkout.required"));
+    if (!edit?.title_my || !edit.title_en) { toast.error(t("checkout.required")); return; }
     const payload = {
       title_my: edit.title_my, title_en: edit.title_en, subtitle_my: edit.subtitle_my || null, subtitle_en: edit.subtitle_en || null,
       link: edit.link || null, image_url: edit.image_url || null, is_active: edit.is_active ?? true, sort: Number(edit.sort) || 0,
       starts_at: edit.starts_at || new Date().toISOString(), ends_at: edit.ends_at || null,
     };
     const { error } = edit.id ? await supabase.from("promotions").update(payload).eq("id", edit.id) : await supabase.from("promotions").insert(payload);
-    if (error) return toast.error(t("err.generic"));
+    if (error) { toast.error(t("err.generic")); return; }
     setEdit(null);
     qc.invalidateQueries();
   };

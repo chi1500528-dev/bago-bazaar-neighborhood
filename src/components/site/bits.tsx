@@ -34,7 +34,7 @@ export function CategoryIcon({ name, className }: { name?: string | null; classN
   return <I className={className} strokeWidth={1.8} />;
 }
 
-export function MediaImg({ path, alt, className, eager }: { path?: string | null; alt: string; className?: string; eager?: boolean }) {
+export function MediaImg({ path, alt, className, eager }: { path?: string | null | undefined; alt: string; className?: string | undefined; eager?: boolean | undefined }) {
   const isUrl = !!path && path.startsWith("http");
   const { data } = useMediaUrl(isUrl ? null : path);
   const src = isUrl ? path : data;

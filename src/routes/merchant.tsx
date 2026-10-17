@@ -90,8 +90,8 @@ function ShopForm({ shop }: { shop?: ShopRow }) {
   });
   const [busy, setBusy] = useState(false);
   const save = async () => {
-    if (!f.name.trim()) return toast.error(`${t("merchant.shop_name")}: ${t("checkout.required")}`);
-    if (!f.offers_delivery && !f.offers_pickup) return toast.error(t("err.METHOD_UNAVAILABLE"));
+    if (!f.name.trim()) { toast.error(`${t("merchant.shop_name")}: ${t("checkout.required")}`); return; }
+    if (!f.offers_delivery && !f.offers_pickup) { toast.error(t("err.METHOD_UNAVAILABLE")); return; }
     setBusy(true);
     const payload = {
       name: f.name.trim(), description: f.description || null, category_id: f.category_id || null, township_id: f.township_id || null,
@@ -104,7 +104,7 @@ function ShopForm({ shop }: { shop?: ShopRow }) {
       ? await supabase.from("shops").update(payload).eq("id", shop.id)
       : await supabase.from("shops").insert({ ...payload, owner_id: session!.user.id, slug: slugify(f.name) });
     setBusy(false);
-    if (error) return toast.error(t("err.generic"));
+    if (error) { toast.error(t("err.generic")); return; }
     toast.success(t("account.saved"));
     qc.invalidateQueries();
   };
@@ -190,7 +190,7 @@ function ProductForm({ shopId, product, onDone }: { shopId: string; product?: Pr
   const [busy, setBusy] = useState(false);
   const all = cats.data ?? [];
   const save = async () => {
-    if (!f.name.trim() || !f.price) return toast.error(t("checkout.required"));
+    if (!f.name.trim() || !f.price) { toast.error(t("checkout.required")); return; }
     setBusy(true);
     const payload = {
       name: f.name.trim(), description: f.description || null, category_id: f.category_id || null,
@@ -201,7 +201,7 @@ function ProductForm({ shopId, product, onDone }: { shopId: string; product?: Pr
       ? await supabase.from("products").update(payload).eq("id", product.id)
       : await supabase.from("products").insert({ ...payload, shop_id: shopId });
     setBusy(false);
-    if (error) return toast.error(t("err.generic"));
+    if (error) { toast.error(t("err.generic")); return; }
     qc.invalidateQueries();
     onDone();
   };
