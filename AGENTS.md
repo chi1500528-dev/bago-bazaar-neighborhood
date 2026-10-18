@@ -17,3 +17,4 @@
 - Admin, merchant and shop-approval flags are guarded by the `shops_guard` trigger; merchants can never self-approve.
 - Category fallback photos map by slug in `src/lib/category-images.ts`; real uploaded media always wins — keeps placeholder imagery swappable.
 - `src/lib/domain/*` and `src/lib/i18n/dict.ts` stay platform-neutral (no DOM, React, Vite or Supabase imports) — a future Expo app reuses them as-is; see `docs/mobile-native.md`.
+- Netlify self-deploys are configured only via `netlify.toml` (`NITRO_PRESET=netlify`, publish `dist`); keep `vite.config.ts` preset-free so Lovable hosting stays on its default target.

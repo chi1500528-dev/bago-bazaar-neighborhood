@@ -1,0 +1,17 @@
+# Netlify build for the TanStack Start app.
+# Nitro emits static files to dist/ and the server function to
+# .netlify/functions-internal/server (picked up by Netlify automatically).
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NITRO_PRESET = "netlify"
+  NODE_VERSION = "22"
+  # Public (publishable) Supabase settings; also set SUPABASE_URL and
+  # SUPABASE_PUBLISHABLE_KEY in Netlify UI if .env is not committed.
+  VITE_SUPABASE_URL = "https://rvgqgtjkqmvjauqofsgt.supabase.co"
+  VITE_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_m-ZcV_fxixC-RYgbgoMKqw_GoH0uzf_"
+  VITE_SUPABASE_PROJECT_ID = "rvgqgtjkqmvjauqofsgt"
+  SUPABASE_URL = "https://rvgqgtjkqmvjauqofsgt.supabase.co"
+  SUPABASE_PUBLISHABLE_KEY = "sb_publishable_m-ZcV_fxixC-RYgbgoMKqw_GoH0uzf_"
