@@ -28,6 +28,7 @@ import { Route as OrdersIndexRouteImport } from './routes/orders.index'
 import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 import { Route as PIdRouteImport } from './routes/p.$id'
 import { Route as ShopsSlugRouteImport } from './routes/shops.$slug'
+import { Route as ApiPublicSbSplatRouteImport } from './routes/api/public/sb/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -124,6 +125,11 @@ const ShopsSlugRoute = ShopsSlugRouteImport.update({
   path: '/shops/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSbSplatRoute = ApiPublicSbSplatRouteImport.update({
+  id: '/api/public/sb/$',
+  path: '/api/public/sb/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/p/$id': typeof PIdRoute
   '/shops/$slug': typeof ShopsSlugRoute
   '/orders/': typeof OrdersIndexRoute
+  '/api/public/sb/$': typeof ApiPublicSbSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/p/$id': typeof PIdRoute
   '/shops/$slug': typeof ShopsSlugRoute
   '/orders': typeof OrdersIndexRoute
+  '/api/public/sb/$': typeof ApiPublicSbSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/p/$id': typeof PIdRoute
   '/shops/$slug': typeof ShopsSlugRoute
   '/orders/': typeof OrdersIndexRoute
+  '/api/public/sb/$': typeof ApiPublicSbSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/p/$id'
     | '/shops/$slug'
     | '/orders/'
+    | '/api/public/sb/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/p/$id'
     | '/shops/$slug'
     | '/orders'
+    | '/api/public/sb/$'
   id:
     | '__root__'
     | '/'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/p/$id'
     | '/shops/$slug'
     | '/orders/'
+    | '/api/public/sb/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -275,6 +287,7 @@ export interface RootRouteChildren {
   PIdRoute: typeof PIdRoute
   ShopsSlugRoute: typeof ShopsSlugRoute
   OrdersIndexRoute: typeof OrdersIndexRoute
+  ApiPublicSbSplatRoute: typeof ApiPublicSbSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -412,6 +425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sb/$': {
+      id: '/api/public/sb/$'
+      path: '/api/public/sb/$'
+      fullPath: '/api/public/sb/$'
+      preLoaderRoute: typeof ApiPublicSbSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -435,6 +455,7 @@ const rootRouteChildren: RootRouteChildren = {
   PIdRoute: PIdRoute,
   ShopsSlugRoute: ShopsSlugRoute,
   OrdersIndexRoute: OrdersIndexRoute,
+  ApiPublicSbSplatRoute: ApiPublicSbSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
