@@ -67,7 +67,7 @@ Other hosts: the preview frontend is on `id-preview--6e6eef8d-326f-46b0-8e8e-909
 |---|---|
 | Website frame, bundled imagery, local language/cart | Can still load; this explains a healthy-looking website with broken data |
 | Featured shops, products, search | Main queries throw errors and some views offer a generic retry |
-| Categories, promotions, food/nearby sections | Some errors become missing content or empty-state messages |
+| Categories, promotions, food/nearby sections | Home/category-index category lists offer retry; other category lookups can resemble no results. Promotions and food/nearby sections can show empty-state messages instead of explaining connection errors |
 | Roles | The role query ignores returned errors and defaults to `[]`; Admin access can appear to disappear, without deleting the actual role |
 | Login/signup/token refresh | Cannot complete online; a cached session may remain temporarily, but is not proof of reachable Auth or valid server access |
 | Profile loading / language saving | Some returned errors are ignored; forms may stay blank or language persistence may silently fail |
