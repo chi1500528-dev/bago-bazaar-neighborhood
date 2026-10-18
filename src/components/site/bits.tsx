@@ -106,3 +106,15 @@ export function StatusBadge({ status, kind = "order" }: { status: string; kind?:
   const key = (kind === "order" ? `status.${status}` : `shopstatus.${status}`) as Parameters<typeof t>[0];
   return <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", tone)}>{t(key)}</span>;
 }
+
+/** Phone-only action bar pinned just above the bottom tab menu. */
+export function StickyActionBar({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <div className="h-20 md:hidden" aria-hidden />
+      <div className="fixed inset-x-0 z-30 border-t bg-card/95 px-4 py-3 shadow-lg backdrop-blur md:hidden" style={{ bottom: "calc(3.5rem + 1px + env(safe-area-inset-bottom))" }}>
+        <div className="flex items-center gap-3">{children}</div>
+      </div>
+    </>
+  );
+}

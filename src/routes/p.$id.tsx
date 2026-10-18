@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
 import { PRODUCT_FIELDS, type Product } from "@/lib/queries";
 import { discountPercent, effectivePrice, formatMMK } from "@/lib/domain/rules";
-import { EmptyState, MediaImg } from "@/components/site/bits";
+import { EmptyState, MediaImg, StickyActionBar } from "@/components/site/bits";
 import { useAddToCart } from "@/components/site/cards";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -83,11 +83,17 @@ function ProductPage() {
             </div>
           </div>
         )}
-        <Button size="lg" className="w-full md:w-auto" disabled={out} onClick={() => add(p, qty)}>
+        <Button size="lg" className="hidden md:inline-flex" disabled={out} onClick={() => add(p, qty)}>
           {out ? t("product.out_of_stock") : t("product.add_to_cart")}
         </Button>
         {p.description && <p className="whitespace-pre-line break-words border-t pt-4 text-sm leading-relaxed">{p.description}</p>}
       </div>
+      <StickyActionBar>
+        <span className="min-w-0 flex-1 truncate text-lg font-bold text-primary">{formatMMK(effectivePrice(p) * (out ? 1 : qty), lang)}</span>
+        <Button size="lg" className="h-12 shrink-0" disabled={out} onClick={() => add(p, qty)}>
+          {out ? t("product.out_of_stock") : t("product.add_to_cart")}
+        </Button>
+      </StickyActionBar>
     </div>
   );
 }

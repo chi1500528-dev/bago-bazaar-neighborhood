@@ -168,7 +168,7 @@ export function BottomNav() {
       <ul className="grid grid-cols-5">
         {items.map((it) => (
           <li key={it.to}>
-            <Link to={it.to} className={cn("relative flex flex-col items-center gap-0.5 py-2 text-[11px] leading-tight", it.active ? "text-primary" : "text-muted-foreground")}>
+            <Link to={it.to} className={cn("relative flex min-h-14 flex-col items-center justify-center gap-0.5 py-1.5 text-[11px] leading-tight", it.active ? "text-primary" : "text-muted-foreground")}>
               <it.icon className="size-5" strokeWidth={it.active ? 2.4 : 1.8} />
               <span className="line-clamp-1 px-0.5">{it.label}</span>
               {"badge" in it && it.badge > 0 && (

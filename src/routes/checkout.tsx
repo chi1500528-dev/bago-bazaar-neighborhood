@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
 import { cartTotals, errorKey, formatMMK, type DeliveryMethod } from "@/lib/domain/rules";
 import { townshipsQuery, useCartShop } from "@/lib/queries";
-import { EmptyState } from "@/components/site/bits";
+import { EmptyState, StickyActionBar } from "@/components/site/bits";
 import { useTownshipName } from "@/components/site/cards";
 import { RequireAuth } from "@/components/site/shell";
 import { Button } from "@/components/ui/button";
@@ -116,17 +116,17 @@ function Checkout() {
           </div>
         </section>
         <section className="surface grid gap-4 p-5 sm:grid-cols-2">
-          {field("name", t("checkout.name"), <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />)}
-          {field("phone", t("checkout.phone"), <Input id="phone" type="tel" inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />)}
+          {field("name", t("checkout.name"), <Input id="name" autoComplete="name" className="h-11" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />)}
+          {field("phone", t("checkout.phone"), <Input id="phone" type="tel" inputMode="tel" autoComplete="tel" className="h-11" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />)}
           {method === "delivery" ? (
             <>
               {field("township", t("checkout.township"), (
-                <select id="township" value={form.township} onChange={(e) => setForm({ ...form, township: e.target.value })} className="h-9 w-full rounded-md border bg-card px-2 text-sm">
+                <select id="township" value={form.township} onChange={(e) => setForm({ ...form, township: e.target.value })} className="h-11 w-full rounded-md border bg-card px-2 text-sm">
                   <option value="">—</option>
                   {towns.data?.map((x) => <option key={x.id} value={x.id}>{pick(x.name_my, x.name_en)}</option>)}
                 </select>
               ))}
-              <div className="sm:col-span-2">{field("address", t("checkout.address"), <Textarea id="address" rows={2} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />)}</div>
+              <div className="sm:col-span-2">{field("address", t("checkout.address"), <Textarea id="address" autoComplete="street-address" rows={2} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />)}</div>
             </>
           ) : (
             <div className="rounded-md bg-primary-soft p-3 text-sm sm:col-span-2">
@@ -156,9 +156,13 @@ function Checkout() {
           <div className="flex justify-between"><span>{t("cart.delivery_fee")}</span><span>{formatMMK(totals.deliveryFee, lang)}</span></div>
           <div className="flex justify-between pt-1 text-base font-bold"><span>{t("cart.total")}</span><span className="text-primary">{formatMMK(totals.total, lang)}</span></div>
         </div>
-        <Button size="lg" className="w-full" disabled={busy || !method} onClick={submit}>{busy ? t("checkout.placing") : t("checkout.place")}</Button>
-        <Link to="/cart" className="block text-center text-xs text-muted-foreground hover:underline">{t("common.back")}</Link>
+        <Button size="lg" className="hidden w-full md:inline-flex" disabled={busy || !method} onClick={submit}>{busy ? t("checkout.placing") : t("checkout.place")}</Button>
+        <Link to="/cart" className="block py-2 text-center text-xs text-muted-foreground hover:underline">{t("common.back")}</Link>
       </aside>
+      <StickyActionBar>
+        <span className="min-w-0 flex-1"><span className="block text-xs text-muted-foreground">{t("cart.total")}</span><span className="text-lg font-bold text-primary">{formatMMK(totals.total, lang)}</span></span>
+        <Button size="lg" className="h-12 shrink-0" disabled={busy || !method} onClick={submit}>{busy ? t("checkout.placing") : t("checkout.place")}</Button>
+      </StickyActionBar>
     </div>
   );
 }

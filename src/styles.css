@@ -151,3 +151,6 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Keep focused fields clear of the phone keyboard and the sticky bars. */
+input, textarea, select { scroll-margin-bottom: 9rem; }
