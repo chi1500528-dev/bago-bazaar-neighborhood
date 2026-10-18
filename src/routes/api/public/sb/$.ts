@@ -8,7 +8,12 @@ const DROP = ["host", "cookie", "origin", "referer", "content-length", "accept-e
 async function relay({ request, params }: { request: Request; params: { _splat?: string } }) {
   const path = params._splat ?? "";
   if (!ALLOWED.test(path)) return new Response("Not found", { status: 404 });
-  const base = (process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"] || "").replace(/\/+$/, "");
+  const base = (
+    process.env["SUPABASE_URL"] ||
+    process.env["VITE_SUPABASE_URL"] ||
+    import.meta.env["VITE_SUPABASE_URL"] ||
+    "https://rvgqgtjkqmvjauqofsgt.supabase.co"
+  ).replace(/\/+$/, "");
   if (!base) return new Response("Backend not configured", { status: 500 });
   const url = new URL(request.url);
   const headers = new Headers(request.headers);
