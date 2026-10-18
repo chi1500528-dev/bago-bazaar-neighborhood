@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toRelayUrl } from "@/lib/sb-relay";
 
 // Images live in the private "media" bucket; paths are stored in the DB and
 // turned into short-lived signed URLs for display.
@@ -10,7 +11,7 @@ export function useMediaUrl(path: string | null | undefined) {
     staleTime: 50 * 60 * 1000,
     queryFn: async () => {
       const { data } = await supabase.storage.from("media").createSignedUrl(path!, 3600);
-      return data?.signedUrl ?? null;
+      return data?.signedUrl ? toRelayUrl(data.signedUrl) : null;
     },
   });
 }
