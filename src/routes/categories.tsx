@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useApp } from "@/lib/app-state";
 import { categoriesQuery } from "@/lib/queries";
 import { CategoryIcon, ErrorBox } from "@/components/site/bits";
+import { categoryImage } from "@/lib/category-images";
 
 export const Route = createFileRoute("/categories")({
   head: () => ({
@@ -29,10 +30,10 @@ function Categories() {
         {top.map((c) => {
           const subs = all.filter((s) => s.parent_id === c.id);
           return (
-            <div key={c.id} className="surface p-4">
-              <Link to="/c/$slug" params={{ slug: c.slug }} className="flex items-center gap-3 hover:text-primary">
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
-                  <CategoryIcon name={c.icon} className="size-5" />
+            <div key={c.id} className="lift rounded-2xl bg-card p-4">
+              <Link to="/c/$slug" params={{ slug: c.slug }} className="zoom-img flex items-center gap-3 hover:text-primary">
+                <span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-sage text-primary">
+                  {categoryImage(c.slug) ? <img src={categoryImage(c.slug)!} alt="" loading="lazy" className="size-full object-cover" /> : <CategoryIcon name={c.icon} className="size-5" />}
                 </span>
                 <span className="font-semibold">{pick(c.name_my, c.name_en)}</span>
               </Link>
