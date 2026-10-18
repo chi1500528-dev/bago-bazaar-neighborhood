@@ -1,6 +1,6 @@
 // Browser-only: send Supabase calls through our own site (/api/public/sb)
 // so the app works where *.supabase.co is blocked. Call once on the client.
-const SB = String(import.meta.env['VITE_SUPABASE_URL'] ?? "").replace(/\/+$/, "");
+const SB = String(import.meta.env['VITE_SUPABASE_URL'] || "https://rvgqgtjkqmvjauqofsgt.supabase.co").replace(/\/+$/, "");
 
 export function toRelayUrl(url: string): string {
   if (typeof window === "undefined" || !SB || !url.startsWith(SB + "/")) return url;
