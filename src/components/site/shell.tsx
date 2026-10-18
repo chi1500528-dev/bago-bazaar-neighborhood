@@ -14,13 +14,13 @@ import {
 export function LangSwitch({ className }: { className?: string }) {
   const { lang, setLang } = useApp();
   return (
-    <div className={cn("inline-flex rounded-md border bg-card p-0.5 text-xs", className)} role="group" aria-label="Language">
+    <div className={cn("inline-flex rounded-full border bg-card p-0.5 text-xs", className)} role="group" aria-label="Language">
       {(["my", "en"] as const).map((l) => (
         <button
           key={l}
           onClick={() => setLang(l)}
           aria-pressed={lang === l}
-          className={cn("rounded px-2 py-1 transition-colors", lang === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+          className={cn("rounded-full px-2.5 py-1 transition-colors", lang === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
         >
           {l === "my" ? "မြန်မာ" : "English"}
         </button>
@@ -63,13 +63,13 @@ function SearchBox({ className }: { className?: string }) {
       }}
       role="search"
     >
-      <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder={t("nav.search_placeholder")}
         aria-label={t("common.search")}
-        className="h-10 w-full rounded-lg border bg-card pl-9 pr-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+        className="h-11 w-full rounded-full border border-border/80 bg-card pl-10 shadow-soft transition-shadow pr-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
       />
     </form>
   );
@@ -128,15 +128,17 @@ function CartLink() {
 export function Header() {
   const { t } = useApp();
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-md">
       <div className="container-page flex h-16 items-center gap-3 md:gap-5">
         <Logo />
+        <span className="hidden h-7 w-px bg-border lg:block" />
         <TownshipSelect className="hidden lg:flex" />
-        <SearchBox className="hidden flex-1 md:block" />
+        <SearchBox className="hidden flex-1 md:block md:max-w-2xl" />
         <nav className="ml-auto flex items-center gap-1 md:ml-0">
           <Link to="/categories" className="hidden h-9 items-center rounded-md px-3 text-sm font-medium hover:bg-accent lg:inline-flex">
             {t("nav.categories")}
           </Link>
+          <span className="mx-1 hidden h-6 w-px bg-border sm:block" />
           <LangSwitch className="hidden sm:inline-flex" />
           <AccountMenu />
           <span className="hidden md:inline-flex"><CartLink /></span>
@@ -183,7 +185,7 @@ export function BottomNav() {
 export function Footer() {
   const { t } = useApp();
   return (
-    <footer className="mt-12 border-t bg-card pb-24 md:pb-0">
+    <footer className="mt-16 bg-primary pb-24 text-primary-foreground md:pb-0 [&_a:hover]:text-gold [&_.text-muted-foreground]:text-primary-foreground/70 [&_.text-foreground]:text-primary-foreground">
       <div className="container-page grid gap-8 py-10 md:grid-cols-[1.5fr_1fr_1fr]">
         <div className="space-y-3">
           <Logo />
@@ -201,7 +203,7 @@ export function Footer() {
           <li><Link to="/merchant" className="hover:text-primary">{t("footer.merchant")}</Link></li>
         </ul>
       </div>
-      <div className="border-t py-4 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} Bago Market · ပဲခူးဈေး</div>
+      <div className="border-t border-primary-foreground/15 py-4 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} Bago Market · ပဲခူးဈေး</div>
     </footer>
   );
 }

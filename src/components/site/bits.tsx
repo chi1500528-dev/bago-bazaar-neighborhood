@@ -11,12 +11,12 @@ import { cn } from "@/lib/utils";
 export function Logo({ compact = false }: { compact?: boolean }) {
   return (
     <Link to="/" className="flex items-center gap-2.5 shrink-0" aria-label="Bago Market ပဲခူးဈေး">
-      <span className="grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground">
-        <ShoppingBag className="size-5" strokeWidth={2.2} />
+      <span className="relative grid size-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-soft ring-1 ring-gold/50 ring-offset-2 ring-offset-background">
+        <ShoppingBag className="size-[18px]" strokeWidth={2} />
       </span>
       {!compact && (
         <span className="flex flex-col leading-tight">
-          <span className="text-[15px] font-bold tracking-tight text-foreground">Bago Market</span>
+          <span className="font-display text-[17px] font-semibold tracking-tight text-foreground">Bago Market</span>
           <span className="text-xs text-gold-foreground/80" lang="my">ပဲခူးဈေး</span>
         </span>
       )}
@@ -49,9 +49,9 @@ export function MediaImg({ path, alt, className, eager }: { path?: string | null
 
 export function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
-    <section className="py-7 md:py-9">
-      <div className="mb-4 flex items-end justify-between gap-4">
-        <h2 className="text-lg font-semibold md:text-xl">{title}</h2>
+    <section className="py-8 md:py-12">
+      <div className="mb-5 flex items-end justify-between gap-4 border-b border-border/70 pb-3">
+        <h2 className="text-xl font-semibold md:text-2xl">{title}</h2>
         {action}
       </div>
       {children}

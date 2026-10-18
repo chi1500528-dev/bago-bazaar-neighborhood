@@ -64,16 +64,16 @@ export function ProductCard({ p, onAdd }: { p: Product; onAdd: (p: Product) => v
   const off = discountPercent(p);
   const out = p.stock <= 0;
   return (
-    <div className="group surface flex flex-col overflow-hidden">
+    <div className="group lift zoom-img flex flex-col overflow-hidden rounded-xl bg-card">
       <Link to="/p/$id" params={{ id: p.id }} className="relative block aspect-square overflow-hidden bg-muted">
-        <MediaImg path={p.images[0]} alt={p.name} className="size-full transition-transform duration-300 group-hover:scale-[1.03]" />
+        <MediaImg path={p.images[0]} alt={p.name} className="size-full" />
         {off > 0 && (
           <span className="absolute left-2 top-2 rounded-md bg-gold px-2 py-0.5 text-xs font-semibold text-gold-foreground">
             -{off}%
           </span>
         )}
       </Link>
-      <div className="flex flex-1 flex-col gap-1 p-3">
+      <div className="flex flex-1 flex-col gap-1 p-3.5">
         <Link to="/p/$id" params={{ id: p.id }} className="line-clamp-2 text-sm font-medium hover:text-primary">
           {p.name}
         </Link>
@@ -81,10 +81,11 @@ export function ProductCard({ p, onAdd }: { p: Product; onAdd: (p: Product) => v
           {p.shops.name}
         </Link>
         <div className="mt-auto flex flex-wrap items-baseline gap-x-2 pt-1">
-          <span className="font-semibold text-primary">{formatMMK(effectivePrice(p), lang)}</span>
+          <span className="text-[15px] font-semibold text-primary">{formatMMK(effectivePrice(p), lang)}</span>
           {off > 0 && <span className="text-xs text-muted-foreground line-through">{formatMMK(p.price, lang)}</span>}
         </div>
-        <Button size="sm" variant={out ? "secondary" : "default"} disabled={out} onClick={() => onAdd(p)} className="mt-2 h-auto min-h-8 whitespace-normal py-1.5">
+        {!out && <span className="text-[11px] text-success">{t("product.in_stock")}</span>}
+        <Button size="sm" variant={out ? "secondary" : "default"} disabled={out} onClick={() => onAdd(p)} className="mt-2 h-auto min-h-9 whitespace-normal rounded-full py-1.5 transition-colors">
           {out ? t("product.out_of_stock") : t("product.add_to_cart")}
         </Button>
       </div>
@@ -96,15 +97,15 @@ export function ShopCard({ s }: { s: Shop }) {
   const { t } = useApp();
   const tw = useTownshipName();
   return (
-    <Link to="/shops/$slug" params={{ slug: s.slug }} className="surface group flex flex-col overflow-hidden transition-colors hover:border-primary/40">
-      <div className="relative aspect-[16/9] bg-muted">
-        <MediaImg path={s.cover_url} alt={s.name} className="size-full" />
-        <div className="absolute -bottom-6 left-3 size-12 overflow-hidden rounded-lg border-2 border-card bg-card">
+    <Link to="/shops/$slug" params={{ slug: s.slug }} className="group lift zoom-img flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card">
+      <div className="relative aspect-[16/9] bg-sage">
+        <div className="size-full overflow-hidden"><MediaImg path={s.cover_url} alt={s.name} className="size-full" /></div>
+        <div className="absolute -bottom-7 left-4 size-14 overflow-hidden rounded-full border-[3px] border-card bg-card shadow-soft">
           <MediaImg path={s.logo_url} alt="" className="size-full" />
         </div>
       </div>
-      <div className="flex flex-1 flex-col gap-1 px-3 pb-3 pt-8">
-        <h3 className="line-clamp-1 font-semibold group-hover:text-primary">{s.name}</h3>
+      <div className="flex flex-1 flex-col gap-1 px-4 pb-4 pt-9">
+        <h3 className="line-clamp-1 font-display text-base font-semibold group-hover:text-primary">{s.name}</h3>
         {s.township_id && <p className="text-xs text-muted-foreground">{tw(s.township_id)}</p>}
         <div className="mt-1 flex flex-wrap gap-1.5 text-xs">
           {s.offers_delivery && (
