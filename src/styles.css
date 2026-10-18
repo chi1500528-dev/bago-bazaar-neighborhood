@@ -146,7 +146,7 @@
 }
 @keyframes float-slow { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
 @utility eyebrow {
-  font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-muted-foreground);
+  font-size: 0.78rem; letter-spacing: 0.02em; text-transform: uppercase; color: var(--color-muted-foreground);
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

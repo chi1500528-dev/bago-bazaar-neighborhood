@@ -15,3 +15,4 @@
 - Data is read via the browser Supabase client + react-query; access control is enforced by RLS, not by hiding UI.
 - Images go to the private `media` bucket under `{userId}/...`; DB stores the path and `MediaImg` resolves signed URLs — public buckets are blocked on this project.
 - Admin, merchant and shop-approval flags are guarded by the `shops_guard` trigger; merchants can never self-approve.
+- Category fallback photos map by slug in `src/lib/category-images.ts`; real uploaded media always wins — keeps placeholder imagery swappable.
