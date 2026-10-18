@@ -108,7 +108,7 @@ export function StatusBadge({ status, kind = "order" }: { status: string; kind?:
 }
 
 /** Phone-only action bar pinned just above the bottom tab menu. */
-export function StickyActionBar({ children }: { children: React.ReactNode }) {
+export function StickyActionBar({ children }: { children: ReactNode }) {
   return (
     <>
       <div className="h-20 md:hidden" aria-hidden />

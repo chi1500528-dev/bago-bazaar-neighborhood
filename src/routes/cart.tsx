@@ -3,7 +3,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { useCartShop } from "@/lib/queries";
 import { useApp } from "@/lib/app-state";
 import { cartTotals, formatMMK } from "@/lib/domain/rules";
-import { EmptyState, MediaImg } from "@/components/site/bits";
+import { EmptyState, MediaImg, StickyActionBar } from "@/components/site/bits";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/cart")({
@@ -38,11 +38,11 @@ function CartPage() {
                 <span className="text-sm text-primary">{formatMMK(l.unitPrice, lang)}</span>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center rounded-md border">
-                    <button className="grid size-10 place-items-center" onClick={() => setQty(l.productId, l.quantity - 1)} aria-label="-"><Minus className="size-4" /></button>
+                    <button className="grid size-11 place-items-center" onClick={() => setQty(l.productId, l.quantity - 1)} aria-label="-"><Minus className="size-4" /></button>
                     <span className="w-8 text-center text-sm">{l.quantity}</span>
-                    <button className="grid size-10 place-items-center" onClick={() => setQty(l.productId, l.quantity + 1)} aria-label="+"><Plus className="size-4" /></button>
+                    <button className="grid size-11 place-items-center" onClick={() => setQty(l.productId, l.quantity + 1)} aria-label="+"><Plus className="size-4" /></button>
                   </div>
-                  <button onClick={() => removeLine(l.productId)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive"><Trash2 className="size-4" />{t("cart.remove")}</button>
+                  <button onClick={() => removeLine(l.productId)} className="flex min-h-11 items-center gap-1 px-2 text-xs text-muted-foreground hover:text-destructive"><Trash2 className="size-4" />{t("cart.remove")}</button>
                 </div>
               </div>
             </li>
@@ -56,8 +56,12 @@ function CartPage() {
           <span className="text-right text-muted-foreground">{shop.data?.offers_delivery ? formatMMK(shop.data.delivery_fee, lang) : "—"}</span>
         </div>
         <p className="text-xs text-muted-foreground">{t("cart.delivery_fee_note")}</p>
-        <Button asChild size="lg" className="w-full"><Link to="/checkout">{t("cart.checkout")}</Link></Button>
+        <Button asChild size="lg" className="hidden w-full md:inline-flex"><Link to="/checkout">{t("cart.checkout")}</Link></Button>
       </aside>
+      <StickyActionBar>
+        <span className="min-w-0 flex-1"><span className="block text-xs text-muted-foreground">{t("cart.subtotal")}</span><span className="text-lg font-bold text-primary">{formatMMK(totals.subtotal, lang)}</span></span>
+        <Button asChild size="lg" className="h-12 shrink-0"><Link to="/checkout">{t("cart.checkout")}</Link></Button>
+      </StickyActionBar>
     </div>
   );
 }
