@@ -39,7 +39,7 @@ function Account() {
   };
   return (
     <div className="mx-auto max-w-lg space-y-5 py-6">
-      <h1 className="text-xl font-bold">{t("account.title")}</h1>
+      <h1 className="text-[26px] font-semibold leading-[1.5] md:text-[30px]">{t("account.title")}</h1>
       <div className="surface space-y-4 p-5">
         <p className="text-sm text-muted-foreground">{session?.user.email}</p>
         <div className="space-y-1.5"><Label>{t("auth.name")}</Label><Input value={f.full_name} onChange={(e) => setF({ ...f, full_name: e.target.value })} /></div>

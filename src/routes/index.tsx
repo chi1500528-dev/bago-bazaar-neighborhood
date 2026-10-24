@@ -159,16 +159,18 @@ function Home() {
         )}
       </Section>
 
+      {food.length > 0 && (
       <div className="-mx-4 bg-sage/60 px-4 md:mx-0 md:rounded-3xl md:px-8">
       <Section title={t("home.food")} action={<Link to="/c/$slug" params={{ slug: "food" }} className="text-sm font-medium text-primary hover:underline">{t("common.see_all")}</Link>}>
-        {food.length === 0 ? <EmptyState text={t("shop.empty")} /> : (
+        {(
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{food.map((s) => <ShopCard key={s.id} s={s} />)}</div>
         )}
       </Section>
       </div>
+      )}
 
       <Section title={t("home.near")} action={<TownshipSelect />}>
-        {!township ? <EmptyState text={t("home.near_pick")} /> : near.length === 0 ? <EmptyState text={t("shop.empty")} /> : (
+        {!township ? <p className="text-[15px] text-muted-foreground">{t("home.near_pick")}</p> : near.length === 0 ? <p className="text-[15px] text-muted-foreground">{t("shop.empty")}</p> : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{near.map((s) => <ShopCard key={s.id} s={s} />)}</div>
         )}
       </Section>

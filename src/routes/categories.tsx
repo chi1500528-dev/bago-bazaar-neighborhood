@@ -25,7 +25,7 @@ function Categories() {
   const top = all.filter((c) => !c.parent_id);
   return (
     <div className="py-6">
-      <h1 className="mb-5 text-xl font-bold">{t("nav.categories")}</h1>
+      <h1 className="mb-5 text-[26px] font-semibold leading-[1.5] md:text-[30px]">{t("nav.categories")}</h1>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {top.map((c) => {
           const subs = all.filter((s) => s.parent_id === c.id);

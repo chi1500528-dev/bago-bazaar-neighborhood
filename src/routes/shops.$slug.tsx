@@ -60,7 +60,7 @@ function ShopPage() {
             <MediaImg path={s.logo_url} alt="" className="size-full" />
           </div>
           <div className="flex-1 space-y-2">
-            <h1 className="text-xl font-bold md:text-2xl">{s.name}</h1>
+            <h1 className="text-[26px] font-semibold leading-[1.5] md:text-[30px]">{s.name}</h1>
             {s.description && <p className="whitespace-pre-line text-sm text-muted-foreground">{s.description}</p>}
           </div>
         </div>

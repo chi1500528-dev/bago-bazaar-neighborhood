@@ -48,7 +48,7 @@ function Merchant() {
   if (!shop.data)
     return (
       <div className="mx-auto max-w-2xl py-6">
-        <h1 className="text-xl font-bold">{t("merchant.create")}</h1>
+        <h1 className="text-[26px] font-semibold leading-[1.5] md:text-[30px]">{t("merchant.create")}</h1>
         <p className="mb-5 text-sm text-muted-foreground">{t("merchant.create_sub")}</p>
         <ShopForm />
       </div>
@@ -57,7 +57,7 @@ function Merchant() {
   return (
     <div className="py-6">
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-bold">{s.name}</h1>
+        <h1 className="text-[26px] font-semibold leading-[1.5] md:text-[30px]">{s.name}</h1>
         <StatusBadge status={s.status} kind="shop" />
         {s.status === "approved" && <Link to="/shops/$slug" params={{ slug: s.slug }} className="text-sm text-primary hover:underline">{t("shop.visit")} →</Link>}
       </div>

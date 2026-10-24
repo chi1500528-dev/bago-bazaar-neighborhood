@@ -61,7 +61,7 @@ function ProductPage() {
         )}
       </div>
       <div className="space-y-4">
-        <h1 className="break-words text-xl font-bold md:text-2xl">{p.name}</h1>
+        <h1 className="break-words text-[26px] font-semibold leading-[1.5] md:text-[30px]">{p.name}</h1>
         <div className="flex flex-wrap items-baseline gap-3">
           <span className="text-2xl font-bold text-primary">{formatMMK(effectivePrice(p), lang)}</span>
           {off > 0 && <><span className="text-muted-foreground line-through">{formatMMK(p.price, lang)}</span><span className="rounded bg-gold px-2 py-0.5 text-[13px] font-semibold text-gold-foreground">-{off}%</span></>}

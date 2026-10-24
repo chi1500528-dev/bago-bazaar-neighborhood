@@ -37,7 +37,7 @@ function Admin() {
   const { t } = useApp();
   return (
     <div className="py-6">
-      <h1 className="mb-4 text-xl font-bold">{t("admin.title")}</h1>
+      <h1 className="mb-4 text-[26px] font-semibold leading-[1.5] md:text-[30px]">{t("admin.title")}</h1>
       <Tabs defaultValue="overview">
         <TabsList className="flex h-auto flex-wrap justify-start">
           <TabsTrigger value="overview">{t("admin.overview")}</TabsTrigger>

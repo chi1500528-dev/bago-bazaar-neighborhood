@@ -99,7 +99,7 @@ function Checkout() {
   return (
     <div className="grid gap-6 py-6 lg:grid-cols-[1fr_22rem]">
       <div className="space-y-6">
-        <h1 className="text-xl font-bold">{t("checkout.title")}</h1>
+        <h1 className="text-[26px] font-semibold leading-[1.5] md:text-[30px]">{t("checkout.title")}</h1>
         <section className="space-y-3">
           <h2 className="font-semibold">{t("checkout.method")}</h2>
           <div className="grid gap-3 sm:grid-cols-2">

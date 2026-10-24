@@ -27,7 +27,7 @@ function CartPage() {
   return (
     <div className="grid gap-6 py-6 lg:grid-cols-[1fr_22rem]">
       <div>
-        <h1 className="mb-1 text-xl font-bold">{t("cart.title")}</h1>
+        <h1 className="mb-1 text-[26px] font-semibold leading-[1.5] md:text-[30px]">{t("cart.title")}</h1>
         {shop.data && <Link to="/shops/$slug" params={{ slug: shop.data.slug }} className="text-sm text-primary hover:underline">{shop.data.name}</Link>}
         <ul className="mt-4 divide-y rounded-lg border bg-card">
           {cart.map((l) => (

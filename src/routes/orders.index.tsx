@@ -31,7 +31,7 @@ function Orders() {
   });
   return (
     <div className="py-6">
-      <h1 className="mb-4 text-xl font-bold">{t("orders.title")}</h1>
+      <h1 className="mb-4 text-[26px] font-semibold leading-[1.5] md:text-[30px]">{t("orders.title")}</h1>
       {q.isLoading ? <p className="text-sm text-muted-foreground">{t("common.loading")}</p> : (q.data ?? []).length === 0 ? <EmptyState text={t("orders.empty")} /> : (
         <ul className="divide-y rounded-lg border bg-card">
           {q.data!.map((o) => (

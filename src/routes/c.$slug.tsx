@@ -50,7 +50,7 @@ function CategoryPage() {
         <Link to="/categories" className="hover:underline">{t("nav.categories")}</Link>
         {cat.parent_id && parent && <> / <Link to="/c/$slug" params={{ slug: parent.slug }} className="hover:underline">{pick(parent.name_my, parent.name_en)}</Link></>}
       </nav>
-      <h1 className="text-xl font-bold md:text-2xl">{pick(cat.name_my, cat.name_en)}</h1>
+      <h1 className="text-[26px] font-semibold leading-[1.5] md:text-[30px]">{pick(cat.name_my, cat.name_en)}</h1>
       {subs.length > 0 && (
         <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
           {parent && (
