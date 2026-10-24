@@ -113,7 +113,7 @@ function Home() {
         {cats.isError ? <ErrorBox onRetry={() => cats.refetch()} /> : cats.isLoading ? (
           <div className="flex gap-4">{[0, 1, 2, 3, 4].map((i) => <div key={i} className="size-20 animate-pulse rounded-full bg-muted" />)}</div>
         ) : (
-          <div className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:flex-wrap md:justify-start md:gap-6 md:overflow-visible md:px-0">
+          <div className="-mx-4 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:flex-wrap md:justify-start md:gap-6 md:overflow-visible md:px-0">
             {top.map((c) => (
               <Link key={c.id} to="/c/$slug" params={{ slug: c.slug }} className="group flex w-20 shrink-0 snap-start flex-col items-center gap-2 md:w-24">
                 <span className="block size-20 overflow-hidden rounded-full border-2 border-gold/50 bg-sage p-0.5 transition-colors group-hover:border-primary md:size-24">
