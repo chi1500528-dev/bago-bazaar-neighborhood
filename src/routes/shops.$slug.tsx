@@ -60,7 +60,7 @@ function ShopPage() {
             <MediaImg path={s.logo_url} alt="" className="size-full" />
           </div>
           <div className="flex-1 space-y-2">
-            <h1 className="text-xl font-bold md:text-2xl">{s.name}</h1>
+            <h1 className="text-[26px] font-semibold leading-[1.5] md:text-[30px]">{s.name}</h1>
             {s.description && <p className="whitespace-pre-line text-sm text-muted-foreground">{s.description}</p>}
           </div>
         </div>
@@ -73,7 +73,7 @@ function ShopPage() {
           <div className="flex flex-col gap-1">
             {s.offers_delivery && <span className="flex gap-2"><Bike className="size-4 text-primary" />{t("shop.delivery")} · {t("shop.delivery_fee")} {formatMMK(s.delivery_fee, lang)}</span>}
             {s.offers_pickup && <span className="flex gap-2"><Store className="size-4 text-primary" />{t("shop.pickup")}</span>}
-            {s.delivery_note && <span className="text-xs text-muted-foreground">{s.delivery_note}</span>}
+            {s.delivery_note && <span className="text-[13px] text-muted-foreground">{s.delivery_note}</span>}
           </div>
         </dl>
       </div>

@@ -27,7 +27,7 @@ function CartPage() {
   return (
     <div className="grid gap-6 py-6 lg:grid-cols-[1fr_22rem]">
       <div>
-        <h1 className="mb-1 text-xl font-bold">{t("cart.title")}</h1>
+        <h1 className="mb-1 text-[26px] font-semibold leading-[1.5] md:text-[30px]">{t("cart.title")}</h1>
         {shop.data && <Link to="/shops/$slug" params={{ slug: shop.data.slug }} className="text-sm text-primary hover:underline">{shop.data.name}</Link>}
         <ul className="mt-4 divide-y rounded-lg border bg-card">
           {cart.map((l) => (
@@ -42,7 +42,7 @@ function CartPage() {
                     <span className="w-8 text-center text-sm">{l.quantity}</span>
                     <button className="grid size-11 place-items-center" onClick={() => setQty(l.productId, l.quantity + 1)} aria-label="+"><Plus className="size-4" /></button>
                   </div>
-                  <button onClick={() => removeLine(l.productId)} className="flex min-h-11 items-center gap-1 px-2 text-xs text-muted-foreground hover:text-destructive"><Trash2 className="size-4" />{t("cart.remove")}</button>
+                  <button onClick={() => removeLine(l.productId)} className="flex min-h-11 items-center gap-1 px-2 text-[13px] text-muted-foreground hover:text-destructive"><Trash2 className="size-4" />{t("cart.remove")}</button>
                 </div>
               </div>
             </li>
@@ -55,11 +55,11 @@ function CartPage() {
           <span>{t("cart.delivery_fee")}</span>
           <span className="text-right text-muted-foreground">{shop.data?.offers_delivery ? formatMMK(shop.data.delivery_fee, lang) : "—"}</span>
         </div>
-        <p className="text-xs text-muted-foreground">{t("cart.delivery_fee_note")}</p>
+        <p className="text-[13px] text-muted-foreground">{t("cart.delivery_fee_note")}</p>
         <Button asChild size="lg" className="hidden w-full md:inline-flex"><Link to="/checkout">{t("cart.checkout")}</Link></Button>
       </aside>
       <StickyActionBar>
-        <span className="min-w-0 flex-1"><span className="block text-xs text-muted-foreground">{t("cart.subtotal")}</span><span className="text-lg font-bold text-primary">{formatMMK(totals.subtotal, lang)}</span></span>
+        <span className="min-w-0 flex-1"><span className="block text-[13px] text-muted-foreground">{t("cart.subtotal")}</span><span className="text-lg font-bold text-primary">{formatMMK(totals.subtotal, lang)}</span></span>
         <Button asChild size="lg" className="h-12 shrink-0"><Link to="/checkout">{t("cart.checkout")}</Link></Button>
       </StickyActionBar>
     </div>
