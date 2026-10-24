@@ -137,7 +137,7 @@ function Home() {
                 <MediaImg path={p.image_url} alt={pick(p.title_my, p.title_en)} className="absolute inset-0 size-full" />
                 <div className="relative mt-auto w-full bg-gradient-to-t from-foreground/75 to-transparent p-4 text-primary-foreground">
                   <p className="font-semibold">{pick(p.title_my, p.title_en)}</p>
-                  {(p.subtitle_my || p.subtitle_en) && <p className="text-xs opacity-90">{pick(p.subtitle_my, p.subtitle_en)}</p>}
+                  {(p.subtitle_my || p.subtitle_en) && <p className="text-[13px] opacity-90">{pick(p.subtitle_my, p.subtitle_en)}</p>}
                 </div>
               </a>
             ))}

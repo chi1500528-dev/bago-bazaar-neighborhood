@@ -40,7 +40,7 @@ function Categories() {
               {subs.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {subs.map((s) => (
-                    <Link key={s.id} to="/c/$slug" params={{ slug: s.slug }} className="rounded-full border px-2.5 py-0.5 text-xs hover:border-primary hover:text-primary">
+                    <Link key={s.id} to="/c/$slug" params={{ slug: s.slug }} className="rounded-full border px-2.5 py-0.5 text-[13px] hover:border-primary hover:text-primary">
                       {pick(s.name_my, s.name_en)}
                     </Link>
                   ))}

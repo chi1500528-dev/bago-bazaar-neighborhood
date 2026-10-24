@@ -46,7 +46,7 @@ function CategoryPage() {
 
   return (
     <div className="py-6">
-      <nav className="mb-2 text-xs text-muted-foreground">
+      <nav className="mb-2 text-[13px] text-muted-foreground">
         <Link to="/categories" className="hover:underline">{t("nav.categories")}</Link>
         {cat.parent_id && parent && <> / <Link to="/c/$slug" params={{ slug: parent.slug }} className="hover:underline">{pick(parent.name_my, parent.name_en)}</Link></>}
       </nav>

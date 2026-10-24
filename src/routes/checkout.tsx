@@ -92,7 +92,7 @@ function Checkout() {
     <div className="space-y-1.5">
       <Label htmlFor={k}>{label}</Label>
       {el}
-      {errors[k] && <p className="text-xs text-destructive">{errors[k]}</p>}
+      {errors[k] && <p className="text-[13px] text-destructive">{errors[k]}</p>}
     </div>
   );
 
@@ -109,7 +109,7 @@ function Checkout() {
                 <Icon className="mt-0.5 size-5 text-primary" />
                 <span>
                   <span className="block font-medium">{t(m === "delivery" ? "checkout.delivery" : "checkout.pickup")}</span>
-                  <span className="text-xs text-muted-foreground">{m === "delivery" ? `${t("shop.delivery_fee")} ${formatMMK(s.delivery_fee, lang)}` : s.name}</span>
+                  <span className="text-[13px] text-muted-foreground">{m === "delivery" ? `${t("shop.delivery_fee")} ${formatMMK(s.delivery_fee, lang)}` : s.name}</span>
                 </span>
               </button>
             ))}
@@ -157,10 +157,10 @@ function Checkout() {
           <div className="flex justify-between pt-1 text-base font-bold"><span>{t("cart.total")}</span><span className="text-primary">{formatMMK(totals.total, lang)}</span></div>
         </div>
         <Button size="lg" className="hidden w-full md:inline-flex" disabled={busy || !method} onClick={submit}>{busy ? t("checkout.placing") : t("checkout.place")}</Button>
-        <Link to="/cart" className="block py-2 text-center text-xs text-muted-foreground hover:underline">{t("common.back")}</Link>
+        <Link to="/cart" className="block py-2 text-center text-[13px] text-muted-foreground hover:underline">{t("common.back")}</Link>
       </aside>
       <StickyActionBar>
-        <span className="min-w-0 flex-1"><span className="block text-xs text-muted-foreground">{t("cart.total")}</span><span className="text-lg font-bold text-primary">{formatMMK(totals.total, lang)}</span></span>
+        <span className="min-w-0 flex-1"><span className="block text-[13px] text-muted-foreground">{t("cart.total")}</span><span className="text-lg font-bold text-primary">{formatMMK(totals.total, lang)}</span></span>
         <Button size="lg" className="h-12 shrink-0" disabled={busy || !method} onClick={submit}>{busy ? t("checkout.placing") : t("checkout.place")}</Button>
       </StickyActionBar>
     </div>

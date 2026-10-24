@@ -37,7 +37,7 @@ function Orders() {
           {q.data!.map((o) => (
             <li key={o.id}>
               <Link to="/orders/$id" params={{ id: o.id }} className="flex flex-wrap items-center justify-between gap-2 p-4 hover:bg-muted/50">
-                <div><p className="font-medium">{t("orders.number", { n: o.order_no })}</p><p className="text-xs text-muted-foreground">{o.shops?.name}</p></div>
+                <div><p className="font-medium">{t("orders.number", { n: o.order_no })}</p><p className="text-[13px] text-muted-foreground">{o.shops?.name}</p></div>
                 <div className="flex items-center gap-3"><span className="text-sm font-medium">{formatMMK(o.total, lang)}</span><StatusBadge status={o.status} /></div>
               </Link>
             </li>

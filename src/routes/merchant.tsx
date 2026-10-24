@@ -161,7 +161,7 @@ function MerchantProducts({ shop }: { shop: ShopRow }) {
               <MediaImg path={p.images[0]} alt={p.name} className="size-14 shrink-0 rounded" />
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-1 font-medium">{p.name}</p>
-                <p className="text-xs text-muted-foreground">{formatMMK(p.sale_price ?? p.price, lang)} · {t("merchant.stock")}: {p.stock} · {p.is_active ? t("common.active") : t("common.inactive")}</p>
+                <p className="text-[13px] text-muted-foreground">{formatMMK(p.sale_price ?? p.price, lang)} · {t("merchant.stock")}: {p.stock} · {p.is_active ? t("common.active") : t("common.inactive")}</p>
               </div>
               <Button size="sm" variant="outline" onClick={() => setEditing(p)}>{t("common.edit")}</Button>
             </li>
@@ -219,9 +219,9 @@ function ProductForm({ shopId, product, onDone }: { shopId: string; product?: Pr
           ])}
         </select></div>
       <div className="grid grid-cols-3 gap-2">
-        <div className="space-y-1.5"><Label className="text-xs">{t("merchant.price")}</Label><Input inputMode="numeric" value={f.price} onChange={num("price")} /></div>
-        <div className="space-y-1.5"><Label className="text-xs">{t("merchant.sale_price")}</Label><Input inputMode="numeric" value={f.sale_price} onChange={num("sale_price")} /></div>
-        <div className="space-y-1.5"><Label className="text-xs">{t("merchant.stock")}</Label><Input inputMode="numeric" value={f.stock} onChange={num("stock")} /></div>
+        <div className="space-y-1.5"><Label className="text-[13px]">{t("merchant.price")}</Label><Input inputMode="numeric" value={f.price} onChange={num("price")} /></div>
+        <div className="space-y-1.5"><Label className="text-[13px]">{t("merchant.sale_price")}</Label><Input inputMode="numeric" value={f.sale_price} onChange={num("sale_price")} /></div>
+        <div className="space-y-1.5"><Label className="text-[13px]">{t("merchant.stock")}</Label><Input inputMode="numeric" value={f.stock} onChange={num("stock")} /></div>
       </div>
       <ImageField multiple label={t("merchant.images")} value={f.images} onChange={(v) => setF({ ...f, images: v })} />
       <label className="flex items-center gap-2 text-sm"><Switch checked={f.is_active} onCheckedChange={(v) => setF({ ...f, is_active: v })} />{f.is_active ? t("common.active") : t("common.inactive")}</label>
@@ -257,7 +257,7 @@ function MerchantOrders({ shopId }: { shopId: string }) {
           <li key={o.id}>
             <button onClick={() => setOpen(o.id)} className="flex w-full flex-wrap items-center justify-between gap-2 p-4 text-left hover:bg-muted/50">
               <div><p className="font-medium">{t("orders.number", { n: o.order_no })} · {o.recipient_name}</p>
-                <p className="text-xs text-muted-foreground">{t(o.delivery_method === "delivery" ? "checkout.delivery" : "checkout.pickup")} · {new Date(o.created_at).toLocaleString()}</p></div>
+                <p className="text-[13px] text-muted-foreground">{t(o.delivery_method === "delivery" ? "checkout.delivery" : "checkout.pickup")} · {new Date(o.created_at).toLocaleString()}</p></div>
               <div className="flex items-center gap-3"><span className="text-sm font-medium">{formatMMK(o.total, lang)}</span><StatusBadge status={o.status} /></div>
             </button>
           </li>
