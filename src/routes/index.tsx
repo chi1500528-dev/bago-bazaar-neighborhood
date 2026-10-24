@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
 function SeeAll({ to }: { to: "/categories" | "/search" }) {
   const { t } = useApp();
   return (
-    <Link to={to} className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+    <Link to={to} className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-sm font-medium text-primary hover:underline">
       {t("common.see_all")} <ArrowRight className="size-3.5" />
     </Link>
   );
@@ -111,7 +111,7 @@ function Home() {
 
       <Section title={t("home.categories")} action={<SeeAll to="/categories" />}>
         {cats.isError ? <ErrorBox onRetry={() => cats.refetch()} /> : cats.isLoading ? (
-          <div className="flex gap-4">{[0, 1, 2, 3, 4].map((i) => <div key={i} className="size-20 animate-pulse rounded-full bg-muted" />)}</div>
+          <div className="flex gap-4 overflow-hidden">{[0, 1, 2, 3, 4].map((i) => <div key={i} className="size-20 shrink-0 animate-pulse rounded-full bg-muted" />)}</div>
         ) : (
           <div className="-mx-4 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:flex-wrap md:justify-start md:gap-6 md:overflow-visible md:px-0">
             {top.map((c) => (
@@ -137,7 +137,7 @@ function Home() {
                 <MediaImg path={p.image_url} alt={pick(p.title_my, p.title_en)} className="absolute inset-0 size-full" />
                 <div className="relative mt-auto w-full bg-gradient-to-t from-foreground/75 to-transparent p-4 text-primary-foreground">
                   <p className="font-semibold">{pick(p.title_my, p.title_en)}</p>
-                  {(p.subtitle_my || p.subtitle_en) && <p className="text-xs opacity-90">{pick(p.subtitle_my, p.subtitle_en)}</p>}
+                  {(p.subtitle_my || p.subtitle_en) && <p className="text-[13px] opacity-90">{pick(p.subtitle_my, p.subtitle_en)}</p>}
                 </div>
               </a>
             ))}
@@ -159,16 +159,18 @@ function Home() {
         )}
       </Section>
 
+      {food.length > 0 && (
       <div className="-mx-4 bg-sage/60 px-4 md:mx-0 md:rounded-3xl md:px-8">
       <Section title={t("home.food")} action={<Link to="/c/$slug" params={{ slug: "food" }} className="text-sm font-medium text-primary hover:underline">{t("common.see_all")}</Link>}>
-        {food.length === 0 ? <EmptyState text={t("shop.empty")} /> : (
+        {(
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{food.map((s) => <ShopCard key={s.id} s={s} />)}</div>
         )}
       </Section>
       </div>
+      )}
 
       <Section title={t("home.near")} action={<TownshipSelect />}>
-        {!township ? <EmptyState text={t("home.near_pick")} /> : near.length === 0 ? <EmptyState text={t("shop.empty")} /> : (
+        {!township ? <p className="text-[15px] text-muted-foreground">{t("home.near_pick")}</p> : near.length === 0 ? <p className="text-[15px] text-muted-foreground">{t("shop.empty")}</p> : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{near.map((s) => <ShopCard key={s.id} s={s} />)}</div>
         )}
       </Section>

@@ -52,7 +52,7 @@ function SearchPage() {
 
   return (
     <div className="py-6">
-      <h1 className="mb-3 text-xl font-bold">{t("search.title")}</h1>
+      <h1 className="mb-3 text-[26px] font-semibold leading-[1.5] md:text-[30px]">{t("search.title")}</h1>
       <input
         autoFocus value={input} onChange={(e) => setInput(e.target.value)} placeholder={t("nav.search_placeholder")}
         className="h-11 w-full rounded-lg border bg-card px-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"

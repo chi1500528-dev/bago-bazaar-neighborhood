@@ -69,12 +69,12 @@
   --primary-deep: #102F28;
   --primary-foreground: oklch(0.98 0.01 120);
   --primary-soft: oklch(0.95 0.025 158);
-  --secondary: oklch(0.955 0.012 90);
+  --secondary: #F4F3ED;
   --secondary-foreground: oklch(0.28 0.02 160);
   --gold: #C6A66B;
   --gold-foreground: oklch(0.25 0.04 70);
   --gold-soft: oklch(0.96 0.035 85);
-  --muted: oklch(0.955 0.008 90);
+  --muted: #F4F3ED;
   --muted-foreground: #5F665F;
   --accent: oklch(0.95 0.02 158);
   --accent-foreground: oklch(0.3 0.06 158);
@@ -87,12 +87,12 @@
   --ring: #173F35;
   --sidebar: oklch(0.98 0.006 85);
   --sidebar-foreground: oklch(0.24 0.012 160);
-  --sidebar-primary: oklch(0.42 0.085 158);
+  --sidebar-primary: #173F35;
   --sidebar-primary-foreground: oklch(0.98 0.01 120);
   --sidebar-accent: oklch(0.95 0.02 158);
   --sidebar-accent-foreground: oklch(0.3 0.06 158);
-  --sidebar-border: oklch(0.91 0.01 90);
-  --sidebar-ring: oklch(0.42 0.085 158);
+  --sidebar-border: #E8E6DE;
+  --sidebar-ring: #173F35;
 }
 
 @layer base {
@@ -110,6 +110,10 @@
   }
   :lang(my) {
     line-height: 1.85;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
