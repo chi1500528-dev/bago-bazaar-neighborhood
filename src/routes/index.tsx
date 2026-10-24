@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
 function SeeAll({ to }: { to: "/categories" | "/search" }) {
   const { t } = useApp();
   return (
-    <Link to={to} className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+    <Link to={to} className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-sm font-medium text-primary hover:underline">
       {t("common.see_all")} <ArrowRight className="size-3.5" />
     </Link>
   );
@@ -111,7 +111,7 @@ function Home() {
 
       <Section title={t("home.categories")} action={<SeeAll to="/categories" />}>
         {cats.isError ? <ErrorBox onRetry={() => cats.refetch()} /> : cats.isLoading ? (
-          <div className="flex gap-4">{[0, 1, 2, 3, 4].map((i) => <div key={i} className="size-20 animate-pulse rounded-full bg-muted" />)}</div>
+          <div className="flex gap-4 overflow-hidden">{[0, 1, 2, 3, 4].map((i) => <div key={i} className="size-20 shrink-0 animate-pulse rounded-full bg-muted" />)}</div>
         ) : (
           <div className="-mx-4 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:flex-wrap md:justify-start md:gap-6 md:overflow-visible md:px-0">
             {top.map((c) => (
