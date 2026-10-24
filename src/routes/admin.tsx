@@ -37,7 +37,7 @@ function Admin() {
   const { t } = useApp();
   return (
     <div className="py-6">
-      <h1 className="mb-4 text-[26px] font-semibold leading-[1.5] md:text-[30px]">{t("admin.title")}</h1>
+      <h1 className="mb-4 text-xl font-bold">{t("admin.title")}</h1>
       <Tabs defaultValue="overview">
         <TabsList className="flex h-auto flex-wrap justify-start">
           <TabsTrigger value="overview">{t("admin.overview")}</TabsTrigger>
@@ -82,7 +82,7 @@ function Overview() {
   ] as const;
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-      {items.map(([l, v]) => <div key={l} className="surface p-4"><p className="text-[13px] text-muted-foreground">{l}</p><p className="text-2xl font-bold">{v ?? "–"}</p></div>)}
+      {items.map(([l, v]) => <div key={l} className="surface p-4"><p className="text-xs text-muted-foreground">{l}</p><p className="text-2xl font-bold">{v ?? "–"}</p></div>)}
     </div>
   );
 }
@@ -118,8 +118,8 @@ function Shops() {
             <li key={s.id} className="flex flex-wrap items-center gap-3 p-3">
               <MediaImg path={s.logo_url} alt="" className="size-12 rounded" />
               <div className="min-w-0 flex-1">
-                <p className="font-medium">{s.name} {s.is_featured && <span className="text-[13px] text-gold-foreground">★</span>}</p>
-                <p className="line-clamp-1 text-[13px] text-muted-foreground">{s.phone} · {s.address}</p>
+                <p className="font-medium">{s.name} {s.is_featured && <span className="text-xs text-gold-foreground">★</span>}</p>
+                <p className="line-clamp-1 text-xs text-muted-foreground">{s.phone} · {s.address}</p>
               </div>
               <StatusBadge status={s.status} kind="shop" />
               <div className="flex flex-wrap gap-1.5">
@@ -152,7 +152,7 @@ function Products() {
       {q.data!.map((p) => (
         <li key={p.id} className="flex items-center gap-3 p-3">
           <MediaImg path={p.images[0]} alt="" className="size-12 rounded" />
-          <div className="min-w-0 flex-1"><p className="line-clamp-1 font-medium">{p.name}</p><p className="text-[13px] text-muted-foreground">{p.shops?.name} · {formatMMK(p.price, lang)} · {p.stock}</p></div>
+          <div className="min-w-0 flex-1"><p className="line-clamp-1 font-medium">{p.name}</p><p className="text-xs text-muted-foreground">{p.shops?.name} · {formatMMK(p.price, lang)} · {p.stock}</p></div>
           <Switch checked={p.is_active} onCheckedChange={async (v) => { await supabase.from("products").update({ is_active: v }).eq("id", p.id); qc.invalidateQueries({ queryKey: ["admin-products"] }); }} />
         </li>
       ))}
@@ -220,9 +220,9 @@ function Categories() {
   };
   const row = (c: Cat, depth = 0) => (
     <li key={c.id} className="flex items-center gap-3 p-3" style={{ paddingLeft: 12 + depth * 24 }}>
-      <span className="w-8 text-[13px] text-muted-foreground">{c.sort}</span>
-      <span className="flex-1 text-sm">{pick(c.name_my, c.name_en)} <span className="text-[13px] text-muted-foreground">/ {c.name_en}</span></span>
-      {!c.is_active && <span className="text-[13px] text-muted-foreground">{t("common.inactive")}</span>}
+      <span className="w-8 text-xs text-muted-foreground">{c.sort}</span>
+      <span className="flex-1 text-sm">{pick(c.name_my, c.name_en)} <span className="text-xs text-muted-foreground">/ {c.name_en}</span></span>
+      {!c.is_active && <span className="text-xs text-muted-foreground">{t("common.inactive")}</span>}
       <Button size="sm" variant="outline" onClick={() => setEdit(c)}>{t("common.edit")}</Button>
     </li>
   );
@@ -288,7 +288,7 @@ function Promotions() {
           {q.data!.map((p) => (
             <li key={p.id} className="flex items-center gap-3 p-3">
               <MediaImg path={p.image_url} alt="" className="h-12 w-24 rounded" />
-              <div className="flex-1 text-sm"><p className="font-medium">{pick(p.title_my, p.title_en)}</p><p className="text-[13px] text-muted-foreground">{d(p.starts_at)} → {d(p.ends_at) || "∞"} · {p.is_active ? t("common.active") : t("common.inactive")}</p></div>
+              <div className="flex-1 text-sm"><p className="font-medium">{pick(p.title_my, p.title_en)}</p><p className="text-xs text-muted-foreground">{d(p.starts_at)} → {d(p.ends_at) || "∞"} · {p.is_active ? t("common.active") : t("common.inactive")}</p></div>
               <Button size="sm" variant="outline" onClick={() => setEdit(p)}>{t("common.edit")}</Button>
               <Button size="sm" variant="ghost" onClick={() => del(p.id)}>{t("common.delete")}</Button>
             </li>
@@ -318,7 +318,7 @@ function Promotions() {
           )}
         </DialogContent>
       </Dialog>
-      <p className="mt-3 text-[13px] text-muted-foreground"><Link to="/" className="underline">→ Home</Link></p>
+      <p className="mt-3 text-xs text-muted-foreground"><Link to="/" className="underline">→ Home</Link></p>
     </div>
   );
 }

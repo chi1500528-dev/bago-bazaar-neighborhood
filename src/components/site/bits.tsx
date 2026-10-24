@@ -17,7 +17,7 @@ export function Logo({ compact = false }: { compact?: boolean }) {
       {!compact && (
         <span className="flex flex-col leading-tight">
           <span className="font-display text-[17px] font-semibold tracking-tight text-foreground">Bago Market</span>
-          <span className="text-[13px] text-gold-foreground/80" lang="my">ပဲခူးဈေး</span>
+          <span className="text-xs text-gold-foreground/80" lang="my">ပဲခူးဈေး</span>
         </span>
       )}
     </Link>
@@ -51,7 +51,7 @@ export function Section({ title, action, children }: { title: string; action?: R
   return (
     <section className="py-8 md:py-12">
       <div className="mb-5 flex items-end justify-between gap-4 border-b border-border/70 pb-3">
-        <h2 className="text-[22px] font-semibold md:text-2xl">{title}</h2>
+        <h2 className="text-xl font-semibold md:text-2xl">{title}</h2>
         {action}
       </div>
       {children}
@@ -61,7 +61,7 @@ export function Section({ title, action, children }: { title: string; action?: R
 
 export function EmptyState({ text, action }: { text: string; action?: ReactNode }) {
   return (
-    <div className="surface flex flex-col items-center gap-3 px-6 py-8 text-center text-[15px] text-muted-foreground">
+    <div className="surface flex flex-col items-center gap-3 px-6 py-10 text-center text-sm text-muted-foreground">
       <Package className="size-7 opacity-40" />
       <p className="max-w-md">{text}</p>
       {action}
@@ -104,7 +104,7 @@ export function StatusBadge({ status, kind = "order" }: { status: string; kind?:
           ? "bg-gold-soft text-gold-foreground"
           : "bg-accent text-accent-foreground";
   const key = (kind === "order" ? `status.${status}` : `shopstatus.${status}`) as Parameters<typeof t>[0];
-  return <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-[13px] font-medium", tone)}>{t(key)}</span>;
+  return <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", tone)}>{t(key)}</span>;
 }
 
 /** Phone-only action bar pinned just above the bottom tab menu. */
@@ -112,18 +112,9 @@ export function StickyActionBar({ children }: { children: ReactNode }) {
   return (
     <>
       <div className="h-20 md:hidden" aria-hidden />
-      <div className="fixed inset-x-0 z-30 border-t bg-card/95 px-4 py-3 shadow-lg backdrop-blur md:hidden" style={{ bottom: "calc(60px + 1px + env(safe-area-inset-bottom))" }}>
+      <div className="fixed inset-x-0 z-30 border-t bg-card/95 px-4 py-3 shadow-lg backdrop-blur md:hidden" style={{ bottom: "calc(3.5rem + 1px + env(safe-area-inset-bottom))" }}>
         <div className="flex items-center gap-3">{children}</div>
       </div>
     </>
-  );
-}
-
-export function PageHeading({ children, sub }: { children: ReactNode; sub?: ReactNode }) {
-  return (
-    <div className="mb-6">
-      <h1 className="text-[26px] font-semibold leading-[1.5] md:text-[30px]">{children}</h1>
-      {sub && <p className="mt-1 text-[15px] text-muted-foreground">{sub}</p>}
-    </div>
   );
 }

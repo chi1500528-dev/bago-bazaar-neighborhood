@@ -51,7 +51,7 @@ function AuthPage() {
 
   return (
     <div className="mx-auto max-w-sm py-12">
-      <h1 className="mb-6 text-center text-[26px] font-semibold leading-[1.5] md:text-[30px]">{mode === "in" ? t("auth.title") : t("auth.signup_title")}</h1>
+      <h1 className="mb-6 text-center text-xl font-bold">{mode === "in" ? t("auth.title") : t("auth.signup_title")}</h1>
       {sent ? (
         <p className="surface p-5 text-center text-sm">{t("auth.check_email")}</p>
       ) : (

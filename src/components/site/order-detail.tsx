@@ -69,13 +69,13 @@ export function OrderDetail({ id, as }: { id: string; as: "customer" | "merchant
           <p>{o.recipient_name} · <a href={`tel:${o.phone}`} className="hover:underline">{o.phone}</a></p>
           {o.delivery_method === "delivery" ? <p>{[o.address, tw(o.township_id)].filter(Boolean).join(", ")}</p> : <p className="text-muted-foreground">{[o.shops?.address, o.shops?.pickup_info].filter(Boolean).join(" · ")}</p>}
           {o.note && <p className="text-muted-foreground">“{o.note}”</p>}
-          <p className="pt-2 text-[13px] text-muted-foreground">{t("checkout.payment_cod")}</p>
+          <p className="pt-2 text-xs text-muted-foreground">{t("checkout.payment_cod")}</p>
         </div>
         <div className="surface p-4 text-sm">
           <p className="mb-2 font-semibold">{t("orders.history")}</p>
           <ol className="space-y-1.5">
             {history.map((h) => (
-              <li key={h.id} className="flex justify-between gap-3"><span>{t(`status.${h.status}` as "status.pending")}</span><span className="text-[13px] text-muted-foreground">{new Date(h.created_at).toLocaleString(lang === "my" ? "my-MM" : "en-GB")}</span></li>
+              <li key={h.id} className="flex justify-between gap-3"><span>{t(`status.${h.status}` as "status.pending")}</span><span className="text-xs text-muted-foreground">{new Date(h.created_at).toLocaleString(lang === "my" ? "my-MM" : "en-GB")}</span></li>
             ))}
           </ol>
         </div>
