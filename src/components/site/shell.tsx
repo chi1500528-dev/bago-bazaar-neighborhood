@@ -14,7 +14,7 @@ import {
 export function LangSwitch({ className }: { className?: string }) {
   const { lang, setLang } = useApp();
   return (
-    <div className={cn("inline-flex rounded-full border bg-card p-0.5 text-[13px]", className)} role="group" aria-label="Language">
+    <div className={cn("inline-flex rounded-full border bg-card p-0.5 text-xs", className)} role="group" aria-label="Language">
       {(["my", "en"] as const).map((l) => (
         <button
           key={l}
@@ -115,11 +115,11 @@ function CartLink() {
   const { cart, t } = useApp();
   const n = cart.reduce((s, l) => s + l.quantity, 0);
   return (
-    <Link to="/cart" className="relative inline-flex h-10 items-center gap-1.5 rounded-md px-3 text-[15px] font-medium hover:bg-accent" aria-label={t("nav.cart")}>
+    <Link to="/cart" className="relative inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent" aria-label={t("nav.cart")}>
       <ShoppingCart className="size-4" />
       <span className="hidden sm:inline">{t("nav.cart")}</span>
       {n > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[13px] leading-5 font-bold text-gold-foreground">{n}</span>
+        <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">{n}</span>
       )}
     </Link>
   );
@@ -135,7 +135,7 @@ export function Header() {
         <TownshipSelect className="hidden lg:flex" />
         <SearchBox className="hidden flex-1 md:block md:max-w-2xl" />
         <nav className="ml-auto flex items-center gap-1 md:ml-0">
-          <Link to="/categories" className="hidden h-10 items-center rounded-md px-3 text-[15px] font-medium hover:bg-accent lg:inline-flex">
+          <Link to="/categories" className="hidden h-9 items-center rounded-md px-3 text-sm font-medium hover:bg-accent lg:inline-flex">
             {t("nav.categories")}
           </Link>
           <span className="mx-1 hidden h-6 w-px bg-border sm:block" />
@@ -168,12 +168,11 @@ export function BottomNav() {
       <ul className="grid grid-cols-5">
         {items.map((it) => (
           <li key={it.to}>
-            <Link to={it.to} className={cn("relative flex min-h-[60px] flex-col items-center justify-center gap-1 py-1.5 text-[13px] leading-tight", it.active ? "font-semibold text-primary" : "text-muted-foreground")} aria-current={it.active ? "page" : undefined}>
-              {it.active && <span className="absolute inset-x-[30%] top-0 h-0.5 rounded-full bg-primary" aria-hidden />}
-              <it.icon className="size-6" strokeWidth={it.active ? 2.4 : 1.8} />
+            <Link to={it.to} className={cn("relative flex min-h-14 flex-col items-center justify-center gap-0.5 py-1.5 text-[11px] leading-tight", it.active ? "text-primary" : "text-muted-foreground")}>
+              <it.icon className="size-5" strokeWidth={it.active ? 2.4 : 1.8} />
               <span className="line-clamp-1 px-0.5">{it.label}</span>
               {"badge" in it && it.badge > 0 && (
-                <span className="absolute right-[20%] top-1 grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[13px] leading-5 font-bold text-gold-foreground">{it.badge}</span>
+                <span className="absolute right-[22%] top-1 grid min-w-4 place-items-center rounded-full bg-gold px-1 text-[10px] font-bold text-gold-foreground">{it.badge}</span>
               )}
             </Link>
           </li>
@@ -186,7 +185,7 @@ export function BottomNav() {
 export function Footer() {
   const { t } = useApp();
   return (
-    <footer className="mt-16 bg-primary-deep pb-24 text-primary-foreground md:pb-0 [&_a:hover]:text-gold [&_.text-muted-foreground]:text-primary-foreground/70 [&_.text-foreground]:text-primary-foreground">
+    <footer className="mt-16 bg-primary pb-24 text-primary-foreground md:pb-0 [&_a:hover]:text-gold [&_.text-muted-foreground]:text-primary-foreground/70 [&_.text-foreground]:text-primary-foreground">
       <div className="container-page grid gap-8 py-10 md:grid-cols-[1.5fr_1fr_1fr]">
         <div className="space-y-3">
           <Logo />
@@ -194,17 +193,17 @@ export function Footer() {
           <LangSwitch />
         </div>
         <ul className="space-y-2 text-sm">
-          <li><Link to="/about" className="hover:text-gold">{t("footer.about")}</Link></li>
-          <li><Link to="/contact" className="hover:text-gold">{t("footer.contact")}</Link></li>
-          <li><Link to="/help" className="hover:text-gold">{t("footer.help")}</Link></li>
+          <li><Link to="/about" className="hover:text-primary">{t("footer.about")}</Link></li>
+          <li><Link to="/contact" className="hover:text-primary">{t("footer.contact")}</Link></li>
+          <li><Link to="/help" className="hover:text-primary">{t("footer.help")}</Link></li>
         </ul>
         <ul className="space-y-2 text-sm">
-          <li><Link to="/terms" className="hover:text-gold">{t("footer.terms")}</Link></li>
-          <li><Link to="/privacy" className="hover:text-gold">{t("footer.privacy")}</Link></li>
-          <li><Link to="/merchant" className="hover:text-gold">{t("footer.merchant")}</Link></li>
+          <li><Link to="/terms" className="hover:text-primary">{t("footer.terms")}</Link></li>
+          <li><Link to="/privacy" className="hover:text-primary">{t("footer.privacy")}</Link></li>
+          <li><Link to="/merchant" className="hover:text-primary">{t("footer.merchant")}</Link></li>
         </ul>
       </div>
-      <div className="border-t border-primary-foreground/15 py-4 text-center text-[13px] text-muted-foreground">© {new Date().getFullYear()} Bago Market · ပဲခူးဈေး</div>
+      <div className="border-t border-primary-foreground/15 py-4 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} Bago Market · ပဲခူးဈေး</div>
     </footer>
   );
 }

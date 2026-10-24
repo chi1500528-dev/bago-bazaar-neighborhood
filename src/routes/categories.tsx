@@ -25,7 +25,7 @@ function Categories() {
   const top = all.filter((c) => !c.parent_id);
   return (
     <div className="py-6">
-      <h1 className="mb-5 text-[26px] font-semibold leading-[1.5] md:text-[30px]">{t("nav.categories")}</h1>
+      <h1 className="mb-5 text-xl font-bold">{t("nav.categories")}</h1>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {top.map((c) => {
           const subs = all.filter((s) => s.parent_id === c.id);
@@ -40,7 +40,7 @@ function Categories() {
               {subs.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {subs.map((s) => (
-                    <Link key={s.id} to="/c/$slug" params={{ slug: s.slug }} className="rounded-full border px-2.5 py-0.5 text-[13px] hover:border-primary hover:text-primary">
+                    <Link key={s.id} to="/c/$slug" params={{ slug: s.slug }} className="rounded-full border px-2.5 py-0.5 text-xs hover:border-primary hover:text-primary">
                       {pick(s.name_my, s.name_en)}
                     </Link>
                   ))}

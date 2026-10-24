@@ -61,10 +61,10 @@ function ProductPage() {
         )}
       </div>
       <div className="space-y-4">
-        <h1 className="break-words text-[26px] font-semibold leading-[1.5] md:text-[30px]">{p.name}</h1>
+        <h1 className="break-words text-xl font-bold md:text-2xl">{p.name}</h1>
         <div className="flex flex-wrap items-baseline gap-3">
           <span className="text-2xl font-bold text-primary">{formatMMK(effectivePrice(p), lang)}</span>
-          {off > 0 && <><span className="text-muted-foreground line-through">{formatMMK(p.price, lang)}</span><span className="rounded bg-gold px-2 py-0.5 text-[13px] font-semibold text-gold-foreground">-{off}%</span></>}
+          {off > 0 && <><span className="text-muted-foreground line-through">{formatMMK(p.price, lang)}</span><span className="rounded bg-gold px-2 py-0.5 text-xs font-semibold text-gold-foreground">-{off}%</span></>}
         </div>
         <p className={cn("text-sm font-medium", out ? "text-destructive" : p.stock <= 5 ? "text-warning" : "text-success")}>
           {out ? t("product.out_of_stock") : p.stock <= 5 ? t("product.low_stock", { n: p.stock }) : t("product.in_stock")}

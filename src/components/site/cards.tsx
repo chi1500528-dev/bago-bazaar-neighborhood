@@ -68,24 +68,24 @@ export function ProductCard({ p, onAdd }: { p: Product; onAdd: (p: Product) => v
       <Link to="/p/$id" params={{ id: p.id }} className="relative block aspect-square overflow-hidden bg-muted">
         <MediaImg path={p.images[0]} alt={p.name} className="size-full" />
         {off > 0 && (
-          <span className="absolute left-2 top-2 rounded-md bg-gold px-2 py-0.5 text-[13px] font-semibold text-gold-foreground">
+          <span className="absolute left-2 top-2 rounded-md bg-gold px-2 py-0.5 text-xs font-semibold text-gold-foreground">
             -{off}%
           </span>
         )}
       </Link>
       <div className="flex flex-1 flex-col gap-1 p-3.5">
-        <Link to="/p/$id" params={{ id: p.id }} className="line-clamp-2 text-base font-medium leading-snug hover:text-primary">
+        <Link to="/p/$id" params={{ id: p.id }} className="line-clamp-2 text-sm font-medium hover:text-primary">
           {p.name}
         </Link>
-        <Link to="/shops/$slug" params={{ slug: p.shops.slug }} className="truncate text-[13px] text-muted-foreground hover:underline">
+        <Link to="/shops/$slug" params={{ slug: p.shops.slug }} className="truncate text-xs text-muted-foreground hover:underline">
           {p.shops.name}
         </Link>
         <div className="mt-auto flex flex-wrap items-baseline gap-x-2 pt-1">
-          <span className="text-lg font-bold text-primary">{formatMMK(effectivePrice(p), lang)}</span>
-          {off > 0 && <span className="text-[13px] text-muted-foreground line-through">{formatMMK(p.price, lang)}</span>}
+          <span className="text-[15px] font-semibold text-primary">{formatMMK(effectivePrice(p), lang)}</span>
+          {off > 0 && <span className="text-xs text-muted-foreground line-through">{formatMMK(p.price, lang)}</span>}
         </div>
-        {!out && <span className="text-[13px] text-success">{t("product.in_stock")}</span>}
-        <Button size="sm" variant={out ? "secondary" : "default"} disabled={out} onClick={() => onAdd(p)} className="mt-2 h-auto min-h-11 whitespace-normal rounded-full py-1.5 transition-colors">
+        {!out && <span className="text-[11px] text-success">{t("product.in_stock")}</span>}
+        <Button size="sm" variant={out ? "secondary" : "default"} disabled={out} onClick={() => onAdd(p)} className="mt-2 h-auto min-h-9 whitespace-normal rounded-full py-1.5 transition-colors">
           {out ? t("product.out_of_stock") : t("product.add_to_cart")}
         </Button>
       </div>
@@ -106,8 +106,8 @@ export function ShopCard({ s }: { s: Shop }) {
       </div>
       <div className="flex flex-1 flex-col gap-1 px-4 pb-4 pt-9">
         <h3 className="line-clamp-1 font-display text-base font-semibold group-hover:text-primary">{s.name}</h3>
-        {s.township_id && <p className="text-[13px] text-muted-foreground">{tw(s.township_id)}</p>}
-        <div className="mt-1 flex flex-wrap gap-1.5 text-[13px]">
+        {s.township_id && <p className="text-xs text-muted-foreground">{tw(s.township_id)}</p>}
+        <div className="mt-1 flex flex-wrap gap-1.5 text-xs">
           {s.offers_delivery && (
             <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-primary">
               <Bike className="size-3" />{t("shop.delivery")}

@@ -34,7 +34,7 @@ export function ImageField({ value, onChange, multiple, label }: { value: string
         ))}
         {(multiple || value.length === 0) && (
           <button type="button" disabled={busy} onClick={() => ref.current?.click()} className="grid size-20 place-items-center rounded-md border border-dashed text-muted-foreground hover:border-primary">
-            {busy ? <span className="text-[13px]">…</span> : <Upload className="size-5" />}
+            {busy ? <span className="text-xs">…</span> : <Upload className="size-5" />}
           </button>
         )}
       </div>
