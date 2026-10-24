@@ -185,7 +185,7 @@ export function BottomNav() {
 export function Footer() {
   const { t } = useApp();
   return (
-    <footer className="mt-16 bg-primary pb-24 text-primary-foreground md:pb-0 [&_a:hover]:text-gold [&_.text-muted-foreground]:text-primary-foreground/70 [&_.text-foreground]:text-primary-foreground">
+    <footer className="mt-16 bg-primary-deep pb-24 text-primary-foreground md:pb-0 [&_a:hover]:text-gold [&_.text-muted-foreground]:text-primary-foreground/70 [&_.text-foreground]:text-primary-foreground">
       <div className="container-page grid gap-8 py-10 md:grid-cols-[1.5fr_1fr_1fr]">
         <div className="space-y-3">
           <Logo />
@@ -193,14 +193,14 @@ export function Footer() {
           <LangSwitch />
         </div>
         <ul className="space-y-2 text-sm">
-          <li><Link to="/about" className="hover:text-primary">{t("footer.about")}</Link></li>
-          <li><Link to="/contact" className="hover:text-primary">{t("footer.contact")}</Link></li>
-          <li><Link to="/help" className="hover:text-primary">{t("footer.help")}</Link></li>
+          <li><Link to="/about" className="hover:text-gold">{t("footer.about")}</Link></li>
+          <li><Link to="/contact" className="hover:text-gold">{t("footer.contact")}</Link></li>
+          <li><Link to="/help" className="hover:text-gold">{t("footer.help")}</Link></li>
         </ul>
         <ul className="space-y-2 text-sm">
-          <li><Link to="/terms" className="hover:text-primary">{t("footer.terms")}</Link></li>
-          <li><Link to="/privacy" className="hover:text-primary">{t("footer.privacy")}</Link></li>
-          <li><Link to="/merchant" className="hover:text-primary">{t("footer.merchant")}</Link></li>
+          <li><Link to="/terms" className="hover:text-gold">{t("footer.terms")}</Link></li>
+          <li><Link to="/privacy" className="hover:text-gold">{t("footer.privacy")}</Link></li>
+          <li><Link to="/merchant" className="hover:text-gold">{t("footer.merchant")}</Link></li>
         </ul>
       </div>
       <div className="border-t border-primary-foreground/15 py-4 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} Bago Market · ပဲခူးဈေး</div>
