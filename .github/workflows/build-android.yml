@@ -1,10 +1,10 @@
-name: Build Android APK
+name: Build Android APK and AAB
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["capacitor.config.ts", "capacitor-www/**", ".github/workflows/build-android.yml"]
+    paths: ["capacitor.config.ts", "capacitor-www/**", "android-res/**", ".github/workflows/build-android.yml"]
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -24,11 +24,47 @@ jobs:
       - run: npm install --legacy-peer-deps --no-audit --no-fund
       - run: npx cap add android || true
       - run: npx cap sync android
+
+      - name: Apply Bago Market app icons
+        run: |
+          RES=android/app/src/main/res
+          cp -r android-res/mipmap-* "$RES"/
+          mkdir -p "$RES/values"
+          cat > "$RES/values/ic_launcher_background.xml" <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="ic_launcher_background">#0F3B25</color>
+          </resources>
+          EOF
+          sed -i 's/^          //' "$RES/values/ic_launcher_background.xml"
+
       - run: chmod +x android/gradlew
-      - name: Build debug APK
+
+      - name: Build debug APK and release AAB
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleDebug bundleRelease --no-daemon
+
+      - name: Sign AAB (only if keystore secrets are set)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          AAB=android/app/build/outputs/bundle/release/app-release.aab
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::notice::No keystore secrets set - AAB is unsigned. Add ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD to sign it for Google Play."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
+          jarsigner -keystore release.keystore -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" "$AAB" "$KEY_ALIAS"
+          rm release.keystore
+
       - uses: actions/upload-artifact@v5
         with:
           name: bago-market-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
+      - uses: actions/upload-artifact@v5
+        with:
+          name: bago-market-release-aab
+          path: android/app/build/outputs/bundle/release/*.aab
