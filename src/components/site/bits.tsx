@@ -8,16 +8,16 @@ import { useMediaUrl } from "@/lib/media";
 import { useApp } from "@/lib/app-state";
 import { cn } from "@/lib/utils";
 
-export function Logo({ compact = false }: { compact?: boolean }) {
+export function Logo({ compact = false, onDark = false }: { compact?: boolean; onDark?: boolean }) {
   return (
     <Link to="/" className="flex items-center gap-2.5 shrink-0" aria-label="Bago Market ပဲခူးဈေး">
-      <span className="relative grid size-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-soft ring-1 ring-gold/50 ring-offset-2 ring-offset-background">
+      <span className={cn("relative grid size-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-soft ring-1 ring-gold/50 ring-offset-2", onDark ? "ring-offset-primary" : "ring-offset-background")}>
         <ShoppingBag className="size-[18px]" strokeWidth={2} />
       </span>
       {!compact && (
         <span className="flex flex-col leading-tight">
-          <span className="font-display text-[17px] font-semibold tracking-tight text-foreground">Bago Market</span>
-          <span className="text-xs text-gold-foreground/80" lang="my">ပဲခူးဈေး</span>
+          <span className={cn("font-display text-[17px] font-semibold tracking-tight", onDark ? "text-primary-foreground" : "text-foreground")}>Bago Market</span>
+          <span className={cn("text-[13px] font-medium", onDark ? "text-gold" : "text-primary")} lang="my">ပဲခူးဈေး</span>
         </span>
       )}
     </Link>

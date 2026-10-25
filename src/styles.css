@@ -73,7 +73,7 @@
   --gold-foreground: oklch(0.25 0.04 70);
   --gold-soft: oklch(0.96 0.035 85);
   --muted: oklch(0.955 0.008 90);
-  --muted-foreground: oklch(0.5 0.012 150);
+  --muted-foreground: oklch(0.4 0.015 150);
   --accent: oklch(0.95 0.02 158);
   --accent-foreground: oklch(0.3 0.06 158);
   --destructive: oklch(0.55 0.17 27);
@@ -109,6 +109,9 @@
   :lang(my) {
     line-height: 1.85;
   }
+  /* Padauk strokes are thin; give body text a little more weight so it doesn't look faded. */
+  html:lang(my) body { font-weight: 500; -webkit-font-smoothing: antialiased; }
+  input::placeholder, textarea::placeholder { color: var(--color-muted-foreground); opacity: 1; }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     letter-spacing: -0.01em;
@@ -146,7 +149,7 @@
 }
 @keyframes float-slow { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
 @utility eyebrow {
-  font-size: 0.78rem; letter-spacing: 0.02em; text-transform: uppercase; color: var(--color-muted-foreground);
+  font-size: 0.82rem; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; color: var(--color-muted-foreground);
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
