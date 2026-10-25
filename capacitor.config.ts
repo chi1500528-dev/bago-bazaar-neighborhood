@@ -12,7 +12,9 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: { launchShowDuration: 1200, backgroundColor: "#0f3b25" },
-    StatusBar: { backgroundColor: "#0f3b25", style: "DARK" },
+    StatusBar: { overlaysWebView: false, backgroundColor: "#0f3b25", style: "DARK" },
+    // Android 15+ forces edge-to-edge; expose real insets as --safe-area-inset-* CSS vars.
+    SystemBars: { insetsHandling: "css", style: "DARK" },
   },
 };
 
