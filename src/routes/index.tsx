@@ -82,10 +82,25 @@ function Home() {
     <>
       {dialog}
       {/* Hero */}
-      <section className="relative mt-5 grid items-center gap-8 overflow-hidden rounded-3xl bg-ivory px-6 py-8 md:grid-cols-[1fr_1.05fr] md:px-12 md:py-12">
+      {/* Mobile: one compact banner card */}
+      <section className="relative mt-4 grid grid-cols-[minmax(0,1fr)_42%] items-stretch overflow-hidden rounded-3xl bg-ivory shadow-soft md:hidden">
+        <div className="flex min-w-0 flex-col justify-center gap-3 py-5 pl-5 pr-2">
+          <span className="text-xs font-medium text-primary">{t("hero.eyebrow")}</span>
+          <h1 className="text-xl font-semibold leading-[1.55] text-foreground">{t("hero.title")}</h1>
+          <Button asChild size="sm" className="w-fit rounded-full px-5 shadow-soft"><Link to="/categories">{t("hero.shop")}</Link></Button>
+        </div>
+        <img src={heroImg} alt="" width={1200} height={1408} className="h-full min-h-48 w-full object-cover" />
+      </section>
+      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 px-1 text-sm font-medium text-foreground/80 md:hidden">
+        <span className="inline-flex items-center gap-1.5"><Store className="size-4 text-primary" />{t("hero.badge_local")}</span>
+        <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-4 text-primary" />{t("hero.badge_pay")}</span>
+      </div>
+
+      {/* Desktop hero */}
+      <section className="relative mt-5 hidden items-center gap-8 overflow-hidden rounded-3xl bg-ivory px-12 py-12 md:grid md:grid-cols-[1fr_1.05fr]">
         <div className="relative z-10 flex flex-col gap-5">
           <span className="eyebrow flex items-center gap-2"><span className="h-px w-8 bg-gold" />{t("hero.eyebrow")}</span>
-          <h1 className="text-3xl font-semibold leading-[1.5] md:text-[2.6rem] md:leading-[1.45]">{t("hero.title")}</h1>
+          <p role="heading" aria-level={1} className="font-display text-[2.6rem] font-semibold leading-[1.45]">{t("hero.title")}</p>
           <p className="max-w-md text-base text-muted-foreground">{t("hero.sub")}</p>
           <div className="flex flex-wrap gap-3 pt-1">
             <Button asChild size="lg" className="rounded-full px-7 shadow-soft"><Link to="/categories">{t("hero.shop")}</Link></Button>
@@ -96,14 +111,14 @@ function Home() {
             <span className="inline-flex items-center gap-2"><ShieldCheck className="size-4 text-primary" />{t("hero.badge_pay")}</span>
           </div>
         </div>
-        <div className="relative mx-auto w-full max-w-md md:max-w-none">
+        <div className="relative w-full">
           <div className="relative ml-auto aspect-[4/4.4] w-[82%] overflow-hidden rounded-[2rem] shadow-lift">
             <img src={heroImg} alt="" width={1200} height={1408} className="size-full object-cover" />
           </div>
           <div className="float-slow absolute bottom-6 left-0 w-[38%] overflow-hidden rounded-2xl border-4 border-card shadow-lift">
             <img src={heroTextile} alt="" width={816} height={816} loading="lazy" className="aspect-square size-full object-cover" />
           </div>
-          <div className="absolute -top-2 left-[8%] hidden w-[26%] overflow-hidden rounded-2xl border-4 border-card shadow-lift sm:block" style={{ animation: "float-slow 9s ease-in-out infinite" }}>
+          <div className="absolute -top-2 left-[8%] w-[26%] overflow-hidden rounded-2xl border-4 border-card shadow-lift" style={{ animation: "float-slow 9s ease-in-out infinite" }}>
             <img src={heroGrocery} alt="" width={816} height={816} loading="lazy" className="aspect-square size-full object-cover" />
           </div>
         </div>

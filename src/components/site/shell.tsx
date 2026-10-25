@@ -11,16 +11,19 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function LangSwitch({ className }: { className?: string }) {
+export function LangSwitch({ className, onDark = false }: { className?: string; onDark?: boolean }) {
   const { lang, setLang } = useApp();
   return (
-    <div className={cn("inline-flex rounded-full border bg-card p-0.5 text-xs", className)} role="group" aria-label="Language">
+    <div className={cn("inline-flex rounded-full border p-0.5 text-xs font-medium", onDark ? "border-primary-foreground/25 bg-primary-foreground/10" : "bg-card", className)} role="group" aria-label="Language">
       {(["my", "en"] as const).map((l) => (
         <button
           key={l}
           onClick={() => setLang(l)}
           aria-pressed={lang === l}
-          className={cn("rounded-full px-2.5 py-1 transition-colors", lang === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+          className={cn("rounded-full px-2.5 py-1 transition-colors",
+            onDark
+              ? lang === l ? "bg-primary-foreground text-primary" : "text-primary-foreground/85 hover:text-primary-foreground"
+              : lang === l ? "bg-primary text-primary-foreground" : "text-foreground/70 hover:text-foreground")}
         >
           {l === "my" ? "မြန်မာ" : "English"}
         </button>
@@ -168,8 +171,8 @@ export function BottomNav() {
       <ul className="grid grid-cols-5">
         {items.map((it) => (
           <li key={it.to}>
-            <Link to={it.to} className={cn("relative flex min-h-14 flex-col items-center justify-center gap-0.5 py-1.5 text-[11px] leading-tight", it.active ? "text-primary" : "text-muted-foreground")}>
-              <it.icon className="size-5" strokeWidth={it.active ? 2.4 : 1.8} />
+            <Link to={it.to} className={cn("relative flex min-h-14 flex-col items-center justify-center gap-0.5 py-1.5 text-xs leading-tight", it.active ? "font-semibold text-primary" : "font-medium text-foreground/70")}>
+              <it.icon className="size-[22px]" strokeWidth={it.active ? 2.4 : 2} />
               <span className="line-clamp-1 px-0.5">{it.label}</span>
               {"badge" in it && it.badge > 0 && (
                 <span className="absolute right-[22%] top-1 grid min-w-4 place-items-center rounded-full bg-gold px-1 text-[10px] font-bold text-gold-foreground">{it.badge}</span>
@@ -185,12 +188,12 @@ export function BottomNav() {
 export function Footer() {
   const { t } = useApp();
   return (
-    <footer className="mt-16 bg-primary pb-24 text-primary-foreground md:pb-0 [&_a:hover]:text-gold [&_.text-muted-foreground]:text-primary-foreground/70 [&_.text-foreground]:text-primary-foreground">
+    <footer className="mt-16 bg-primary pb-24 text-primary-foreground md:pb-0 [&_a:hover]:text-gold">
       <div className="container-page grid gap-8 py-10 md:grid-cols-[1.5fr_1fr_1fr]">
         <div className="space-y-3">
-          <Logo />
-          <p className="max-w-sm text-sm text-muted-foreground">{t("footer.tagline")}</p>
-          <LangSwitch />
+          <Logo onDark />
+          <p className="max-w-sm text-sm text-primary-foreground/85">{t("footer.tagline")}</p>
+          <LangSwitch onDark />
         </div>
         <ul className="space-y-2 text-sm">
           <li><Link to="/about" className="hover:text-primary">{t("footer.about")}</Link></li>
@@ -203,7 +206,7 @@ export function Footer() {
           <li><Link to="/merchant" className="hover:text-primary">{t("footer.merchant")}</Link></li>
         </ul>
       </div>
-      <div className="border-t border-primary-foreground/15 py-4 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} Bago Market · ပဲခူးဈေး</div>
+      <div className="border-t border-primary-foreground/15 py-4 text-center text-xs text-primary-foreground/75">© {new Date().getFullYear()} Bago Market · ပဲခူးဈေး</div>
     </footer>
   );
 }
