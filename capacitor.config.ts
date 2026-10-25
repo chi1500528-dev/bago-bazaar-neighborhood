@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   appName: "Bago Market",
   webDir: "capacitor-www",
   server: {
-    url: "https://bago-bazaar-neighborhood.lovable.app",
+    url: "https://bagomarket.netlify.app",
     cleartext: false,
   },
   plugins: {
