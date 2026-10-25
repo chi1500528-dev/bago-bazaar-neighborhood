@@ -128,7 +128,7 @@ function CartLink() {
 export function Header() {
   const { t } = useApp();
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-md" style={{ paddingTop: "var(--safe-area-inset-top, env(safe-area-inset-top, 0px))" }}>
       <div className="container-page flex h-16 items-center gap-3 md:gap-5">
         <Logo />
         <span className="hidden h-7 w-px bg-border lg:block" />
@@ -164,7 +164,7 @@ export function BottomNav() {
     { to: "/account", label: t("nav.account"), icon: User, active: path.startsWith("/account") || path === "/auth" },
   ] as const;
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-card md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-card md:hidden" style={{ paddingBottom: "max(0.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))" }}>
       <ul className="grid grid-cols-5">
         {items.map((it) => (
           <li key={it.to}>
