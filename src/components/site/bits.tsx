@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import {
   Baby, CookingPot, HeartPulse, Package, Pencil, Shirt, ShoppingBasket, Smartphone, Sofa, Sparkles, Tv, Utensils,
-  ShoppingBag, ImageOff, type LucideIcon,
+  ImageOff, type LucideIcon,
 } from "lucide-react";
 import { useMediaUrl } from "@/lib/media";
 import { useApp } from "@/lib/app-state";
@@ -11,9 +11,14 @@ import { cn } from "@/lib/utils";
 export function Logo({ compact = false, onDark = false }: { compact?: boolean; onDark?: boolean }) {
   return (
     <Link to="/" className="flex items-center gap-2.5 shrink-0" aria-label="Bago Market ပဲခူးဈေး">
-      <span className={cn("relative grid size-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-soft ring-1 ring-gold/50 ring-offset-2", onDark ? "ring-offset-primary" : "ring-offset-background")}>
-        <ShoppingBag className="size-[18px]" strokeWidth={2} />
-      </span>
+      <img
+        src="/logo.png"
+        alt=""
+        width={700}
+        height={730}
+        className={cn("h-11 w-auto shrink-0 object-contain", onDark && "rounded-lg bg-background/95 p-1")}
+        decoding="async"
+      />
       {!compact && (
         <span className="flex flex-col leading-tight">
           <span className={cn("font-display text-[17px] font-semibold tracking-tight", onDark ? "text-primary-foreground" : "text-foreground")}>Bago Market</span>
