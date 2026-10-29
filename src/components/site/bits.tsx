@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import {
   Baby, CookingPot, HeartPulse, Package, Pencil, Shirt, ShoppingBasket, Smartphone, Sofa, Sparkles, Tv, Utensils,
-  ShoppingBag, ImageOff, type LucideIcon,
+  ImageOff, type LucideIcon,
 } from "lucide-react";
 import { useMediaUrl } from "@/lib/media";
 import { useApp } from "@/lib/app-state";
