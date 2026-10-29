@@ -11,7 +11,6 @@ import { useApp } from "@/lib/app-state";
 import { categoriesQuery, PRODUCT_FIELDS, SHOP_FIELDS, type Product, type Shop } from "@/lib/queries";
 import { CategoryIcon, EmptyState, ErrorBox, LoadingGrid, MediaImg, Section } from "@/components/site/bits";
 import { ProductCard, ShopCard, useAddToCart } from "@/components/site/cards";
-import { TownshipSelect } from "@/components/site/shell";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({

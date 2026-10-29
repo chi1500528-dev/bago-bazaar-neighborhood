@@ -107,10 +107,12 @@
     line-height: 1.7;
   }
   :lang(my) {
-    line-height: 1.85;
+    line-height: 1.8;
   }
-  /* Padauk strokes are thin; give body text a little more weight so it doesn't look faded. */
-  html:lang(my) body { font-weight: 500; -webkit-font-smoothing: antialiased; }
+  /* Noto Sans Myanmar ships a real 400 weight; keep stacked marks from colliding. */
+  html:lang(my) body { font-weight: 400; font-size: 15px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  html:lang(my) h1, html:lang(my) h2, html:lang(my) h3, html:lang(my) h4 { letter-spacing: normal; line-height: 1.6; font-weight: 600; }
+  html:lang(my) .text-xs { font-size: 0.8rem; }
   input::placeholder, textarea::placeholder { color: var(--color-muted-foreground); opacity: 1; }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
