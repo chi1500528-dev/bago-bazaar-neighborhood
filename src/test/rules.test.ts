@@ -20,8 +20,7 @@ describe("one-shop cart", () => {
 describe("totals", () => {
   it("adds delivery fee only for delivery", () => {
     const lines = [line({ quantity: 2 }), line({ productId: "p2", unitPrice: 500 })];
-    expect(cartTotals(lines, "delivery", 1500)).toEqual({ subtotal: 2500, deliveryFee: 1500, total: 4000 });
-    expect(cartTotals(lines, "pickup", 1500).total).toBe(2500);
+    expect(cartTotals(lines)).toEqual({ subtotal: 2500, total: 2500 });
   });
 });
 

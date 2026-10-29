@@ -96,7 +96,7 @@ function ShopForm({ shop }: { shop?: ShopRow }) {
     const payload = {
       name: f.name.trim(), description: f.description || null, category_id: f.category_id || null, township_id: f.township_id || null,
       address: f.address || null, phone: f.phone || null, opening_hours: f.opening_hours || null,
-      offers_delivery: f.offers_delivery, offers_pickup: f.offers_pickup, delivery_fee: Math.max(0, Number(f.delivery_fee) || 0),
+      offers_delivery: f.offers_delivery, offers_pickup: f.offers_pickup, delivery_fee: 0,
       delivery_note: f.delivery_note || null, pickup_info: f.pickup_info || null, is_food: f.is_food,
       logo_url: f.logo[0] ?? null, cover_url: f.cover[0] ?? null,
     };
@@ -128,7 +128,6 @@ function ShopForm({ shop }: { shop?: ShopRow }) {
       <label className="flex items-center gap-2 text-sm"><Switch checked={f.offers_delivery} onCheckedChange={(v) => setF({ ...f, offers_delivery: v })} />{t("shop.delivery")}</label>
       <label className="flex items-center gap-2 text-sm"><Switch checked={f.offers_pickup} onCheckedChange={(v) => setF({ ...f, offers_pickup: v })} />{t("shop.pickup")}</label>
       {f.offers_delivery && <>
-        <div className="space-y-1.5"><Label>{t("shop.delivery_fee")} (MMK)</Label><Input inputMode="numeric" value={f.delivery_fee} onChange={(e) => setF({ ...f, delivery_fee: e.target.value.replace(/\D/g, "") })} /></div>
         <div className="space-y-1.5"><Label>{t("merchant.delivery_note")}</Label><Input value={f.delivery_note} onChange={(e) => setF({ ...f, delivery_note: e.target.value })} /></div>
       </>}
       {f.offers_pickup && <div className="space-y-1.5 sm:col-span-2"><Label>{t("merchant.pickup_info")}</Label><Input value={f.pickup_info} onChange={(e) => setF({ ...f, pickup_info: e.target.value })} /></div>}

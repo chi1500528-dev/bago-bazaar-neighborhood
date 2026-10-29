@@ -23,7 +23,7 @@ function CartPage() {
   const shop = useCartShop(cart[0]?.shopId);
   if (cart.length === 0)
     return <div className="py-10"><EmptyState text={t("cart.empty")} action={<Button asChild><Link to="/categories">{t("hero.shop")}</Link></Button>} /></div>;
-  const totals = cartTotals(cart, null, 0);
+  const totals = cartTotals(cart);
   return (
     <div className="grid gap-6 py-6 lg:grid-cols-[1fr_22rem]">
       <div>
@@ -51,10 +51,6 @@ function CartPage() {
       </div>
       <aside className="surface h-fit space-y-3 p-5">
         <div className="flex justify-between text-sm"><span>{t("cart.subtotal")}</span><span className="font-medium">{formatMMK(totals.subtotal, lang)}</span></div>
-        <div className="flex justify-between text-sm">
-          <span>{t("cart.delivery_fee")}</span>
-          <span className="text-right text-muted-foreground">{shop.data?.offers_delivery ? formatMMK(shop.data.delivery_fee, lang) : "—"}</span>
-        </div>
         <p className="text-xs text-muted-foreground">{t("cart.delivery_fee_note")}</p>
         <Button asChild size="lg" className="hidden w-full md:inline-flex"><Link to="/checkout">{t("cart.checkout")}</Link></Button>
       </aside>

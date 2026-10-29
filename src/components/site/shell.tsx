@@ -134,8 +134,6 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-md" style={{ paddingTop: "var(--safe-area-inset-top, env(safe-area-inset-top, 0px))" }}>
       <div className="container-page flex h-16 items-center gap-3 md:gap-5">
         <Logo />
-        <span className="hidden h-7 w-px bg-border lg:block" />
-        <TownshipSelect className="hidden lg:flex" />
         <SearchBox className="hidden flex-1 md:block md:max-w-2xl" />
         <nav className="ml-auto flex items-center gap-1 md:ml-0">
           <Link to="/categories" className="hidden h-9 items-center rounded-md px-3 text-sm font-medium hover:bg-accent lg:inline-flex">

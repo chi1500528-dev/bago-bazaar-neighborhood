@@ -52,10 +52,10 @@ export function addToCart(lines: CartLine[], item: CartLine): AddResult {
   return { ok: true, lines: [...lines, item] };
 }
 
-export function cartTotals(lines: CartLine[], method: DeliveryMethod | null, deliveryFee: number) {
+/** Delivery cost depends on distance and is agreed in person, so it is never added here. */
+export function cartTotals(lines: CartLine[]) {
   const subtotal = lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
-  const fee = method === "delivery" && lines.length > 0 ? deliveryFee : 0;
-  return { subtotal, deliveryFee: fee, total: subtotal + fee };
+  return { subtotal, total: subtotal };
 }
 
 /** Next statuses a merchant may set. Mirrors public.update_order_status. */

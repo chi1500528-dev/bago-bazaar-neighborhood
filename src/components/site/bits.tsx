@@ -22,7 +22,7 @@ export function Logo({ compact = false, onDark = false }: { compact?: boolean; o
       {!compact && (
         <span className="flex flex-col leading-tight">
           <span className={cn("font-display text-[17px] font-semibold tracking-tight", onDark ? "text-primary-foreground" : "text-foreground")}>Bago Market</span>
-          <span className={cn("text-[13px] font-medium", onDark ? "text-gold" : "text-primary")} lang="my">ပဲခူးဈေး</span>
+          <span className={cn("text-[13px] font-medium", onDark ? "text-primary-foreground" : "text-primary")} lang="my">ပဲခူးဈေး</span>
         </span>
       )}
     </Link>
