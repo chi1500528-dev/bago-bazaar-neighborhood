@@ -5,7 +5,7 @@ import heroImg from "@/assets/hero-main.jpg";
 import heroTextile from "@/assets/hero-textile.jpg";
 import heroGrocery from "@/assets/hero-grocery.jpg";
 import { categoryImage } from "@/lib/category-images";
-import { ShieldCheck, Store } from "lucide-react";
+import { ShieldCheck, ShoppingBag, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
 import { categoriesQuery, PRODUCT_FIELDS, SHOP_FIELDS, type Product, type Shop } from "@/lib/queries";
@@ -104,9 +104,19 @@ function Home() {
             <Button asChild size="lg" className="rounded-full px-7 shadow-soft"><Link to="/categories">{t("hero.shop")}</Link></Button>
             <Button asChild size="lg" variant="outline" className="rounded-full border-primary/30 bg-transparent px-7"><Link to="/merchant">{t("hero.open")}</Link></Button>
           </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 pt-2 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-2"><Store className="size-4 text-primary" />{t("hero.badge_local")}</span>
-            <span className="inline-flex items-center gap-2"><ShieldCheck className="size-4 text-primary" />{t("hero.badge_pay")}</span>
+          <div className="mt-3 rounded-2xl border border-border/70 bg-card/80 p-5 shadow-soft">
+            <p className="eyebrow mb-4">{t("hero.how")}</p>
+            <ol className="grid grid-cols-3 gap-3">
+              {([[Store, "hero.step1"], [ShoppingBag, "hero.step2"], [ShieldCheck, "hero.step3"]] as const).map(([Icon, k], i) => (
+                <li key={k} className="flex flex-col gap-2">
+                  <span className="flex items-center gap-2">
+                    <span className="grid size-10 place-items-center rounded-full bg-primary text-primary-foreground"><Icon className="size-5" /></span>
+                    {i < 2 && <span className="h-px flex-1 bg-gold/50" />}
+                  </span>
+                  <span className="text-sm font-medium text-foreground">{t(k)}</span>
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
         <div className="relative w-full">
