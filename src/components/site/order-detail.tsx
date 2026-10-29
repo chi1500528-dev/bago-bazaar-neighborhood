@@ -93,7 +93,7 @@ export function OrderDetail({ id, as }: { id: string; as: "customer" | "merchant
         </ul>
         <div className="mt-3 space-y-1 border-t pt-3 text-sm">
           <div className="flex justify-between"><span>{t("cart.subtotal")}</span><span>{formatMMK(o.subtotal, lang)}</span></div>
-          <div className="flex justify-between"><span>{t("cart.delivery_fee")}</span><span>{formatMMK(o.delivery_fee, lang)}</span></div>
+          {o.delivery_fee > 0 && <div className="flex justify-between"><span>{t("cart.delivery_fee")}</span><span>{formatMMK(o.delivery_fee, lang)}</span></div>}
           <div className="flex justify-between font-bold"><span>{t("cart.total").replace(/\s*\(.*\)/, "")}</span><span className="text-primary">{formatMMK(o.total, lang)}</span></div>
         </div>
       </div>

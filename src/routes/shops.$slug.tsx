@@ -71,7 +71,7 @@ function ShopPage() {
           {s.opening_hours && <div className="flex gap-2"><Clock className="mt-0.5 size-4 shrink-0 text-primary" /><dd>{s.opening_hours}</dd></div>}
           {s.phone && <div className="flex gap-2"><Phone className="mt-0.5 size-4 shrink-0 text-primary" /><dd><a href={`tel:${s.phone}`} className="hover:underline">{s.phone}</a></dd></div>}
           <div className="flex flex-col gap-1">
-            {s.offers_delivery && <span className="flex gap-2"><Bike className="size-4 text-primary" />{t("shop.delivery")} · {t("shop.delivery_fee")} {formatMMK(s.delivery_fee, lang)}</span>}
+            {s.offers_delivery && <span className="flex gap-2"><Bike className="size-4 text-primary" />{t("shop.delivery")}</span>}
             {s.offers_pickup && <span className="flex gap-2"><Store className="size-4 text-primary" />{t("shop.pickup")}</span>}
             {s.delivery_note && <span className="text-xs text-muted-foreground">{s.delivery_note}</span>}
           </div>

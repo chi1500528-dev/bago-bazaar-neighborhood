@@ -56,7 +56,7 @@ function Checkout() {
   if (cart.length === 0) return <div className="py-10"><EmptyState text={t("cart.empty")} /></div>;
   if (!shop.data) return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
   const s = shop.data;
-  const totals = cartTotals(cart, method, s.delivery_fee);
+  const totals = cartTotals(cart);
 
   const submit = async () => {
     const e: { name?: string; phone?: string; address?: string; township?: string } = {};
@@ -109,7 +109,7 @@ function Checkout() {
                 <Icon className="mt-0.5 size-5 text-primary" />
                 <span>
                   <span className="block font-medium">{t(m === "delivery" ? "checkout.delivery" : "checkout.pickup")}</span>
-                  <span className="text-xs text-muted-foreground">{m === "delivery" ? `${t("shop.delivery_fee")} ${formatMMK(s.delivery_fee, lang)}` : s.name}</span>
+                  <span className="text-xs text-muted-foreground">{m === "delivery" ? t("cart.delivery_fee_note") : s.name}</span>
                 </span>
               </button>
             ))}
@@ -153,7 +153,7 @@ function Checkout() {
         </ul>
         <div className="space-y-1 border-t pt-3 text-sm">
           <div className="flex justify-between"><span>{t("cart.subtotal")}</span><span>{formatMMK(totals.subtotal, lang)}</span></div>
-          <div className="flex justify-between"><span>{t("cart.delivery_fee")}</span><span>{formatMMK(totals.deliveryFee, lang)}</span></div>
+          {method === "delivery" && <p className="text-xs text-muted-foreground">{t("cart.delivery_fee_note")}</p>}
           <div className="flex justify-between pt-1 text-base font-bold"><span>{t("cart.total")}</span><span className="text-primary">{formatMMK(totals.total, lang)}</span></div>
         </div>
         <Button size="lg" className="hidden w-full md:inline-flex" disabled={busy || !method} onClick={submit}>{busy ? t("checkout.placing") : t("checkout.place")}</Button>
