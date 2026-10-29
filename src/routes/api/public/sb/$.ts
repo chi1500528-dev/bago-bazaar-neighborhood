@@ -30,6 +30,11 @@ async function relay({ request, params }: { request: Request; params: { _splat?:
   out.delete("content-encoding");
   out.delete("content-length");
   out.delete("transfer-encoding");
+  // Signed image URLs carry their own token, so the picture can be cached by the phone.
+  if (request.method === "GET" && res.status === 200 && path.startsWith("storage/v1/object/sign/")) {
+    out.set("Cache-Control", "public, max-age=604800, immutable");
+    out.delete("set-cookie");
+  }
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers: out });
 }
 
