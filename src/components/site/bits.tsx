@@ -41,15 +41,28 @@ export function CategoryIcon({ name, className }: { name?: string | null; classN
 
 export function MediaImg({ path, alt, className, eager }: { path?: string | null | undefined; alt: string; className?: string | undefined; eager?: boolean | undefined }) {
   const isUrl = !!path && path.startsWith("http");
-  const { data } = useMediaUrl(isUrl ? null : path);
+  const { data, isPending } = useMediaUrl(isUrl ? null : path);
   const src = isUrl ? path : data;
-  if (!src)
+  const [loaded, setLoaded] = useState(false);
+  if (!src) {
+    if (path && isPending) return <div className={cn("animate-pulse bg-muted", className)} aria-label={alt} />;
     return (
       <div className={cn("grid place-items-center bg-muted text-muted-foreground", className)} aria-label={alt}>
         <ImageOff className="size-6 opacity-40" />
       </div>
     );
-  return <img src={src} alt={alt} loading={eager ? "eager" : "lazy"} decoding="async" className={cn("object-cover", className)} />;
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading={eager ? "eager" : "lazy"}
+      fetchPriority={eager ? "high" : "auto"}
+      decoding="async"
+      onLoad={() => setLoaded(true)}
+      className={cn("object-cover bg-muted transition-opacity duration-300 motion-reduce:transition-none", loaded ? "opacity-100" : "opacity-0", className)}
+    />
+  );
 }
 
 export function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
