@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Figtree", "Padauk", "Noto Sans Myanmar", "Myanmar Text", system-ui, sans-serif;
-  --font-display: "Fraunces", "Padauk", "Padauk", "Noto Sans Myanmar", system-ui, sans-serif;
+  --font-sans: "Figtree", "Noto Sans Myanmar", "Padauk", "Myanmar Text", system-ui, sans-serif;
+  --font-display: "Fraunces", "Noto Sans Myanmar", "Padauk", system-ui, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

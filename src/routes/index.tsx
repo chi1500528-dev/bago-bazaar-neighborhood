@@ -38,7 +38,7 @@ function SeeAll({ to }: { to: "/categories" | "/search" }) {
 }
 
 function Home() {
-  const { t, pick, township } = useApp();
+  const { t, pick } = useApp();
   const { add, dialog } = useAddToCart();
   const cats = useQuery(categoriesQuery);
   const top = (cats.data ?? []).filter((c) => !c.parent_id);
@@ -76,7 +76,6 @@ function Home() {
   const allShops = shops.data ?? [];
   const featured = allShops.filter((s) => !s.is_food).slice(0, 8);
   const food = allShops.filter((s) => s.is_food).slice(0, 4);
-  const near = township ? allShops.filter((s) => s.township_id === township).slice(0, 8) : [];
 
   return (
     <>
@@ -197,12 +196,6 @@ function Home() {
         )}
       </Section>
       </div>
-
-      <Section title={t("home.near")} action={<TownshipSelect />}>
-        {!township ? <EmptyState text={t("home.near_pick")} /> : near.length === 0 ? <EmptyState text={t("shop.empty")} /> : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{near.map((s) => <ShopCard key={s.id} s={s} />)}</div>
-        )}
-      </Section>
     </>
   );
 }
