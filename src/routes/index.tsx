@@ -109,7 +109,6 @@ function Home() {
             }}
           />
           <img src="/logo.png" alt="" className="absolute -bottom-10 left-[38%] w-64 opacity-[0.06]" />
-          <span className="absolute left-12 top-8 h-px w-24 bg-gold/60" />
         </div>
         <div className="relative z-10 flex flex-col gap-5">
           <span className="eyebrow flex items-center gap-2"><span className="h-px w-8 bg-gold" />{t("hero.eyebrow")}</span>
