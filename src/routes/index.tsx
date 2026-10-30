@@ -1,11 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
-import heroImg from "@/assets/hero-main.jpg";
-import heroTextile from "@/assets/hero-textile.jpg";
-import heroGrocery from "@/assets/hero-grocery.jpg";
+import heroMarket from "@/assets/hero-market.jpg";
 import { categoryImage } from "@/lib/category-images";
-import { ShieldCheck, ShoppingBag, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
 import { categoriesQuery, PRODUCT_FIELDS, SHOP_FIELDS, type Product, type Shop } from "@/lib/queries";
@@ -79,70 +76,15 @@ function Home() {
   return (
     <>
       {dialog}
-      {/* Hero */}
-      {/* Mobile: one compact banner card */}
-      <section className="relative mt-4 grid grid-cols-[minmax(0,1fr)_42%] items-stretch overflow-hidden rounded-3xl bg-ivory shadow-soft md:hidden">
-        <div className="flex min-w-0 flex-col justify-center gap-3 py-5 pl-5 pr-2">
-          <span className="text-xs font-medium text-primary">{t("hero.eyebrow")}</span>
-          <h1 className="text-xl font-semibold leading-[1.55] text-foreground">{t("hero.title")}</h1>
-          <Button asChild size="sm" className="w-fit rounded-full px-5 shadow-soft"><Link to="/categories">{t("hero.shop")}</Link></Button>
-        </div>
-        <img src={heroImg} alt="" width={1200} height={1408} className="h-full min-h-48 w-full object-cover" />
-      </section>
-      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 px-1 text-sm font-medium text-foreground/80 md:hidden">
-        <span className="inline-flex items-center gap-1.5"><Store className="size-4 text-primary" />{t("hero.badge_local")}</span>
-        <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-4 text-primary" />{t("hero.badge_pay")}</span>
-      </div>
-
-      {/* Desktop hero */}
-      <section className="relative mt-5 hidden items-center gap-8 overflow-hidden rounded-3xl border border-gold/20 bg-ivory px-12 py-12 md:grid md:grid-cols-[1fr_1.05fr]">
-        <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-24 -top-24 size-[28rem] rounded-full bg-primary/10 blur-3xl" />
-          <div className="absolute -bottom-32 left-1/3 size-[24rem] rounded-full bg-gold/20 blur-3xl" />
-          <div
-            className="absolute inset-y-0 left-0 w-3/5 text-primary/[0.07]"
-            style={{
-              backgroundImage: "radial-gradient(currentColor 1.2px, transparent 1.2px)",
-              backgroundSize: "22px 22px",
-              maskImage: "linear-gradient(to right, black, transparent)",
-              WebkitMaskImage: "linear-gradient(to right, black, transparent)",
-            }}
-          />
-          <img src="/logo.png" alt="" className="absolute -bottom-10 left-[38%] w-64 opacity-[0.06]" />
-        </div>
-        <div className="relative z-10 flex flex-col gap-5">
-          <span className="eyebrow flex items-center gap-2"><span className="h-px w-8 bg-gold" />{t("hero.eyebrow")}</span>
-          <p role="heading" aria-level={1} className="font-display text-[2.6rem] font-semibold leading-[1.45]">{t("hero.title")}</p>
-          <p className="max-w-md text-base text-muted-foreground">{t("hero.sub")}</p>
-          <div className="flex flex-wrap gap-3 pt-1">
-            <Button asChild size="lg" className="rounded-full px-7 shadow-soft"><Link to="/categories">{t("hero.shop")}</Link></Button>
-            <Button asChild size="lg" variant="outline" className="rounded-full border-primary/30 bg-transparent px-7"><Link to="/merchant">{t("hero.open")}</Link></Button>
-          </div>
-          <div className="mt-3 rounded-2xl border border-border/70 bg-card/80 p-5 shadow-soft">
-            <p className="eyebrow mb-4">{t("hero.how")}</p>
-            <ol className="grid grid-cols-3 gap-3">
-              {([[Store, "hero.step1"], [ShoppingBag, "hero.step2"], [ShieldCheck, "hero.step3"]] as const).map(([Icon, k], i) => (
-                <li key={k} className="flex flex-col gap-2">
-                  <span className="flex items-center gap-2">
-                    <span className="grid size-10 place-items-center rounded-full bg-primary text-primary-foreground"><Icon className="size-5" /></span>
-                    {i < 2 && <span className="h-px flex-1 bg-gold/50" />}
-                  </span>
-                  <span className="text-sm font-medium text-foreground">{t(k)}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
-        <div className="relative w-full">
-          <div className="relative ml-auto aspect-[4/4.4] w-[82%] overflow-hidden rounded-[2rem] shadow-lift">
-            <img src={heroImg} alt="" width={1200} height={1408} className="size-full object-cover" />
-          </div>
-          <div className="float-slow absolute bottom-6 left-0 w-[38%] overflow-hidden rounded-2xl border-4 border-card shadow-lift">
-            <img src={heroTextile} alt="" width={816} height={816} loading="lazy" className="aspect-square size-full object-cover" />
-          </div>
-          <div className="absolute -top-2 left-[8%] w-[26%] overflow-hidden rounded-2xl border-4 border-card shadow-lift" style={{ animation: "float-slow 9s ease-in-out infinite" }}>
-            <img src={heroGrocery} alt="" width={816} height={816} loading="lazy" className="aspect-square size-full object-cover" />
-          </div>
+      {/* Hero: full-image card */}
+      <section className="relative mt-4 overflow-hidden rounded-3xl shadow-soft md:mt-5">
+        <img src={heroMarket} alt="" width={1792} height={1024} fetchPriority="high"
+          className="absolute inset-0 size-full object-cover object-[70%_center]" />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/55 to-primary/0 md:bg-gradient-to-r md:from-primary/90 md:via-primary/50 md:to-primary/0" />
+        <div className="relative flex aspect-[4/3.6] max-h-[360px] min-h-[290px] w-full flex-col justify-end gap-2.5 p-5 sm:p-7 md:aspect-[21/8] md:max-h-[420px] md:justify-center md:gap-4 md:p-12">
+          <span className="flex items-center gap-2 text-xs font-medium text-gold md:text-sm"><span className="h-px w-6 bg-gold" />{t("hero.eyebrow")}</span>
+          <h1 className="max-w-[560px] md:max-w-[680px] font-display text-[1.45rem] font-semibold leading-[1.45] text-primary-foreground sm:text-[1.75rem] md:text-[2.75rem]">{t("hero.title")}</h1>
+          <Button asChild className="mt-1 h-11 w-fit rounded-full bg-ivory px-6 text-primary shadow-soft hover:bg-ivory/90 md:h-12 md:px-8"><Link to="/categories">{t("hero.shop")}</Link></Button>
         </div>
       </section>
 
