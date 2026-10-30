@@ -83,7 +83,7 @@ function Home() {
         <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/55 to-primary/0 md:bg-gradient-to-r md:from-primary/90 md:via-primary/50 md:to-primary/0" />
         <div className="relative flex aspect-[4/3.6] max-h-[360px] min-h-[290px] w-full flex-col justify-end gap-2.5 p-5 sm:p-7 md:aspect-[21/8] md:max-h-[420px] md:justify-center md:gap-4 md:p-12">
           <span className="flex items-center gap-2 text-xs font-medium text-gold md:text-sm"><span className="h-px w-6 bg-gold" />{t("hero.eyebrow")}</span>
-          <h1 className="max-w-[560px] font-display text-[1.45rem] font-semibold leading-[1.45] text-primary-foreground sm:text-[1.75rem] md:text-[2.75rem]">{t("hero.title")}</h1>
+          <h1 className="max-w-[560px] md:max-w-[680px] font-display text-[1.45rem] font-semibold leading-[1.45] text-primary-foreground sm:text-[1.75rem] md:text-[2.75rem]">{t("hero.title")}</h1>
           <Button asChild className="mt-1 h-11 w-fit rounded-full bg-ivory px-6 text-primary shadow-soft hover:bg-ivory/90 md:h-12 md:px-8"><Link to="/categories">{t("hero.shop")}</Link></Button>
         </div>
       </section>
