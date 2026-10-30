@@ -95,7 +95,22 @@ function Home() {
       </div>
 
       {/* Desktop hero */}
-      <section className="relative mt-5 hidden items-center gap-8 overflow-hidden rounded-3xl bg-ivory px-12 py-12 md:grid md:grid-cols-[1fr_1.05fr]">
+      <section className="relative mt-5 hidden items-center gap-8 overflow-hidden rounded-3xl border border-gold/20 bg-ivory px-12 py-12 md:grid md:grid-cols-[1fr_1.05fr]">
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-24 -top-24 size-[28rem] rounded-full bg-primary/10 blur-3xl" />
+          <div className="absolute -bottom-32 left-1/3 size-[24rem] rounded-full bg-gold/20 blur-3xl" />
+          <div
+            className="absolute inset-y-0 left-0 w-3/5 text-primary/[0.07]"
+            style={{
+              backgroundImage: "radial-gradient(currentColor 1.2px, transparent 1.2px)",
+              backgroundSize: "22px 22px",
+              maskImage: "linear-gradient(to right, black, transparent)",
+              WebkitMaskImage: "linear-gradient(to right, black, transparent)",
+            }}
+          />
+          <img src="/logo.png" alt="" className="absolute -bottom-10 left-[38%] w-64 opacity-[0.06]" />
+          <span className="absolute left-12 top-8 h-px w-24 bg-gold/60" />
+        </div>
         <div className="relative z-10 flex flex-col gap-5">
           <span className="eyebrow flex items-center gap-2"><span className="h-px w-8 bg-gold" />{t("hero.eyebrow")}</span>
           <p role="heading" aria-level={1} className="font-display text-[2.6rem] font-semibold leading-[1.45]">{t("hero.title")}</p>
