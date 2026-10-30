@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ClipboardEvent } from "react";
 import { toast } from "sonner";
 import { Upload, X } from "lucide-react";
 import { uploadMedia } from "@/lib/media";
@@ -24,7 +24,7 @@ export function ImageField({ value, onChange, multiple, label }: { value: string
       setBusy(false);
     }
   };
-  const onPaste = (e: React.ClipboardEvent) => {
+  const onPaste = (e: ClipboardEvent) => {
     const files = Array.from(e.clipboardData.items)
       .filter((i) => i.kind === "file" && i.type.startsWith("image/"))
       .map((i) => i.getAsFile())
