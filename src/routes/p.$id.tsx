@@ -87,10 +87,11 @@ function ProductPage() {
         <Button size="lg" className="hidden md:inline-flex" disabled={out} onClick={() => add(p, qty)}>
           {out ? t("product.out_of_stock") : t("product.add_to_cart")}
         </Button>
-        <ChatWithShop shopId={p.shops.id} shopName={p.shops.name} product={{ id: p.id, name: p.name }} className="w-full md:ml-3 md:w-auto" />
+        <ChatWithShop shopId={p.shops.id} shopName={p.shops.name} product={{ id: p.id, name: p.name }} className="hidden md:ml-3 md:inline-flex" />
         {p.description && <p className="whitespace-pre-line break-words border-t pt-4 text-sm leading-relaxed">{p.description}</p>}
       </div>
       <StickyActionBar>
+        <ChatWithShop iconOnly shopId={p.shops.id} shopName={p.shops.name} product={{ id: p.id, name: p.name }} className="size-12 shrink-0 text-primary" />
         <span className="min-w-0 flex-1 truncate text-lg font-bold text-primary">{formatMMK(effectivePrice(p) * (out ? 1 : qty), lang)}</span>
         <Button size="lg" className="h-12 shrink-0" disabled={out} onClick={() => add(p, qty)}>
           {out ? t("product.out_of_stock") : t("product.add_to_cart")}
