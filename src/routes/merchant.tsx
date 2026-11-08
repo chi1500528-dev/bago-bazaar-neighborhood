@@ -1,4 +1,5 @@
 import { ChatInbox } from "@/components/site/chat";
+import { useUnreadCounts } from "@/lib/notify";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -55,6 +56,12 @@ function Merchant() {
       </div>
     );
   const s = shop.data;
+  return <Dash s={s} />;
+}
+
+function Dash({ s }: { s: ShopRow }) {
+  const { t } = useApp();
+  const alerts = useUnreadCounts();
   return (
     <div className="py-6">
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -65,8 +72,8 @@ function Merchant() {
       {s.status === "pending" && <p className="mb-4 rounded-md bg-gold-soft p-3 text-sm text-gold-foreground">{t("merchant.pending_note")}</p>}
       <Tabs defaultValue="orders">
         <TabsList>
-          <TabsTrigger value="orders">{t("merchant.orders")}</TabsTrigger>
-          <TabsTrigger value="chat">{t("chat.title")}</TabsTrigger>
+          <TabsTrigger value="orders" className="gap-1.5">{t("merchant.orders")}{alerts.newOrders > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">{alerts.newOrders}</span>}</TabsTrigger>
+          <TabsTrigger value="chat" className="gap-1.5">{t("chat.title")}{alerts.shopMessages > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">{alerts.shopMessages}</span>}</TabsTrigger>
           <TabsTrigger value="products">{t("merchant.products")}</TabsTrigger>
           <TabsTrigger value="shop">{t("merchant.shop")}</TabsTrigger>
         </TabsList>
