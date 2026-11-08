@@ -13,7 +13,7 @@ import { ProductCard, useAddToCart, useTownshipName } from "@/components/site/ca
 export const Route = createFileRoute("/shops/$slug")({
   head: ({ params }) => ({
     meta: [
-      { property: \"og:url\", content: siteUrl(`/shops/${params.slug}`) },
+      { property: "og:url", content: siteUrl(`/shops/${params.slug}`) },
       { title: "Shop · Bago Market" },
       { name: "description", content: "A local shop on Bago Market — browse products, delivery and pickup options." },
       { property: "og:title", content: "Shop · Bago Market" },

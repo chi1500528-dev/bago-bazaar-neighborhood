@@ -9,7 +9,7 @@ import { categoryImage } from "@/lib/category-images";
 export const Route = createFileRoute("/categories")({
   head: () => ({
     meta: [
-      { property: \"og:url\", content: siteUrl("/categories") },
+      { property: "og:url", content: siteUrl("/categories") },
       { title: "Categories · Bago Market" },
       { name: "description", content: "Browse all product categories on Bago Market." },
       { property: "og:title", content: "Categories · Bago Market" },

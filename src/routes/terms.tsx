@@ -5,7 +5,7 @@ import { InfoPage } from "@/components/site/info-page";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { property: \"og:url\", content: siteUrl("/terms") },
+      { property: "og:url", content: siteUrl("/terms") },
       { title: "Terms \u00b7 Bago Market" },
       { name: "description", content: "Terms of use for Bago Market." },
       { property: "og:title", content: "Terms \u00b7 Bago Market" },

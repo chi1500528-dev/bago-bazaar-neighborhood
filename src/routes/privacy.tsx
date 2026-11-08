@@ -5,7 +5,7 @@ import { InfoPage } from "@/components/site/info-page";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { property: \"og:url\", content: siteUrl("/privacy") },
+      { property: "og:url", content: siteUrl("/privacy") },
       { title: "Privacy \u00b7 Bago Market" },
       { name: "description", content: "How Bago Market handles your personal information." },
       { property: "og:title", content: "Privacy \u00b7 Bago Market" },

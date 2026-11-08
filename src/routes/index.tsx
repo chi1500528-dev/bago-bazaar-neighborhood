@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { property: \"og:url\", content: siteUrl("/") },
+      { property: "og:url", content: siteUrl("/") },
       { title: "Bago Market · ပဲခူးဈေး — ပဲခူးမြို့ရဲ့ ဈေးဆိုင်စုံ" },
       { name: "description", content: "Shop groceries, food, fashion and more from local shops across Bago Region, Myanmar." },
       { property: "og:title", content: "Bago Market · ပဲခူးဈေး" },

@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/p/$id")({
   head: ({ params }) => ({
     meta: [
-      { property: \"og:url\", content: siteUrl(`/p/${params.id}`) },
+      { property: "og:url", content: siteUrl(`/p/${params.id}`) },
       { title: "Product · Bago Market" },
       { name: "description", content: "Product details, price and availability on Bago Market." },
       { property: "og:title", content: "Product · Bago Market" },

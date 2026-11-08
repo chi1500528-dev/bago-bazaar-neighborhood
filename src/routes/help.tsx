@@ -5,7 +5,7 @@ import { InfoPage } from "@/components/site/info-page";
 export const Route = createFileRoute("/help")({
   head: () => ({
     meta: [
-      { property: \"og:url\", content: siteUrl("/help") },
+      { property: "og:url", content: siteUrl("/help") },
       { title: "Help & FAQ \u00b7 Bago Market" },
       { name: "description", content: "Answers to common questions about shopping and selling on Bago Market." },
       { property: "og:title", content: "Help & FAQ \u00b7 Bago Market" },

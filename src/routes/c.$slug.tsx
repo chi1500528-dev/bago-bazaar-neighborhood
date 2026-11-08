@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/c/$slug")({
   head: ({ params }) => ({
     meta: [
-      { property: \"og:url\", content: siteUrl(`/c/${params.slug}`) },
+      { property: "og:url", content: siteUrl(`/c/${params.slug}`) },
       { title: "Shop by category · Bago Market" },
       { name: "description", content: "Products and shops in this category on Bago Market." },
       { property: "og:title", content: "Shop by category · Bago Market" },

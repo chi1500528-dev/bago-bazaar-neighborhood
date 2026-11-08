@@ -5,7 +5,7 @@ import { InfoPage } from "@/components/site/info-page";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { property: \"og:url\", content: siteUrl("/contact") },
+      { property: "og:url", content: siteUrl("/contact") },
       { title: "Contact \u00b7 Bago Market" },
       { name: "description", content: "How to contact the Bago Market team." },
       { property: "og:title", content: "Contact \u00b7 Bago Market" },
