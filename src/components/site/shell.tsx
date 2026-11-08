@@ -98,6 +98,8 @@ function AccountMenu() {
   const { session, roles, t } = useApp();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const counts = useUnreadCounts();
+  const total = counts.messages + counts.shopMessages + counts.newOrders;
   if (!session)
     return (
       <Link to="/auth" className="inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent">
