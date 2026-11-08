@@ -12,7 +12,7 @@ async function list(base: string, key: string, query: string, field: string): Pr
     });
     if (!res.ok) throw new Error(`sitemap query failed: ${res.status}`);
     const rows = (await res.json()) as Record<string, string>[];
-    out.push(...rows.map((r) => r[field]));
+    out.push(...rows.map((r) => r[field]).filter((v): v is string => !!v));
     if (rows.length < 1000) return out;
   }
 }
