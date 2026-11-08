@@ -23,6 +23,7 @@ import { Route as MerchantRouteImport } from './routes/merchant'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as OrdersIndexRouteImport } from './routes/orders.index'
@@ -101,6 +102,11 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/messages': typeof MessagesRoute
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/c/$slug': typeof CSlugRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/messages': typeof MessagesRoute
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/c/$slug': typeof CSlugRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/messages': typeof MessagesRoute
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/c/$slug': typeof CSlugRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/privacy'
     | '/search'
+    | '/sitemap.xml'
     | '/terms'
     | '/c/$slug'
     | '/orders/$id'
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/privacy'
     | '/search'
+    | '/sitemap.xml'
     | '/terms'
     | '/c/$slug'
     | '/orders/$id'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/privacy'
     | '/search'
+    | '/sitemap.xml'
     | '/terms'
     | '/c/$slug'
     | '/orders/$id'
@@ -294,6 +306,7 @@ export interface RootRouteChildren {
   MessagesRoute: typeof MessagesRoute
   PrivacyRoute: typeof PrivacyRoute
   SearchRoute: typeof SearchRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   CSlugRoute: typeof CSlugRoute
   OrdersIdRoute: typeof OrdersIdRoute
@@ -403,6 +416,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -470,6 +490,7 @@ const rootRouteChildren: RootRouteChildren = {
   MessagesRoute: MessagesRoute,
   PrivacyRoute: PrivacyRoute,
   SearchRoute: SearchRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   CSlugRoute: CSlugRoute,
   OrdersIdRoute: OrdersIdRoute,
