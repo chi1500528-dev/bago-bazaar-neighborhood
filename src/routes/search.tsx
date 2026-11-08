@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -13,11 +14,13 @@ export const Route = createFileRoute("/search")({
   validateSearch: z.object({ q: z.string().optional().catch("") }),
   head: () => ({
     meta: [
+      { property: "og:url", content: siteUrl("/search") },
       { title: "Search · Bago Market" },
       { name: "description", content: "Search products and shops on Bago Market in Myanmar or English." },
       { property: "og:title", content: "Search · Bago Market" },
       { property: "og:description", content: "Find products, shops and categories across Bago Region." },
     ],
+    links: [{ rel: "canonical", href: siteUrl("/search") }],
   }),
   component: SearchPage,
 });

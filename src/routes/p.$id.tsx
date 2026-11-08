@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -13,13 +14,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/p/$id")({
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
+      { property: "og:url", content: siteUrl(`/p/${params.id}`) },
       { title: "Product · Bago Market" },
       { name: "description", content: "Product details, price and availability on Bago Market." },
       { property: "og:title", content: "Product · Bago Market" },
       { property: "og:description", content: "See price, stock and the shop selling this product." },
     ],
+    links: [{ rel: "canonical", href: siteUrl(`/p/${params.id}`) }],
   }),
   component: ProductPage,
 });

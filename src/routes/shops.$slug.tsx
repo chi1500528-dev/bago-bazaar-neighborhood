@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Bike, Clock, MapPin, Phone, Store } from "lucide-react";
@@ -10,13 +11,15 @@ import { ChatWithShop } from "@/components/site/chat";
 import { ProductCard, useAddToCart, useTownshipName } from "@/components/site/cards";
 
 export const Route = createFileRoute("/shops/$slug")({
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
+      { property: "og:url", content: siteUrl(`/shops/${params.slug}`) },
       { title: "Shop · Bago Market" },
       { name: "description", content: "A local shop on Bago Market — browse products, delivery and pickup options." },
       { property: "og:title", content: "Shop · Bago Market" },
       { property: "og:description", content: "Browse this shop's products on Bago Market." },
     ],
+    links: [{ rel: "canonical", href: siteUrl(`/shops/${params.slug}`) }],
   }),
   component: ShopPage,
 });

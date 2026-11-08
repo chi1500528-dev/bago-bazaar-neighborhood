@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useApp } from "@/lib/app-state";
@@ -8,11 +9,13 @@ import { categoryImage } from "@/lib/category-images";
 export const Route = createFileRoute("/categories")({
   head: () => ({
     meta: [
+      { property: "og:url", content: siteUrl("/categories") },
       { title: "Categories · Bago Market" },
       { name: "description", content: "Browse all product categories on Bago Market." },
       { property: "og:title", content: "Categories · Bago Market" },
       { property: "og:description", content: "Food, groceries, fashion, electronics and more from Bago shops." },
     ],
+    links: [{ rel: "canonical", href: siteUrl("/categories") }],
   }),
   component: Categories,
 });
