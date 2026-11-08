@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      { property: \"og:url\", content: siteUrl("/") },
       { title: "Bago Market · ပဲခူးဈေး — ပဲခူးမြို့ရဲ့ ဈေးဆိုင်စုံ" },
       { name: "description", content: "Shop groceries, food, fashion and more from local shops across Bago Region, Myanmar." },
       { property: "og:title", content: "Bago Market · ပဲခူးဈေး" },
@@ -20,6 +22,7 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: siteUrl("/") }],
   }),
   component: Home,
 });

@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,13 +10,15 @@ import { ProductBrowser } from "@/components/site/browser";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/c/$slug")({
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
+      { property: \"og:url\", content: siteUrl(`/c/${params.slug}`) },
       { title: "Shop by category · Bago Market" },
       { name: "description", content: "Products and shops in this category on Bago Market." },
       { property: "og:title", content: "Shop by category · Bago Market" },
       { property: "og:description", content: "Browse products and shops by category across Bago Region." },
     ],
+    links: [{ rel: "canonical", href: siteUrl(`/c/${params.slug}`) }],
   }),
   component: CategoryPage,
 });
