@@ -1,7 +1,7 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Home, LayoutGrid, MapPin, Receipt, Search, ShoppingCart, User } from "lucide-react";
+import { ChevronLeft, Home, LayoutGrid, MapPin, Receipt, Search, ShoppingCart, User } from "lucide-react";
 import { Logo } from "./bits";
 import { useApp } from "@/lib/app-state";
 import { townshipsQuery } from "@/lib/queries";
@@ -233,11 +233,31 @@ export function Footer() {
   );
 }
 
+const MAIN_TABS = ["/", "/categories", "/orders", "/cart", "/account"];
+
+function BackButton() {
+  const { t } = useApp();
+  const router = useRouter();
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  if (MAIN_TABS.includes(path.replace(/\/$/, "") || "/")) return null;
+  return (
+    <div className="pt-4">
+      <button
+        type="button"
+        onClick={() => (window.history.length > 1 ? router.history.back() : router.navigate({ to: "/" }))}
+        className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border/80 bg-card pl-2.5 pr-4 text-sm font-medium text-primary shadow-soft transition-colors hover:bg-accent"
+      >
+        <ChevronLeft className="size-4" /> {t("common.back")}
+      </button>
+    </div>
+  );
+}
+
 export function PageShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="container-page flex-1 pb-24 md:pb-8">{children}</main>
+      <main className="container-page flex-1 pb-24 md:pb-8"><BackButton />{children}</main>
       <Footer />
       <BottomNav />
     </div>

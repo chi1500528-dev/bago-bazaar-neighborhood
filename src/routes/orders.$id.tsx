@@ -21,7 +21,6 @@ function Page() {
   return (
     <RequireAuth>
       <div className="py-6">
-        <Link to="/orders" className="mb-3 inline-block text-sm text-primary hover:underline">← {t("orders.title")}</Link>
         <OrderDetail id={id} as="customer" />
       </div>
     </RequireAuth>
