@@ -5,6 +5,13 @@
   command = "npm run build"
   publish = "dist"
 
+# Send old Netlify address to the primary custom domain.
+[[redirects]]
+  from = "https://bagomarket.netlify.app/*"
+  to = "https://bagomarket.shop/:splat"
+  status = 301
+  force = true
+
 [build.environment]
   NITRO_PRESET = "netlify"
   NODE_VERSION = "22"
