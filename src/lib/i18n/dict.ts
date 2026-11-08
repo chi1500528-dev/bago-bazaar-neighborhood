@@ -206,6 +206,19 @@ const my = {
   "footer.privacy": "ကိုယ်ရေးအချက်အလက်မူဝါဒ",
   "footer.merchant": "ဆိုင်အဖြစ် စာရင်းသွင်းရန်",
   "footer.tagline": "ပဲခူးတိုင်းဒေသကြီးရှိ ဒေသခံဆိုင်များနှင့် ဝယ်သူများကို ချိတ်ဆက်ပေးသော ဈေးကွက်။",
+  "chat.title": "စကားပြောခန်း",
+  "chat.with_shop": "ဆိုင်နှင့် စကားပြောရန်",
+  "chat.placeholder": "စာရိုက်ပါ…",
+  "chat.send": "ပို့ရန်",
+  "chat.empty": "ပစ္စည်းအကြောင်း ဆိုင်ကို တိုက်ရိုက်မေးမြန်းနိုင်ပါသည်။",
+  "chat.about": "မေးမြန်းသည့်ပစ္စည်း",
+  "chat.view_product": "ပစ္စည်းကြည့်ရန်",
+  "chat.signin": "စကားပြောရန် အရင်ဝင်ရောက်ပါ",
+  "chat.no_conversations": "စကားပြောမှု မရှိသေးပါ။",
+  "chat.customer": "ဝယ်သူ",
+  "chat.new": "စာအသစ်",
+  "chat.back": "နောက်သို့",
+  "chat.pick": "စကားပြောမှုတစ်ခု ရွေးပါ",
 };
 
 export type TKey = keyof typeof my;
@@ -415,6 +428,19 @@ const en: Record<TKey, string> = {
   "footer.privacy": "Privacy",
   "footer.merchant": "Register as a merchant",
   "footer.tagline": "A marketplace connecting local shops and shoppers across Bago Region.",
+  "chat.title": "Messages",
+  "chat.with_shop": "Chat with shop",
+  "chat.placeholder": "Type a message…",
+  "chat.send": "Send",
+  "chat.empty": "Ask the shop anything about their products.",
+  "chat.about": "Asking about",
+  "chat.view_product": "View product",
+  "chat.signin": "Please sign in to chat",
+  "chat.no_conversations": "No conversations yet.",
+  "chat.customer": "Customer",
+  "chat.new": "New message",
+  "chat.back": "Back",
+  "chat.pick": "Select a conversation",
 };
 
 export const dictionaries: Record<Lang, Record<TKey, string>> = { my, en };

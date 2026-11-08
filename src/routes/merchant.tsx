@@ -1,3 +1,4 @@
+import { ChatInbox } from "@/components/site/chat";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -65,10 +66,12 @@ function Merchant() {
       <Tabs defaultValue="orders">
         <TabsList>
           <TabsTrigger value="orders">{t("merchant.orders")}</TabsTrigger>
+          <TabsTrigger value="chat">{t("chat.title")}</TabsTrigger>
           <TabsTrigger value="products">{t("merchant.products")}</TabsTrigger>
           <TabsTrigger value="shop">{t("merchant.shop")}</TabsTrigger>
         </TabsList>
         <TabsContent value="orders" className="pt-4"><MerchantOrders shopId={s.id} /></TabsContent>
+        <TabsContent value="chat" className="pt-4"><ChatInbox side="shop" shopId={s.id} /></TabsContent>
         <TabsContent value="products" className="pt-4"><MerchantProducts shop={s} /></TabsContent>
         <TabsContent value="shop" className="pt-4"><ShopForm shop={s} /></TabsContent>
       </Tabs>

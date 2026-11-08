@@ -96,6 +96,7 @@ function AccountMenu() {
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuItem asChild><Link to="/account">{t("account.title")}</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/orders">{t("orders.title")}</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/messages">{t("chat.title")}</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/merchant">{t("nav.merchant")}</Link></DropdownMenuItem>
         {roles.includes("admin") && <DropdownMenuItem asChild><Link to="/admin">{t("nav.admin")}</Link></DropdownMenuItem>}
         <DropdownMenuSeparator />

@@ -56,6 +56,7 @@ function Account() {
       </div>
       <div className="flex flex-wrap gap-2">
         <Button asChild variant="outline"><Link to="/orders">{t("orders.title")}</Link></Button>
+        <Button asChild variant="outline"><Link to="/messages">{t("chat.title")}</Link></Button>
         <Button asChild variant="outline"><Link to="/merchant">{t("nav.merchant")}</Link></Button>
         {roles.includes("admin") && <Button asChild variant="outline"><Link to="/admin">{t("nav.admin")}</Link></Button>}
       </div>
