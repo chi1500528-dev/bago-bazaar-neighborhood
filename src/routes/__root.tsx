@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider } from "../lib/app-state";
 import { PageShell } from "../components/site/shell";
 import { Toaster } from "../components/ui/sonner";
+import { Notifier } from "../lib/notify";
 
 function NotFoundComponent() {
   return (
@@ -136,6 +137,7 @@ function RootComponent() {
         <PageShell>
           <Outlet />
         </PageShell>
+        <Notifier />
         <Toaster position="top-center" />
       </AppProvider>
     </QueryClientProvider>

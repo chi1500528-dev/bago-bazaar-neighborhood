@@ -7,6 +7,22 @@ import { useApp } from "@/lib/app-state";
 import { townshipsQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { playChime, setSoundOn, soundOn, useUnreadCounts } from "@/lib/notify";
+
+function Dot({ n }: { n: number }) {
+  if (!n) return null;
+  return <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">{n}</span>;
+}
+
+function SoundToggle() {
+  const { t } = useApp();
+  const [on, setOn] = useState(true);
+  return (
+    <DropdownMenuItem onSelect={(e) => { e.preventDefault(); const v = !soundOn(); setSoundOn(v); setOn(v); if (v) playChime(); }} onFocus={() => setOn(soundOn())}>
+      {on ? "🔔 " + t("notify.sound_on") : "🔕 " + t("notify.sound_off")}
+    </DropdownMenuItem>
+  );
+}
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -82,6 +98,8 @@ function AccountMenu() {
   const { session, roles, t } = useApp();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const counts = useUnreadCounts();
+  const total = counts.messages + counts.shopMessages + counts.newOrders;
   if (!session)
     return (
       <Link to="/auth" className="inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent">
@@ -92,12 +110,14 @@ function AccountMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger className="inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent">
         <User className="size-4" /> <span className="hidden sm:inline">{t("nav.account")}</span>
+        {total > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">{total}</span>}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuItem asChild><Link to="/account">{t("account.title")}</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/orders">{t("orders.title")}</Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link to="/messages">{t("chat.title")}</Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link to="/merchant">{t("nav.merchant")}</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/messages">{t("chat.title")}<Dot n={counts.messages} /></Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/merchant">{t("nav.merchant")}<Dot n={counts.shopMessages + counts.newOrders} /></Link></DropdownMenuItem>
+        <SoundToggle />
         {roles.includes("admin") && <DropdownMenuItem asChild><Link to="/admin">{t("nav.admin")}</Link></DropdownMenuItem>}
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -158,12 +178,14 @@ export function BottomNav() {
   const { t, cart } = useApp();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const n = cart.reduce((s, l) => s + l.quantity, 0);
+  const c = useUnreadCounts();
+  const alerts = c.messages + c.shopMessages + c.newOrders;
   const items = [
     { to: "/", label: t("nav.home"), icon: Home, active: path === "/" },
     { to: "/categories", label: t("nav.categories"), icon: LayoutGrid, active: path.startsWith("/categories") || path.startsWith("/c/") },
     { to: "/orders", label: t("nav.orders"), icon: Receipt, active: path.startsWith("/orders") },
     { to: "/cart", label: t("nav.cart"), icon: ShoppingCart, active: path === "/cart" || path === "/checkout", badge: n },
-    { to: "/account", label: t("nav.account"), icon: User, active: path.startsWith("/account") || path === "/auth" },
+    { to: "/account", label: t("nav.account"), icon: User, active: path.startsWith("/account") || path === "/auth", badge: alerts },
   ] as const;
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-card md:hidden" style={{ paddingBottom: "max(0.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))" }}>

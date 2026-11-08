@@ -219,6 +219,12 @@ const my = {
   "chat.new": "စာအသစ်",
   "chat.back": "နောက်သို့",
   "chat.pick": "စကားပြောမှုတစ်ခု ရွေးပါ",
+  "notify.new_message": "စာအသစ်ရောက်ပါပြီ",
+  "notify.new_order": "အော်ဒါအသစ် ရောက်ပါပြီ",
+  "notify.order_update": "အော်ဒါ အခြေအနေ ပြောင်းလဲသည်",
+  "notify.open": "ဖွင့်ရန်",
+  "notify.sound_on": "အသံသတိပေးချက် ဖွင့်ထားသည်",
+  "notify.sound_off": "အသံသတိပေးချက် ပိတ်ထားသည်",
 };
 
 export type TKey = keyof typeof my;
@@ -441,6 +447,12 @@ const en: Record<TKey, string> = {
   "chat.new": "New message",
   "chat.back": "Back",
   "chat.pick": "Select a conversation",
+  "notify.new_message": "New message",
+  "notify.new_order": "New order received",
+  "notify.order_update": "Order updated",
+  "notify.open": "Open",
+  "notify.sound_on": "Sound alerts on",
+  "notify.sound_off": "Sound alerts off",
 };
 
 export const dictionaries: Record<Lang, Record<TKey, string>> = { my, en };
