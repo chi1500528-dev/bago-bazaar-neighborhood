@@ -64,6 +64,102 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          created_at: string
+          customer_id: string
+          customer_last_read: string
+          customer_name: string | null
+          id: string
+          last_message: string | null
+          last_message_at: string
+          product_id: string | null
+          shop_id: string
+          shop_last_read: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          customer_last_read?: string
+          customer_name?: string | null
+          id?: string
+          last_message?: string | null
+          last_message_at?: string
+          product_id?: string | null
+          shop_id: string
+          shop_last_read?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          customer_last_read?: string
+          customer_name?: string | null
+          id?: string
+          last_message?: string | null
+          last_message_at?: string
+          product_id?: string | null
+          shop_id?: string
+          shop_last_read?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          product_id: string | null
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          sender_id?: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -514,6 +610,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_conversation: { Args: { _id: string }; Returns: boolean }
       can_view_order: { Args: { _order_id: string }; Returns: boolean }
       has_role: {
         Args: {
