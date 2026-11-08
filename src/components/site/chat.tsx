@@ -87,7 +87,7 @@ export function ChatThread({ conversationId, side, product }: { conversationId: 
 }
 
 /** "Chat with shop" button that opens a drawer. Creates the conversation on first open. */
-export function ChatWithShop({ shopId, shopName, ownerId, product, className }: { shopId: string; shopName: string; ownerId?: string; product?: { id: string; name: string }; className?: string }) {
+export function ChatWithShop({ shopId, shopName, ownerId, product, className, iconOnly }: { shopId: string; shopName: string; ownerId?: string; product?: { id: string; name: string }; className?: string; iconOnly?: boolean }) {
   const { t, session } = useApp();
   const [open, setOpen] = useState(false);
   const [convId, setConvId] = useState<string | null>(null);
@@ -107,9 +107,9 @@ export function ChatWithShop({ shopId, shopName, ownerId, product, className }: 
   return (
     <>
       {session ? (
-        <Button variant="outline" className={cn("gap-2", className)} onClick={start}><MessageCircle className="size-4" />{t("chat.with_shop")}</Button>
+        <Button variant="outline" size={iconOnly ? "icon" : "default"} aria-label={t("chat.with_shop")} className={cn("gap-2", className)} onClick={start}><MessageCircle className={iconOnly ? "size-5" : "size-4"} />{!iconOnly && t("chat.with_shop")}</Button>
       ) : (
-        <Button asChild variant="outline" className={cn("gap-2", className)}><Link to="/auth"><MessageCircle className="size-4" />{t("chat.with_shop")}</Link></Button>
+        <Button asChild variant="outline" size={iconOnly ? "icon" : "default"} aria-label={t("chat.with_shop")} className={cn("gap-2", className)}><Link to="/auth"><MessageCircle className={iconOnly ? "size-5" : "size-4"} />{!iconOnly && t("chat.with_shop")}</Link></Button>
       )}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-md">

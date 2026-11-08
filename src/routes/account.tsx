@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { deleteOwnAccount } from "@/lib/account.functions";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -37,6 +39,22 @@ function Account() {
     if (f.township_id) setTownship(f.township_id);
     toast.success(t("account.saved"));
   };
+  const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
+  const remove = async () => {
+    setDeleting(true);
+    try {
+      const token = session?.access_token;
+      if (!token) throw new Error("no session");
+      await deleteOwnAccount({ data: { token } });
+      await supabase.auth.signOut();
+      toast.success(t("account.deleted"));
+      navigate({ to: "/" });
+    } catch {
+      toast.error(t("err.generic"));
+      setDeleting(false);
+    }
+  };
   return (
     <div className="mx-auto max-w-lg space-y-5 py-6">
       <h1 className="text-xl font-bold">{t("account.title")}</h1>
@@ -59,6 +77,22 @@ function Account() {
         <Button asChild variant="outline"><Link to="/messages">{t("chat.title")}</Link></Button>
         <Button asChild variant="outline"><Link to="/merchant">{t("nav.merchant")}</Link></Button>
         {roles.includes("admin") && <Button asChild variant="outline"><Link to="/admin">{t("nav.admin")}</Link></Button>}
+      </div>
+      <div className="surface space-y-3 border-destructive/30 p-5">
+        <p className="text-sm text-muted-foreground">{t("account.delete_hint")}</p>
+        <AlertDialog>
+          <AlertDialogTrigger asChild><Button variant="destructive" disabled={deleting}>{t("account.delete")}</Button></AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("account.delete_confirm")}</AlertDialogTitle>
+              <AlertDialogDescription>{t("account.delete_hint")}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("common.cancel_btn")}</AlertDialogCancel>
+              <AlertDialogAction onClick={remove} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">{t("account.delete_yes")}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
