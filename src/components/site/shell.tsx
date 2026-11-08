@@ -162,7 +162,7 @@ export function Header() {
           </Link>
           <span className="mx-1 hidden h-6 w-px bg-border sm:block" />
           <LangSwitch className="hidden sm:inline-flex" />
-          <AccountMenu />
+          <span className="hidden md:inline-flex"><AccountMenu /></span>
           <span className="hidden md:inline-flex"><CartLink /></span>
         </nav>
       </div>
@@ -217,6 +217,7 @@ export function Footer() {
           <LangSwitch onDark />
         </div>
         <ul className="space-y-2 text-sm">
+          <li><Link to="/account" className="hover:text-primary">{t("footer.account")}</Link></li>
           <li><Link to="/about" className="hover:text-primary">{t("footer.about")}</Link></li>
           <li><Link to="/contact" className="hover:text-primary">{t("footer.contact")}</Link></li>
           <li><Link to="/help" className="hover:text-primary">{t("footer.help")}</Link></li>
