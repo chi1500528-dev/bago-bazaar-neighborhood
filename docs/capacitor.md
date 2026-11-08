@@ -1,7 +1,7 @@
 # Bago Market — Android & iOS apps (Capacitor)
 
 The apps are a native shell that opens the live site
-`https://bago-bazaar-neighborhood.lovable.app`. Every website update appears in
+`https://bagomarket.shop`. Every website update appears in
 the apps immediately — no store update needed. The no-VPN relay keeps working.
 
 **Publish the website first**, the apps show whatever is published.
