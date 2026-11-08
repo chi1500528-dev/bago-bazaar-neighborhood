@@ -6,6 +6,7 @@ import { useApp } from "@/lib/app-state";
 import { PRODUCT_FIELDS, SHOP_FIELDS, type Product, type Shop } from "@/lib/queries";
 import { formatMMK } from "@/lib/domain/rules";
 import { EmptyState, LoadingGrid, MediaImg, Section } from "@/components/site/bits";
+import { ChatWithShop } from "@/components/site/chat";
 import { ProductCard, useAddToCart, useTownshipName } from "@/components/site/cards";
 
 export const Route = createFileRoute("/shops/$slug")({
@@ -62,6 +63,7 @@ function ShopPage() {
           <div className="flex-1 space-y-2">
             <h1 className="text-xl font-bold md:text-2xl">{s.name}</h1>
             {s.description && <p className="whitespace-pre-line text-sm text-muted-foreground">{s.description}</p>}
+            <ChatWithShop shopId={s.id} shopName={s.name} />
           </div>
         </div>
         <dl className="grid gap-3 border-t p-5 text-sm sm:grid-cols-2 lg:grid-cols-4">
