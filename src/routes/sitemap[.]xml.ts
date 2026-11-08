@@ -22,7 +22,7 @@ export const Route = createFileRoute("/sitemap.xml")({
     handlers: {
       GET: async () => {
         const base = (process.env["SUPABASE_URL"] || import.meta.env["VITE_SUPABASE_URL"] || "https://rvgqgtjkqmvjauqofsgt.supabase.co").replace(/\/+$/, "");
-        const key = process.env["SUPABASE_PUBLISHABLE_KEY"] || import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+        const key = process.env["SUPABASE_PUBLISHABLE_KEY"] || import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] || "";
         const [shops, products, cats] = await Promise.all([
           list(base, key, "shops?select=slug&status=eq.approved&is_active=eq.true", "slug"),
           list(base, key, "products?select=id&is_active=eq.true", "id"),
