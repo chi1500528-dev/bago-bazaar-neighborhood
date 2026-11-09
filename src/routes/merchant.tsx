@@ -252,11 +252,10 @@ function MerchantOrders({ shopId }: { shopId: string }) {
       return data;
     },
   });
+  // Live sockets to the backend are blocked on many Myanmar networks; poll instead.
   useEffect(() => {
-    const ch = supabase.channel(`shop-orders-${shopId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `shop_id=eq.${shopId}` }, () => qc.invalidateQueries({ queryKey: ["shop-orders", shopId] }))
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    const id = setInterval(() => qc.invalidateQueries({ queryKey: ["shop-orders", shopId] }), 10000);
+    return () => clearInterval(id);
   }, [shopId, qc]);
   if ((q.data ?? []).length === 0) return <EmptyState text={t("merchant.no_orders")} />;
   return (

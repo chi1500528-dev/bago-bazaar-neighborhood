@@ -105,11 +105,11 @@ function OtpStep({ email, onBack }: { email: string; onBack: () => void }) {
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="otp">{t("auth.otp_code")}</Label>
-        <Input id="otp" inputMode="numeric" autoComplete="one-time-code" autoFocus maxLength={6} pattern="[0-9]{6}"
-          value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+        <Input id="otp" inputMode="numeric" autoComplete="one-time-code" autoFocus maxLength={8} pattern="[0-9]{6,8}"
+          value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
           className="h-12 text-center text-2xl tracking-[0.5em]" required />
       </div>
-      <Button type="submit" className="w-full" disabled={busy || code.length !== 6}>{busy ? t("common.loading") : t("auth.otp_verify")}</Button>
+      <Button type="submit" className="w-full" disabled={busy || code.length < 6}>{busy ? t("common.loading") : t("auth.otp_verify")}</Button>
       <div className="flex justify-between text-sm">
         <button type="button" onClick={onBack} className="text-muted-foreground hover:underline">{t("auth.otp_change")}</button>
         <button type="button" onClick={resend} disabled={wait > 0} className="text-primary hover:underline disabled:text-muted-foreground disabled:no-underline">
