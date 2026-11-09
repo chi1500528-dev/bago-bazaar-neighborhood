@@ -12,6 +12,13 @@
   status = 301
   force = true
 
+# Disable HTTP/3 (QUIC over UDP) — often dropped by Myanmar mobile networks,
+# causing ERR_QUIC_PROTOCOL_ERROR. Browsers stay on reliable HTTP/2.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Alt-Svc = "clear"
+
 [build.environment]
   NITRO_PRESET = "netlify"
   NODE_VERSION = "22"
