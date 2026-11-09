@@ -20,3 +20,4 @@
 - Netlify self-deploys are configured only via `netlify.toml` (`NITRO_PRESET=netlify`, publish `dist`); keep `vite.config.ts` preset-free so Lovable hosting stays on its default target.
 - Browser Supabase traffic (REST/Auth/Storage) is rewritten to the same-origin relay `/api/public/sb/*` by `src/lib/sb-relay.ts` — `*.supabase.co` is blocked on many Myanmar networks; the relay forwards the caller's own key/token so RLS stays the authority. Realtime (websocket) is not relayed.
 - Native Android/iOS apps are a Capacitor shell (`capacitor.config.ts`) loading the published site via `server.url` — the app is SSR and needs the live server + relay; see `docs/capacitor.md`.
+- Cloudflare Workers is the primary self-deploy target via the default (preset-free) build; steps in `docs/cloudflare.md` — serves Myanmar from Bangkok/Singapore edges.
