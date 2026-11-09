@@ -23,11 +23,10 @@ export function OrderDetail({ id, as }: { id: string; as: "customer" | "merchant
       return data;
     },
   });
+  // Live sockets are blocked on many Myanmar networks; poll instead.
   useEffect(() => {
-    const ch = supabase.channel(`order-${id}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${id}` }, () => qc.invalidateQueries({ queryKey: ["order", id] }))
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    const t = setInterval(() => qc.invalidateQueries({ queryKey: ["order", id] }), 10000);
+    return () => clearInterval(t);
   }, [id, qc]);
 
   if (q.isLoading) return <p className="py-10 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
