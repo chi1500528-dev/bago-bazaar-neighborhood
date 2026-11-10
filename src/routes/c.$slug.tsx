@@ -1,3 +1,4 @@
+import { categoryShopsQuery, warm } from "@/lib/queries";
 import { siteUrl } from "@/lib/site";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -20,6 +21,12 @@ export const Route = createFileRoute("/c/$slug")({
     ],
     links: [{ rel: "canonical", href: siteUrl(`/c/${params.slug}`) }],
   }),
+  loader: ({ params, context: { queryClient: qc } }) =>
+    warm([qc.fetchQuery(categoriesQuery).then((all) => {
+      const cat = all.find((c) => c.slug === params.slug);
+      const parentId = cat?.parent_id ?? cat?.id;
+      return parentId ? qc.prefetchQuery(categoryShopsQuery(parentId)) : undefined;
+    })]),
   component: CategoryPage,
 });
 
@@ -33,16 +40,7 @@ function CategoryPage() {
   const subs = parent ? all.filter((c) => c.parent_id === parent.id) : [];
   const ids = cat ? [cat.id, ...all.filter((c) => c.parent_id === cat.id).map((c) => c.id)] : [];
 
-  const shops = useQuery({
-    queryKey: ["cat-shops", parent?.id],
-    enabled: !!parent,
-    queryFn: async () => {
-      const { data, error } = await supabase.from("shops").select(SHOP_FIELDS)
-        .eq("status", "approved").eq("is_active", true).eq("category_id", parent!.id).limit(8);
-      if (error) throw error;
-      return data as Shop[];
-    },
-  });
+  const shops = useQuery(categoryShopsQuery(parent?.id));
 
   if (cats.isLoading) return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
   if (!cat) return <div className="py-10"><EmptyState text={t("search.none")} /></div>;
