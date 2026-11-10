@@ -1,3 +1,4 @@
+import { shopQuery, shopProductsQuery, warm } from "@/lib/queries";
 import { siteUrl } from "@/lib/site";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +22,8 @@ export const Route = createFileRoute("/shops/$slug")({
     ],
     links: [{ rel: "canonical", href: siteUrl(`/shops/${params.slug}`) }],
   }),
+  loader: ({ params, context: { queryClient: qc } }) =>
+    warm([qc.fetchQuery(shopQuery(params.slug)).then((s) => s && qc.prefetchQuery(shopProductsQuery(s.id)))]),
   component: ShopPage,
 });
 
@@ -29,24 +32,8 @@ function ShopPage() {
   const { t, lang } = useApp();
   const tw = useTownshipName();
   const { add, dialog } = useAddToCart();
-  const shop = useQuery({
-    queryKey: ["shop", slug],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("shops").select(SHOP_FIELDS).eq("slug", slug).maybeSingle();
-      if (error) throw error;
-      return data as Shop | null;
-    },
-  });
-  const products = useQuery({
-    queryKey: ["shop-products", shop.data?.id],
-    enabled: !!shop.data,
-    queryFn: async () => {
-      const { data, error } = await supabase.from("products").select(PRODUCT_FIELDS)
-        .eq("shop_id", shop.data!.id).eq("is_active", true).order("created_at", { ascending: false }).limit(60);
-      if (error) throw error;
-      return data as unknown as Product[];
-    },
-  });
+  const shop = useQuery(shopQuery(slug));
+  const products = useQuery(shopProductsQuery(shop.data?.id));
 
   if (shop.isLoading) return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
   const s = shop.data;

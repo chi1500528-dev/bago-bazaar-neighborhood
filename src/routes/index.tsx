@@ -4,9 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 import heroMarket from "@/assets/hero-market.jpg";
 import { categoryImage } from "@/lib/category-images";
-import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
-import { categoriesQuery, PRODUCT_FIELDS, SHOP_FIELDS, type Product, type Shop } from "@/lib/queries";
+import { categoriesQuery, homeProductsQuery, homeShopsQuery, promosQuery, warm } from "@/lib/queries";
 import { CategoryIcon, EmptyState, ErrorBox, LoadingGrid, MediaImg, Section } from "@/components/site/bits";
 import { ProductCard, ShopCard, useAddToCart } from "@/components/site/cards";
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,8 @@ export const Route = createFileRoute("/")({
     ],
     links: [{ rel: "canonical", href: siteUrl("/") }],
   }),
+  loader: ({ context: { queryClient: qc } }) =>
+    warm([qc.prefetchQuery(categoriesQuery), qc.prefetchQuery(promosQuery), qc.prefetchQuery(homeShopsQuery), qc.prefetchQuery(homeProductsQuery)]),
   component: Home,
 });
 
@@ -42,35 +43,9 @@ function Home() {
   const cats = useQuery(categoriesQuery);
   const top = (cats.data ?? []).filter((c) => !c.parent_id);
 
-  const promos = useQuery({
-    queryKey: ["promos"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("promotions").select("*").order("sort").limit(6);
-      if (error) throw error;
-      return data;
-    },
-  });
-  const shops = useQuery({
-    queryKey: ["home-shops"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("shops").select(SHOP_FIELDS).eq("status", "approved").eq("is_active", true)
-        .order("is_featured", { ascending: false }).order("created_at", { ascending: false }).limit(24);
-      if (error) throw error;
-      return data as Shop[];
-    },
-  });
-  const products = useQuery({
-    queryKey: ["home-products"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products").select(PRODUCT_FIELDS).eq("is_active", true)
-        .eq("shops.status", "approved").eq("shops.is_active", true)
-        .order("created_at", { ascending: false }).limit(8);
-      if (error) throw error;
-      return data as unknown as Product[];
-    },
-  });
+  const promos = useQuery(promosQuery);
+  const shops = useQuery(homeShopsQuery);
+  const products = useQuery(homeProductsQuery);
 
   const allShops = shops.data ?? [];
   const featured = allShops.filter((s) => !s.is_food).slice(0, 8);

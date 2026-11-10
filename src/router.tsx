@@ -1,5 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
+import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import { routeTree } from "./routeTree.gen";
 import { installSupabaseRelay } from "./lib/sb-relay";
 
@@ -19,5 +20,7 @@ export const getRouter = () => {
     defaultPreloadStaleTime: 0,
   });
 
+  // Data fetched on the server is sent inside the first page, so shops & products show immediately.
+  setupRouterSsrQueryIntegration({ router, queryClient });
   return router;
 };

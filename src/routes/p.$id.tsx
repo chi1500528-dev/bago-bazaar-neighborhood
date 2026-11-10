@@ -1,3 +1,4 @@
+import { productQuery, warm } from "@/lib/queries";
 import { siteUrl } from "@/lib/site";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/p/$id")({
     ],
     links: [{ rel: "canonical", href: siteUrl(`/p/${params.id}`) }],
   }),
+  loader: ({ params, context }) => warm([context.queryClient.prefetchQuery(productQuery(params.id))]),
   component: ProductPage,
 });
 
@@ -33,14 +35,7 @@ function ProductPage() {
   const { add, dialog } = useAddToCart();
   const [img, setImg] = useState(0);
   const [qty, setQty] = useState(1);
-  const q = useQuery({
-    queryKey: ["product", id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("products").select(PRODUCT_FIELDS).eq("id", id).eq("is_active", true).maybeSingle();
-      if (error) throw error;
-      return data as unknown as Product | null;
-    },
-  });
+  const q = useQuery(productQuery(id));
   if (q.isLoading) return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
   const p = q.data;
   if (!p) return <div className="py-10"><EmptyState text={t("product.not_found")} /></div>;

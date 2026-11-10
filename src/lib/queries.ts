@@ -55,3 +55,75 @@ export function useCartShop(shopId: string | undefined) {
   });
 }
 
+
+// ---- Public catalog reads, shared by page loaders (pre-filled on the server) and components ----
+export const homeShopsQuery = queryOptions({
+  queryKey: ["home-shops"],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("shops").select(SHOP_FIELDS).eq("status", "approved").eq("is_active", true)
+      .order("is_featured", { ascending: false }).order("created_at", { ascending: false }).limit(24);
+    if (error) throw error;
+    return data as Shop[];
+  },
+});
+export const homeProductsQuery = queryOptions({
+  queryKey: ["home-products"],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("products").select(PRODUCT_FIELDS).eq("is_active", true)
+      .eq("shops.status", "approved").eq("shops.is_active", true)
+      .order("created_at", { ascending: false }).limit(8);
+    if (error) throw error;
+    return data as unknown as Product[];
+  },
+});
+export const promosQuery = queryOptions({
+  queryKey: ["promos"],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("promotions").select("*").order("sort").limit(6);
+    if (error) throw error;
+    return data;
+  },
+});
+export const productQuery = (id: string) => queryOptions({
+  queryKey: ["product", id],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("products").select(PRODUCT_FIELDS).eq("id", id).eq("is_active", true).maybeSingle();
+    if (error) throw error;
+    return data as unknown as Product | null;
+  },
+});
+export const shopQuery = (slug: string) => queryOptions({
+  queryKey: ["shop", slug],
+  queryFn: async () => {
+    const { data, error } = await supabase.from("shops").select(SHOP_FIELDS).eq("slug", slug).maybeSingle();
+    if (error) throw error;
+    return data as Shop | null;
+  },
+});
+export const shopProductsQuery = (shopId: string | undefined) => queryOptions({
+  queryKey: ["shop-products", shopId],
+  enabled: !!shopId,
+  queryFn: async () => {
+    const { data, error } = await supabase.from("products").select(PRODUCT_FIELDS)
+      .eq("shop_id", shopId!).eq("is_active", true).order("created_at", { ascending: false }).limit(60);
+    if (error) throw error;
+    return data as unknown as Product[];
+  },
+});
+export const categoryShopsQuery = (categoryId: string | undefined) => queryOptions({
+  queryKey: ["cat-shops", categoryId],
+  enabled: !!categoryId,
+  queryFn: async () => {
+    const { data, error } = await supabase.from("shops").select(SHOP_FIELDS)
+      .eq("status", "approved").eq("is_active", true).eq("category_id", categoryId!).limit(8);
+    if (error) throw error;
+    return data as Shop[];
+  },
+});
+
+/** Wait for data to pre-fill the page, but never longer than `ms` — a slow database must not block the page. */
+export function warm(work: Promise<unknown>[], ms = 2500) {
+  return Promise.race([Promise.allSettled(work), new Promise((r) => setTimeout(r, ms))]).then(() => undefined);
+}
