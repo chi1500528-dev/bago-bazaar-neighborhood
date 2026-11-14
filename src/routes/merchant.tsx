@@ -1,12 +1,13 @@
 import { ChatInbox } from "@/components/site/chat";
 import { useUnreadCounts } from "@/lib/notify";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ChevronRight, MessageCircle, Package, Receipt, Settings2, Eye, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
-import { categoriesQuery, townshipsQuery } from "@/lib/queries";
+import { categoriesQuery, shopCategoriesQuery, townshipsQuery } from "@/lib/queries";
 import { formatMMK, slugify } from "@/lib/domain/rules";
 import { MediaImg, StatusBadge, EmptyState } from "@/components/site/bits";
 import { RequireAuth } from "@/components/site/shell";
@@ -23,6 +24,8 @@ import type { Database } from "@/integrations/supabase/types";
 
 type ShopRow = Database["public"]["Tables"]["shops"]["Row"];
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
+const TABS = ["orders", "chat", "products", "shop"] as const;
+type Tab = (typeof TABS)[number];
 
 export const Route = createFileRoute("/merchant")({
   head: () => ({
@@ -33,6 +36,8 @@ export const Route = createFileRoute("/merchant")({
       { property: "og:description", content: "Open a shop and reach customers across Bago Region." },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>): { tab?: Tab } =>
+    TABS.includes(s.tab as Tab) ? { tab: s.tab as Tab } : {},
   component: () => <RequireAuth><Merchant /></RequireAuth>,
 });
 
@@ -61,27 +66,54 @@ function Merchant() {
 
 function Dash({ s }: { s: ShopRow }) {
   const { t } = useApp();
+  const { tab } = Route.useSearch();
   const alerts = useUnreadCounts();
+  const tiles = [
+    { id: "orders" as const, label: t("merchant.orders"), sub: t("merchant.tile_orders"), icon: Receipt, n: alerts.newOrders },
+    { id: "chat" as const, label: t("chat.title"), sub: t("merchant.tile_chat"), icon: MessageCircle, n: alerts.shopMessages },
+    { id: "products" as const, label: t("merchant.products"), sub: t("merchant.tile_products"), icon: Package, n: 0 },
+    { id: "shop" as const, label: t("merchant.shop"), sub: t("merchant.tile_shop"), icon: Settings2, n: 0 },
+  ];
+  const current = tiles.find((x) => x.id === tab);
   return (
-    <div className="py-6">
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-bold">{s.name}</h1>
-        <StatusBadge status={s.status} kind="shop" />
-        {s.status === "approved" && <Link to="/shops/$slug" params={{ slug: s.slug }} className="text-sm text-primary hover:underline">{t("shop.visit")} →</Link>}
+    <div className="mx-auto max-w-4xl py-6">
+      <div className="surface mb-5 flex flex-wrap items-center gap-4 p-5">
+        <div className="size-14 shrink-0 overflow-hidden rounded-xl border bg-muted"><MediaImg path={s.logo_url} alt="" className="size-full" /></div>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("nav.my_shop")}</p>
+          <h1 className="truncate font-display text-xl font-semibold md:text-2xl">{s.name}</h1>
+          <div className="mt-1"><StatusBadge status={s.status} kind="shop" /></div>
+        </div>
+        {s.status === "approved" && (
+          <Button asChild variant="outline" size="sm" className="rounded-full"><Link to="/shops/$slug" params={{ slug: s.slug }}><Eye className="size-4" />{t("merchant.view_customer")}</Link></Button>
+        )}
       </div>
       {s.status === "pending" && <p className="mb-4 rounded-md bg-gold-soft p-3 text-sm text-gold-foreground">{t("merchant.pending_note")}</p>}
-      <Tabs defaultValue="orders">
-        <TabsList>
-          <TabsTrigger value="orders" className="gap-1.5">{t("merchant.orders")}{alerts.newOrders > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">{alerts.newOrders}</span>}</TabsTrigger>
-          <TabsTrigger value="chat" className="gap-1.5">{t("chat.title")}{alerts.shopMessages > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">{alerts.shopMessages}</span>}</TabsTrigger>
-          <TabsTrigger value="products">{t("merchant.products")}</TabsTrigger>
-          <TabsTrigger value="shop">{t("merchant.shop")}</TabsTrigger>
-        </TabsList>
-        <TabsContent value="orders" className="pt-4"><MerchantOrders shopId={s.id} /></TabsContent>
-        <TabsContent value="chat" className="pt-4"><ChatInbox side="shop" shopId={s.id} /></TabsContent>
-        <TabsContent value="products" className="pt-4"><MerchantProducts shop={s} /></TabsContent>
-        <TabsContent value="shop" className="pt-4"><ShopForm shop={s} /></TabsContent>
-      </Tabs>
+      {!current ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {tiles.map((x) => (
+            <Link key={x.id} to="/merchant" search={{ tab: x.id }} className="surface group flex items-center gap-4 p-5 transition hover:border-primary/40 hover:shadow-soft">
+              <span className="relative grid size-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><x.icon className="size-6" />
+                {x.n > 0 && <span className="absolute -right-1.5 -top-1.5 grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">{x.n}</span>}
+              </span>
+              <span className="min-w-0 flex-1"><span className="block font-semibold">{x.label}</span><span className="block text-sm text-muted-foreground">{x.sub}</span></span>
+              <ChevronRight className="size-5 text-muted-foreground transition group-hover:translate-x-0.5" />
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <div>
+          <div className="mb-4 flex items-center gap-2">
+            <Link to="/merchant" search={{ tab: undefined }} className="text-sm text-muted-foreground hover:text-primary">{t("nav.my_shop")}</Link>
+            <ChevronRight className="size-4 text-muted-foreground" />
+            <h2 className="font-semibold">{current.label}</h2>
+          </div>
+          {tab === "orders" && <MerchantOrders shopId={s.id} />}
+          {tab === "chat" && <ChatInbox side="shop" shopId={s.id} />}
+          {tab === "products" && <MerchantProducts shop={s} />}
+          {tab === "shop" && <ShopForm shop={s} />}
+        </div>
+      )}
     </div>
   );
 }
@@ -111,7 +143,7 @@ function ShopForm({ shop }: { shop?: ShopRow }) {
       logo_url: f.logo[0] ?? null, cover_url: f.cover[0] ?? null,
     };
     const { error } = shop
-      ? await supabase.from("shops").update(payload).eq("id", shop.id)
+      ? await supabase.from("shops").update(payload.name !== shop.name ? { ...payload, slug: slugify(payload.name) } : payload).eq("id", shop.id)
       : await supabase.from("shops").insert({ ...payload, owner_id: session!.user.id, slug: slugify(f.name) });
     setBusy(false);
     if (error) { toast.error(t("err.generic")); return; }
@@ -162,6 +194,7 @@ function MerchantProducts({ shop }: { shop: ShopRow }) {
   });
   return (
     <div>
+      <ShopCategories shopId={shop.id} />
       <Button onClick={() => setEditing("new")} className="mb-4">+ {t("merchant.new_product")}</Button>
       {(q.data ?? []).length === 0 ? <EmptyState text={t("product.empty")} /> : (
         <ul className="divide-y rounded-lg border bg-card">
@@ -194,15 +227,18 @@ function ProductForm({ shopId, product, onDone }: { shopId: string; product?: Pr
   const [f, setF] = useState({
     name: product?.name ?? "", description: product?.description ?? "", category_id: product?.category_id ?? "",
     price: String(product?.price ?? ""), sale_price: product?.sale_price != null ? String(product.sale_price) : "",
+    shop_category_id: product?.shop_category_id ?? "",
     stock: String(product?.stock ?? 0), is_active: product?.is_active ?? true, images: product?.images ?? [],
   });
   const [busy, setBusy] = useState(false);
   const all = cats.data ?? [];
+  const own = useQuery(shopCategoriesQuery(shopId));
   const save = async () => {
     if (!f.name.trim() || !f.price) { toast.error(t("checkout.required")); return; }
     setBusy(true);
     const payload = {
       name: f.name.trim(), description: f.description || null, category_id: f.category_id || null,
+      shop_category_id: f.shop_category_id || null,
       price: Number(f.price), sale_price: f.sale_price ? Number(f.sale_price) : null, stock: Number(f.stock) || 0,
       is_active: f.is_active, images: f.images,
     };
@@ -227,6 +263,10 @@ function ProductForm({ shopId, product, onDone }: { shopId: string; product?: Pr
             ...all.filter((s) => s.parent_id === c.id).map((s) => <option key={s.id} value={s.id}>— {pick(s.name_my, s.name_en)}</option>),
           ])}
         </select></div>
+      {(own.data ?? []).length > 0 && <div className="space-y-1.5"><Label>{t("merchant.shop_category")}</Label>
+        <select className="h-9 w-full rounded-md border bg-card px-2 text-sm" value={f.shop_category_id} onChange={(e) => setF({ ...f, shop_category_id: e.target.value })}>
+          <option value="">—</option>{own.data!.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select></div>}
       <div className="grid grid-cols-3 gap-2">
         <div className="space-y-1.5"><Label className="text-xs">{t("merchant.price")}</Label><Input inputMode="numeric" value={f.price} onChange={num("price")} /></div>
         <div className="space-y-1.5"><Label className="text-xs">{t("merchant.sale_price")}</Label><Input inputMode="numeric" value={f.sale_price} onChange={num("sale_price")} /></div>
@@ -278,5 +318,56 @@ function MerchantOrders({ shopId }: { shopId: string }) {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function ShopCategories({ shopId }: { shopId: string }) {
+  const { t } = useApp();
+  const qc = useQueryClient();
+  const q = useQuery(shopCategoriesQuery(shopId));
+  const [name, setName] = useState("");
+  const [edit, setEdit] = useState<{ id: string; name: string } | null>(null);
+  const refresh = () => qc.invalidateQueries({ queryKey: ["shop-categories", shopId] });
+  const add = async () => {
+    const n = name.trim(); if (!n) return;
+    const { error } = await supabase.from("shop_categories").insert({ shop_id: shopId, name: n.slice(0, 60), sort: (q.data?.length ?? 0) });
+    if (error) { toast.error(t("err.generic")); return; }
+    setName(""); refresh();
+  };
+  const rename = async () => {
+    if (!edit || !edit.name.trim()) return;
+    const { error } = await supabase.from("shop_categories").update({ name: edit.name.trim().slice(0, 60) }).eq("id", edit.id);
+    if (error) { toast.error(t("err.generic")); return; }
+    setEdit(null); refresh();
+  };
+  const remove = async (id: string) => {
+    if (!confirm(t("merchant.cat_delete_confirm"))) return;
+    const { error } = await supabase.from("shop_categories").delete().eq("id", id);
+    if (error) { toast.error(t("err.generic")); return; }
+    refresh(); qc.invalidateQueries({ queryKey: ["my-products", shopId] });
+  };
+  return (
+    <div className="surface mb-5 space-y-3 p-4">
+      <div><p className="font-semibold">{t("merchant.my_categories")}</p><p className="text-xs text-muted-foreground">{t("merchant.my_categories_sub")}</p></div>
+      <div className="flex flex-wrap gap-2">
+        {(q.data ?? []).map((c) => edit?.id === c.id ? (
+          <span key={c.id} className="flex items-center gap-1">
+            <Input autoFocus value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} onKeyDown={(e) => e.key === "Enter" && rename()} className="h-8 w-40" />
+            <Button size="icon" variant="ghost" className="size-8" onClick={rename} aria-label={t("common.save")}><Check className="size-4" /></Button>
+            <Button size="icon" variant="ghost" className="size-8" onClick={() => setEdit(null)} aria-label="Cancel"><X className="size-4" /></Button>
+          </span>
+        ) : (
+          <span key={c.id} className="flex items-center gap-1 rounded-full border bg-card py-1 pl-3 pr-1 text-sm">
+            {c.name}
+            <button onClick={() => setEdit({ id: c.id, name: c.name })} className="grid size-6 place-items-center rounded-full hover:bg-muted" aria-label={t("common.edit")}><Pencil className="size-3.5" /></button>
+            <button onClick={() => remove(c.id)} className="grid size-6 place-items-center rounded-full text-destructive hover:bg-muted" aria-label="Delete"><Trash2 className="size-3.5" /></button>
+          </span>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <Input value={name} placeholder={t("merchant.cat_placeholder")} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} className="max-w-xs" />
+        <Button variant="outline" onClick={add}><Plus className="size-4" />{t("merchant.cat_add")}</Button>
+      </div>
+    </div>
   );
 }

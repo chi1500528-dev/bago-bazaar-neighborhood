@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, Home, LayoutGrid, MapPin, Receipt, Search, ShoppingCart, User } from "lucide-react";
+import { ChevronLeft, Home, LayoutGrid, MapPin, Receipt, Search, ShoppingCart, Store, User } from "lucide-react";
 import { Logo } from "./bits";
 import { useApp } from "@/lib/app-state";
 import { townshipsQuery } from "@/lib/queries";
