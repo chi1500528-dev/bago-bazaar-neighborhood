@@ -1,5 +1,6 @@
 import { siteUrl } from "@/lib/site";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 import heroMarket from "@/assets/hero-market.jpg";

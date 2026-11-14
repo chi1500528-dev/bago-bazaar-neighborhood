@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const SHOP_FIELDS =
   "id, slug, name, description, logo_url, cover_url, township_id, category_id, offers_delivery, offers_pickup, delivery_fee, opening_hours, is_food, is_featured, address, phone, pickup_info, delivery_note";
 export const PRODUCT_FIELDS =
-  "id, shop_id, name, description, price, sale_price, stock, images, category_id, created_at, shops!inner(id, name, slug, status, is_active)";
+  "id, shop_id, name, description, price, sale_price, stock, images, category_id, shop_category_id, created_at, shops!inner(id, name, slug, status, is_active)";
 
 export const townshipsQuery = queryOptions({
   queryKey: ["townships"],
