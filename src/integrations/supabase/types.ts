@@ -620,6 +620,7 @@ export type Database = {
         Returns: boolean
       }
       is_shop_owner: { Args: { _shop_id: string }; Returns: boolean }
+      media_is_public: { Args: { _path: string }; Returns: boolean }
       place_order: {
         Args: {
           p_address: string
