@@ -62,13 +62,15 @@ function Account() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [f, setF] = useState({ full_name: "", phone: "" });
+  const [loaded, setLoaded] = useState(false);
   const [sound, setSound] = useState(true);
   useEffect(() => setSound(soundOn()), []);
   useEffect(() => {
     supabase.from("profiles").select("full_name, phone").eq("id", session!.user.id).maybeSingle().then(({ data }) => {
       if (data) setF({ full_name: data.full_name ?? "", phone: data.phone ?? "" });
+      setLoaded(true);
     });
-  }, [session]);
+  }, [session?.user.id]);
   const save = async () => {
     const { error } = await supabase.from("profiles").update(f).eq("id", session!.user.id);
     if (error) { toast.error(t("err.generic")); return; }
@@ -97,14 +99,14 @@ function Account() {
   };
   const name = f.full_name || session?.user.email?.split("@")[0] || "";
   const initials = name.trim().slice(0, 2).toUpperCase();
-  const role = roles.includes("admin") ? t("account.role_admin") : t("account.role_customer");
+  const role = roles.includes("admin") ? t("account.role_admin") : roles.includes("merchant") ? t("account.role_merchant") : t("account.role_customer");
 
   return (
     <div className="mx-auto max-w-lg space-y-6 py-6">
       <div className="surface flex items-center gap-4 p-5">
-        <span className="grid size-14 shrink-0 place-items-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">{initials}</span>
+        <span className="grid size-14 shrink-0 place-items-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">{loaded ? initials : ""}</span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-lg font-semibold">{name}</p>
+          {loaded ? <p className="truncate text-lg font-semibold">{name}</p> : <p className="h-6 w-32 animate-pulse rounded bg-muted" />}
           <p className="truncate text-sm text-muted-foreground">{session?.user.email}</p>
           <span className="mt-1 inline-block rounded-full bg-gold/15 px-2 py-0.5 text-[11px] font-semibold text-foreground">{role}</span>
         </div>

@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.shops_slug_history() FROM PUBLIC, anon, authenticated;

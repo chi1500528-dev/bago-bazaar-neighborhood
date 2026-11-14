@@ -1,6 +1,8 @@
-import { shopQuery, shopProductsQuery, warm } from "@/lib/queries";
+import { shopCategoriesQuery, shopQuery, shopProductsQuery, warm } from "@/lib/queries";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import { siteUrl } from "@/lib/site";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Bike, Clock, MapPin, Phone, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +36,12 @@ function ShopPage() {
   const { add, dialog } = useAddToCart();
   const shop = useQuery(shopQuery(slug));
   const products = useQuery(shopProductsQuery(shop.data?.id));
+  const cats = useQuery(shopCategoriesQuery(shop.data?.id));
+  const [cat, setCat] = useState<string | null>(null);
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (shop.data && shop.data.slug !== slug) navigate({ to: "/shops/$slug", params: { slug: shop.data.slug }, replace: true });
+  }, [shop.data, slug, navigate]);
 
   if (shop.isLoading) return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
   const s = shop.data;
@@ -70,8 +78,16 @@ function ShopPage() {
         </dl>
       </div>
       <Section title={t("shop.products")}>
-        {products.isLoading ? <LoadingGrid /> : (products.data ?? []).length === 0 ? <EmptyState text={t("shop.no_products")} /> : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{products.data!.map((p) => <ProductCard key={p.id} p={p} onAdd={add} />)}</div>
+        {(cats.data ?? []).length > 0 && (
+          <div className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-1">
+            {[{ id: null as string | null, name: t("shop.all") }, ...cats.data!].map((c) => (
+              <button key={c.id ?? "all"} onClick={() => setCat(c.id)}
+                className={cn("shrink-0 rounded-full border px-4 py-1.5 text-sm", cat === c.id ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:border-primary/40")}>{c.name}</button>
+            ))}
+          </div>
+        )}
+        {products.isLoading ? <LoadingGrid /> : (products.data ?? []).filter((p) => !cat || p.shop_category_id === cat).length === 0 ? <EmptyState text={t("shop.no_products")} /> : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{products.data!.filter((p) => !cat || p.shop_category_id === cat).map((p) => <ProductCard key={p.id} p={p} onAdd={add} />)}</div>
         )}
       </Section>
     </div>

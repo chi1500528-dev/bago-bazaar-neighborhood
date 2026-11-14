@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, Home, LayoutGrid, MapPin, Receipt, Search, ShoppingCart, User } from "lucide-react";
+import { ChevronLeft, Home, LayoutGrid, MapPin, Receipt, Search, ShoppingCart, Store, User } from "lucide-react";
 import { Logo } from "./bits";
 import { useApp } from "@/lib/app-state";
 import { townshipsQuery } from "@/lib/queries";
@@ -116,7 +116,7 @@ function AccountMenu() {
         <DropdownMenuItem asChild><Link to="/account">{t("account.title")}</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/orders">{t("orders.title")}</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/messages">{t("chat.title")}<Dot n={counts.messages} /></Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link to="/merchant">{t("nav.merchant")}<Dot n={counts.shopMessages + counts.newOrders} /></Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/merchant" search={{ tab: undefined }}>{t("nav.merchant")}<Dot n={counts.shopMessages + counts.newOrders} /></Link></DropdownMenuItem>
         <SoundToggle />
         {roles.includes("admin") && <DropdownMenuItem asChild><Link to="/admin">{t("nav.admin")}</Link></DropdownMenuItem>}
         <DropdownMenuSeparator />
@@ -149,6 +149,19 @@ function CartLink() {
   );
 }
 
+function MyShopLink() {
+  const { roles, t } = useApp();
+  const c = useUnreadCounts();
+  if (!roles.includes("merchant")) return null;
+  const n = c.shopMessages + c.newOrders;
+  return (
+    <Link to="/merchant" search={{ tab: undefined }} className="relative hidden h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 md:inline-flex">
+      <Store className="size-4" />{t("nav.my_shop")}
+      {n > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">{n}</span>}
+    </Link>
+  );
+}
+
 export function Header() {
   const { t } = useApp();
   return (
@@ -160,6 +173,7 @@ export function Header() {
           <Link to="/categories" className="hidden h-9 items-center rounded-md px-3 text-sm font-medium hover:bg-accent lg:inline-flex">
             {t("nav.categories")}
           </Link>
+          <MyShopLink />
           <span className="mx-1 hidden h-6 w-px bg-border sm:block" />
           <LangSwitch className="hidden sm:inline-flex" />
           <span className="hidden md:inline-flex"><AccountMenu /></span>
@@ -175,7 +189,8 @@ export function Header() {
 }
 
 export function BottomNav() {
-  const { t, cart } = useApp();
+  const { t, cart, roles } = useApp();
+  const isOwner = roles.includes("merchant");
   const path = useRouterState({ select: (s) => s.location.pathname });
   const n = cart.reduce((s, l) => s + l.quantity, 0);
   const c = useUnreadCounts();
@@ -183,10 +198,12 @@ export function BottomNav() {
   const items = [
     { to: "/", label: t("nav.home"), icon: Home, active: path === "/" },
     { to: "/categories", label: t("nav.categories"), icon: LayoutGrid, active: path.startsWith("/categories") || path.startsWith("/c/") },
-    { to: "/orders", label: t("nav.orders"), icon: Receipt, active: path.startsWith("/orders") },
+    isOwner
+      ? { to: "/merchant", label: t("nav.my_shop"), icon: Store, active: path.startsWith("/merchant"), badge: c.shopMessages + c.newOrders }
+      : { to: "/orders", label: t("nav.orders"), icon: Receipt, active: path.startsWith("/orders"), badge: 0 },
     { to: "/cart", label: t("nav.cart"), icon: ShoppingCart, active: path === "/cart" || path === "/checkout", badge: n },
-    { to: "/account", label: t("nav.account"), icon: User, active: path.startsWith("/account") || path === "/auth", badge: alerts },
-  ] as const;
+    { to: "/account", label: t("nav.account"), icon: User, active: path.startsWith("/account") || path === "/auth", badge: isOwner ? c.messages : alerts },
+  ];
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-card md:hidden" style={{ paddingBottom: "max(0.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))" }}>
       <ul className="grid grid-cols-5">
@@ -195,7 +212,7 @@ export function BottomNav() {
             <Link to={it.to} className={cn("relative flex min-h-14 flex-col items-center justify-center gap-0.5 py-1.5 text-xs leading-tight", it.active ? "font-semibold text-primary" : "font-medium text-foreground/70")}>
               <it.icon className="size-[22px]" strokeWidth={it.active ? 2.4 : 2} />
               <span className="line-clamp-1 px-0.5">{it.label}</span>
-              {"badge" in it && it.badge > 0 && (
+              {"badge" in it && (it.badge ?? 0) > 0 && (
                 <span className="absolute right-[22%] top-1 grid min-w-4 place-items-center rounded-full bg-gold px-1 text-[10px] font-bold text-gold-foreground">{it.badge}</span>
               )}
             </Link>

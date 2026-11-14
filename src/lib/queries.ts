@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const SHOP_FIELDS =
   "id, slug, name, description, logo_url, cover_url, township_id, category_id, offers_delivery, offers_pickup, delivery_fee, opening_hours, is_food, is_featured, address, phone, pickup_info, delivery_note";
 export const PRODUCT_FIELDS =
-  "id, shop_id, name, description, price, sale_price, stock, images, category_id, created_at, shops!inner(id, name, slug, status, is_active)";
+  "id, shop_id, name, description, price, sale_price, stock, images, category_id, shop_category_id, created_at, shops!inner(id, name, slug, status, is_active)";
 
 export const townshipsQuery = queryOptions({
   queryKey: ["townships"],
@@ -99,7 +99,21 @@ export const shopQuery = (slug: string) => queryOptions({
   queryFn: async () => {
     const { data, error } = await supabase.from("shops").select(SHOP_FIELDS).eq("slug", slug).maybeSingle();
     if (error) throw error;
-    return data as Shop | null;
+    if (data) return data as Shop;
+    // Renamed shop: old address still works.
+    const { data: old } = await supabase.from("shop_slug_history").select("shop_id").eq("old_slug", slug).maybeSingle();
+    if (!old) return null;
+    const { data: moved } = await supabase.from("shops").select(SHOP_FIELDS).eq("id", old.shop_id).maybeSingle();
+    return (moved as Shop | null) ?? null;
+  },
+});
+export const shopCategoriesQuery = (shopId: string | undefined) => queryOptions({
+  queryKey: ["shop-categories", shopId],
+  enabled: !!shopId,
+  queryFn: async () => {
+    const { data, error } = await supabase.from("shop_categories").select("id, name, sort").eq("shop_id", shopId!).order("sort").order("created_at");
+    if (error) throw error;
+    return data;
   },
 });
 export const shopProductsQuery = (shopId: string | undefined) => queryOptions({
