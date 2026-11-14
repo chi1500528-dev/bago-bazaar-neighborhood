@@ -329,6 +329,7 @@ export type Database = {
           name: string
           price: number
           sale_price: number | null
+          shop_category_id: string | null
           shop_id: string
           stock: number
           updated_at: string
@@ -343,6 +344,7 @@ export type Database = {
           name: string
           price: number
           sale_price?: number | null
+          shop_category_id?: string | null
           shop_id: string
           stock?: number
           updated_at?: string
@@ -357,6 +359,7 @@ export type Database = {
           name?: string
           price?: number
           sale_price?: number | null
+          shop_category_id?: string | null
           shop_id?: string
           stock?: number
           updated_at?: string
@@ -367,6 +370,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_shop_category_id_fkey"
+            columns: ["shop_category_id"]
+            isOneToOne: false
+            referencedRelation: "shop_categories"
             referencedColumns: ["id"]
           },
           {
@@ -463,6 +473,67 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      shop_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          shop_id: string
+          sort: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          shop_id: string
+          sort?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          shop_id?: string
+          sort?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_categories_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shop_slug_history: {
+        Row: {
+          created_at: string
+          old_slug: string
+          shop_id: string
+        }
+        Insert: {
+          created_at?: string
+          old_slug: string
+          shop_id: string
+        }
+        Update: {
+          created_at?: string
+          old_slug?: string
+          shop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_slug_history_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shops: {
         Row: {
