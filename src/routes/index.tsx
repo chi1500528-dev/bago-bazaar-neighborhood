@@ -66,7 +66,7 @@ function Home() {
       <section className="relative mt-4 overflow-hidden rounded-3xl shadow-soft md:mt-5">
         <img src={heroMarket} alt="" width={1792} height={1024} fetchPriority="high"
           className="absolute inset-0 size-full object-cover object-[70%_center]" />
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/55 to-primary/0 md:bg-gradient-to-r md:from-primary/90 md:via-primary/50 md:to-primary/0" />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-foreground/75 via-foreground/30 to-transparent md:bg-gradient-to-r md:from-foreground/65 md:via-foreground/25 md:to-transparent" />
         <div className="relative flex aspect-[4/3.6] max-h-[360px] min-h-[290px] w-full flex-col justify-end gap-2.5 p-5 sm:p-7 md:aspect-[21/8] md:max-h-[420px] md:justify-center md:gap-4 md:p-12">
           <span className="flex items-center gap-2 text-xs font-medium text-gold md:text-sm"><span className="h-px w-6 bg-gold" />{t("hero.eyebrow")}</span>
           <h1 className="max-w-[560px] md:max-w-[680px] font-display text-[1.45rem] font-semibold leading-[1.45] text-primary-foreground sm:text-[1.75rem] md:text-[2.75rem]">{t("hero.title")}</h1>
