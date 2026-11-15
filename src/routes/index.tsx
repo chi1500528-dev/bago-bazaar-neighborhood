@@ -39,7 +39,14 @@ function SeeAll({ to }: { to: "/categories" | "/search" }) {
 }
 
 function Home() {
-  const { t, pick } = useApp();
+  const { t, pick, roles } = useApp();
+  const navigate = useNavigate();
+  // Shop owners land on their shop once per visit; "Home" afterwards shows the market.
+  useEffect(() => {
+    if (!roles.includes("merchant") || sessionStorage.getItem("bm-owner-landed")) return;
+    sessionStorage.setItem("bm-owner-landed", "1");
+    navigate({ to: "/merchant", search: {}, replace: true });
+  }, [roles, navigate]);
   const { add, dialog } = useAddToCart();
   const cats = useQuery(categoriesQuery);
   const top = (cats.data ?? []).filter((c) => !c.parent_id);

@@ -37,7 +37,7 @@ export const Route = createFileRoute("/merchant")({
     ],
   }),
   validateSearch: (s: Record<string, unknown>): { tab?: Tab } =>
-    TABS.includes(s.tab as Tab) ? { tab: s.tab as Tab } : {},
+    TABS.includes(s["tab"] as Tab) ? { tab: s["tab"] as Tab } : {},
   component: () => <RequireAuth><Merchant /></RequireAuth>,
 });
 
@@ -104,7 +104,7 @@ function Dash({ s }: { s: ShopRow }) {
       ) : (
         <div>
           <div className="mb-4 flex items-center gap-2">
-            <Link to="/merchant" search={{ tab: undefined }} className="text-sm text-muted-foreground hover:text-primary">{t("nav.my_shop")}</Link>
+            <Link to="/merchant" search={{}} className="text-sm text-muted-foreground hover:text-primary">{t("nav.my_shop")}</Link>
             <ChevronRight className="size-4 text-muted-foreground" />
             <h2 className="font-semibold">{current.label}</h2>
           </div>

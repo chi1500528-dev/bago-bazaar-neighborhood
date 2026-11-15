@@ -116,7 +116,7 @@ function AccountMenu() {
         <DropdownMenuItem asChild><Link to="/account">{t("account.title")}</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/orders">{t("orders.title")}</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/messages">{t("chat.title")}<Dot n={counts.messages} /></Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link to="/merchant" search={{ tab: undefined }}>{t("nav.merchant")}<Dot n={counts.shopMessages + counts.newOrders} /></Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/merchant" search={{}}>{t("nav.merchant")}<Dot n={counts.shopMessages + counts.newOrders} /></Link></DropdownMenuItem>
         <SoundToggle />
         {roles.includes("admin") && <DropdownMenuItem asChild><Link to="/admin">{t("nav.admin")}</Link></DropdownMenuItem>}
         <DropdownMenuSeparator />
@@ -155,7 +155,7 @@ function MyShopLink() {
   if (!roles.includes("merchant")) return null;
   const n = c.shopMessages + c.newOrders;
   return (
-    <Link to="/merchant" search={{ tab: undefined }} className="relative hidden h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 md:inline-flex">
+    <Link to="/merchant" search={{}} className="relative hidden h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 md:inline-flex">
       <Store className="size-4" />{t("nav.my_shop")}
       {n > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">{n}</span>}
     </Link>
