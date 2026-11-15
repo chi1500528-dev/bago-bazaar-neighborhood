@@ -45,7 +45,7 @@ function Home() {
   useEffect(() => {
     if (!roles.includes("merchant") || sessionStorage.getItem("bm-owner-landed")) return;
     sessionStorage.setItem("bm-owner-landed", "1");
-    navigate({ to: "/merchant", search: { tab: undefined }, replace: true });
+    navigate({ to: "/merchant", search: {}, replace: true });
   }, [roles, navigate]);
   const { add, dialog } = useAddToCart();
   const cats = useQuery(categoriesQuery);
