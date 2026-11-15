@@ -38,7 +38,7 @@ export type Shop = {
 };
 export type Product = {
   id: string; shop_id: string; name: string; description: string | null; price: number; sale_price: number | null;
-  stock: number; images: string[]; category_id: string | null; created_at: string;
+  stock: number; images: string[]; category_id: string | null; shop_category_id?: string | null; created_at: string;
   shops: { id: string; name: string; slug: string };
 };
 
