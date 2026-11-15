@@ -22,3 +22,5 @@
 - Native Android/iOS apps are a Capacitor shell (`capacitor.config.ts`) loading the published site via `server.url` — the app is SSR and needs the live server + relay; see `docs/capacitor.md`.
 - Cloudflare Workers is the primary self-deploy target via the default (preset-free) build; steps in `docs/cloudflare.md` — serves Myanmar from Bangkok/Singapore edges.
 - Public pages (home, shop, product, category) pre-fill catalog data in route loaders via shared queryOptions in `src/lib/queries.ts` + `warm()` (time-capped) and SSR query hydration — first paint shows products without extra round-trips on slow Myanmar networks.
+- Shop owners (`merchant` role) are sent to `/merchant` once per browser session from `/`; the dashboard uses `?tab=` sub-pages, not separate route files — keeps one owner screen simple.
+- Shop-owned categories live in `shop_categories` (marketplace `categories` stay admin-only); renamed shops get a new slug and old slugs resolve via `shop_slug_history` (trigger-managed).
