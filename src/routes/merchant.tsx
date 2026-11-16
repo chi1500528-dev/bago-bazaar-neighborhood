@@ -1,14 +1,14 @@
 import { ChatInbox } from "@/components/site/chat";
 import { useUnreadCounts } from "@/lib/notify";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight, MessageCircle, Package, Receipt, Settings2, Eye, Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { ChevronRight, MessageCircle, Package, Receipt, Settings2, Eye, Plus, Pencil, Trash2, Check, X, AlertTriangle, ShoppingBag } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
 import { categoriesQuery, shopCategoriesQuery, townshipsQuery } from "@/lib/queries";
-import { formatMMK, slugify } from "@/lib/domain/rules";
+import { formatMMK, slugify, isLowStock, LOW_STOCK_AT } from "@/lib/domain/rules";
 import { MediaImg, StatusBadge, EmptyState } from "@/components/site/bits";
 import { RequireAuth } from "@/components/site/shell";
 import { ImageField } from "@/components/site/upload";
@@ -43,28 +43,89 @@ export const Route = createFileRoute("/merchant")({
 
 function Merchant() {
   const { t, session } = useApp();
-  const shop = useQuery({
-    queryKey: ["my-shop", session!.user.id],
+  const uid = session!.user.id;
+  const shops = useQuery({
+    queryKey: ["my-shops", uid],
     queryFn: async () => {
-      const { data, error } = await supabase.from("shops").select("*").eq("owner_id", session!.user.id).order("created_at").limit(1).maybeSingle();
+      const { data, error } = await supabase.from("shops").select("*").eq("owner_id", uid).order("created_at");
       if (error) throw error;
       return data;
     },
   });
-  if (shop.isLoading) return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
-  if (!shop.data)
+  const [picked, setPicked] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  useEffect(() => { setPicked(localStorage.getItem(`bm.shop.${uid}`)); }, [uid]);
+  const pick = (id: string) => { setPicked(id); setCreating(false); localStorage.setItem(`bm.shop.${uid}`, id); };
+  if (shops.isLoading) return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
+  const list = shops.data ?? [];
+  if (list.length === 0 || creating)
     return (
       <div className="mx-auto max-w-2xl py-6">
+        {creating && <button onClick={() => setCreating(false)} className="mb-3 text-sm text-muted-foreground hover:text-primary">← {t("nav.my_shop")}</button>}
         <h1 className="text-xl font-bold">{t("merchant.create")}</h1>
         <p className="mb-5 text-sm text-muted-foreground">{t("merchant.create_sub")}</p>
-        <ShopForm />
+        <ShopForm onCreated={(id) => pick(id)} />
       </div>
     );
-  const s = shop.data;
-  return <Dash s={s} />;
+  const s = list.find((x) => x.id === picked) ?? list[0]!;
+  return <Dash s={s} shops={list} onPick={pick} onNew={() => setCreating(true)} />;
 }
 
-function Dash({ s }: { s: ShopRow }) {
+function ShopSwitcher({ s, shops, onPick, onNew }: { s: ShopRow; shops: ShopRow[]; onPick: (id: string) => void; onNew: () => void }) {
+  const { t } = useApp();
+  return (
+    <div className="mb-4 flex flex-wrap items-center gap-2">
+      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("merchant.switch_shop")}</span>
+      {shops.map((x) => (
+        <button key={x.id} onClick={() => onPick(x.id)} aria-pressed={x.id === s.id}
+          className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-sm transition ${x.id === s.id ? "border-primary bg-primary/10 font-medium text-primary" : "bg-card hover:border-primary/40"}`}>
+          <span className="size-6 overflow-hidden rounded-full bg-muted"><MediaImg path={x.logo_url} alt="" className="size-full" /></span>{x.name}
+        </button>
+      ))}
+      <button onClick={onNew} className="flex items-center gap-1 rounded-full border border-dashed px-3 py-1 text-sm text-muted-foreground hover:text-primary"><Plus className="size-3.5" />{t("merchant.new_shop")}</button>
+    </div>
+  );
+}
+
+function TodaySummary({ shopId, unread }: { shopId: string; unread: number }) {
+  const { t } = useApp();
+  const q = useQuery({
+    queryKey: ["shop-today", shopId],
+    refetchInterval: 30000,
+    queryFn: async () => {
+      const start = new Date(); start.setHours(0, 0, 0, 0);
+      const [today, pending, prods] = await Promise.all([
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("shop_id", shopId).gte("created_at", start.toISOString()),
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("shop_id", shopId).eq("status", "pending"),
+        supabase.from("products").select("stock, is_active").eq("shop_id", shopId).eq("is_active", true).lte("stock", LOW_STOCK_AT),
+      ]);
+      return { today: today.count ?? 0, pending: pending.count ?? 0, low: (prods.data ?? []).filter(isLowStock).length };
+    },
+  });
+  const d = q.data;
+  const cards = [
+    { label: t("merchant.today_orders"), n: d?.today, tab: "orders" as const, icon: Receipt },
+    { label: t("merchant.pending_orders"), n: d?.pending, tab: "orders" as const, icon: Receipt, hot: (d?.pending ?? 0) > 0 },
+    { label: t("merchant.unread"), n: unread, tab: "chat" as const, icon: MessageCircle, hot: unread > 0 },
+    { label: t("merchant.low_stock"), sub: t("merchant.low_stock_hint"), n: d?.low, tab: "products" as const, icon: AlertTriangle, hot: (d?.low ?? 0) > 0 },
+  ];
+  return (
+    <section className="mb-5" aria-label={t("merchant.today")}>
+      <h2 className="mb-2 text-sm font-semibold text-muted-foreground">{t("merchant.today")}</h2>
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+        {cards.map((c) => (
+          <Link key={c.label} to="/merchant" search={{ tab: c.tab }} className={`surface p-3 transition hover:border-primary/40 ${c.hot ? "border-gold/60 bg-gold-soft/40" : ""}`}>
+            <c.icon className="mb-1 size-4 text-primary" />
+            <p className="text-2xl font-semibold tabular-nums">{c.n ?? "–"}</p>
+            <p className="text-xs leading-tight text-muted-foreground">{c.label}{c.sub && <span className="block opacity-80">{c.sub}</span>}</p>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Dash({ s, shops, onPick, onNew }: { s: ShopRow; shops: ShopRow[]; onPick: (id: string) => void; onNew: () => void }) {
   const { t } = useApp();
   const { tab } = Route.useSearch();
   const alerts = useUnreadCounts();
@@ -77,6 +138,7 @@ function Dash({ s }: { s: ShopRow }) {
   const current = tiles.find((x) => x.id === tab);
   return (
     <div className="mx-auto max-w-4xl py-6">
+      {shops.length > 1 && <ShopSwitcher s={s} shops={shops} onPick={onPick} onNew={onNew} />}
       <div className="surface mb-5 flex flex-wrap items-center gap-4 p-5">
         <div className="size-14 shrink-0 overflow-hidden rounded-xl border bg-muted"><MediaImg path={s.logo_url} alt="" className="size-full" /></div>
         <div className="min-w-0 flex-1">
@@ -84,11 +146,16 @@ function Dash({ s }: { s: ShopRow }) {
           <h1 className="truncate font-display text-xl font-semibold md:text-2xl">{s.name}</h1>
           <div className="mt-1"><StatusBadge status={s.status} kind="shop" /></div>
         </div>
-        {s.status === "approved" && (
-          <Button asChild variant="outline" size="sm" className="rounded-full"><Link to="/shops/$slug" params={{ slug: s.slug }}><Eye className="size-4" />{t("merchant.view_customer")}</Link></Button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {s.status === "approved" && (
+            <Button asChild variant="outline" size="sm" className="rounded-full"><Link to="/shops/$slug" params={{ slug: s.slug }}><Eye className="size-4" />{t("merchant.view_customer")}</Link></Button>
+          )}
+          <Button asChild variant="ghost" size="sm" className="rounded-full"><Link to="/search"><ShoppingBag className="size-4" />{t("merchant.shop_market")}</Link></Button>
+          {shops.length === 1 && <Button variant="ghost" size="sm" className="rounded-full" onClick={onNew}><Plus className="size-4" />{t("merchant.new_shop")}</Button>}
+        </div>
       </div>
       {s.status === "pending" && <p className="mb-4 rounded-md bg-gold-soft p-3 text-sm text-gold-foreground">{t("merchant.pending_note")}</p>}
+      {!current && <TodaySummary shopId={s.id} unread={alerts.shopMessages} />}
       {!current ? (
         <div className="grid gap-3 sm:grid-cols-2">
           {tiles.map((x) => (
@@ -118,7 +185,7 @@ function Dash({ s }: { s: ShopRow }) {
   );
 }
 
-function ShopForm({ shop }: { shop?: ShopRow }) {
+function ShopForm({ shop, onCreated }: { shop?: ShopRow; onCreated?: (id: string) => void }) {
   const { t, pick, session } = useApp();
   const qc = useQueryClient();
   const cats = useQuery(categoriesQuery);
@@ -142,9 +209,14 @@ function ShopForm({ shop }: { shop?: ShopRow }) {
       delivery_note: f.delivery_note || null, pickup_info: f.pickup_info || null, is_food: f.is_food,
       logo_url: f.logo[0] ?? null, cover_url: f.cover[0] ?? null,
     };
-    const { error } = shop
-      ? await supabase.from("shops").update(payload.name !== shop.name ? { ...payload, slug: slugify(payload.name) } : payload).eq("id", shop.id)
-      : await supabase.from("shops").insert({ ...payload, owner_id: session!.user.id, slug: slugify(f.name) });
+    let error;
+    if (shop) {
+      ({ error } = await supabase.from("shops").update(payload.name !== shop.name ? { ...payload, slug: slugify(payload.name) } : payload).eq("id", shop.id));
+    } else {
+      const res = await supabase.from("shops").insert({ ...payload, owner_id: session!.user.id, slug: slugify(f.name) }).select("id").single();
+      error = res.error;
+      if (res.data) onCreated?.(res.data.id);
+    }
     setBusy(false);
     if (error) { toast.error(t("err.generic")); return; }
     toast.success(t("account.saved"));

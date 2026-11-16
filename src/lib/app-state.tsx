@@ -50,6 +50,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTownshipState(readLS<string | null>("bm.township", null));
     setCart(readLS<CartLine[]>("bm.cart", []));
     setHydrated(true);
+    // "Remember me" off: end the session when the browser was closed (sessionStorage gone).
+    if (localStorage.getItem("bm.no-remember") && !sessionStorage.getItem("bm.alive")) {
+      localStorage.removeItem("bm.no-remember");
+      void supabase.auth.signOut({ scope: "local" });
+    }
+    sessionStorage.setItem("bm.alive", "1");
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setAuthReady(true);

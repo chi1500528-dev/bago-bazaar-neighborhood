@@ -93,3 +93,14 @@ export function slugify(s: string) {
     .replace(/^-|-$/g, "");
   return `${base || "shop"}-${Math.random().toString(36).slice(2, 7)}`;
 }
+
+/** New passwords: at least 8 characters and at least one digit. */
+export function passwordOk(pw: string) {
+  return pw.length >= 8 && /\d/.test(pw);
+}
+
+/** Products with this many or fewer left (and still on sale) count as low stock. */
+export const LOW_STOCK_AT = 5;
+export function isLowStock(p: { stock: number; is_active: boolean }) {
+  return p.is_active && p.stock <= LOW_STOCK_AT;
+}

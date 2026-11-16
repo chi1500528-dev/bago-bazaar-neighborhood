@@ -36,3 +36,17 @@ describe("order status steps", () => {
     expect(customerCanCancel("confirmed")).toBe(false);
   });
 });
+
+import { passwordOk as _pwOk, isLowStock as _low } from "@/lib/domain/rules";
+describe("account & stock rules", () => {
+  it("password needs 8+ chars and a number", () => {
+    expect(_pwOk("abcdefg1")).toBe(true);
+    expect(_pwOk("abc1")).toBe(false);
+    expect(_pwOk("abcdefgh")).toBe(false);
+  });
+  it("low stock is 5 or fewer on active products", () => {
+    expect(_low({ stock: 5, is_active: true })).toBe(true);
+    expect(_low({ stock: 6, is_active: true })).toBe(false);
+    expect(_low({ stock: 0, is_active: false })).toBe(false);
+  });
+});

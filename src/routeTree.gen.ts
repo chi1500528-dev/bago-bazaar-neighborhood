@@ -22,6 +22,7 @@ import { Route as HelpRouteImport } from './routes/help'
 import { Route as MerchantRouteImport } from './routes/merchant'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -97,6 +98,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/merchant': typeof MerchantRoute
   '/messages': typeof MessagesRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/merchant': typeof MerchantRoute
   '/messages': typeof MessagesRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/merchant': typeof MerchantRoute
   '/messages': typeof MessagesRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
@@ -232,6 +241,7 @@ export interface FileRouteTypes {
     | '/merchant'
     | '/messages'
     | '/privacy'
+    | '/reset-password'
     | '/search'
     | '/sitemap.xml'
     | '/terms'
@@ -256,6 +266,7 @@ export interface FileRouteTypes {
     | '/merchant'
     | '/messages'
     | '/privacy'
+    | '/reset-password'
     | '/search'
     | '/sitemap.xml'
     | '/terms'
@@ -280,6 +291,7 @@ export interface FileRouteTypes {
     | '/merchant'
     | '/messages'
     | '/privacy'
+    | '/reset-password'
     | '/search'
     | '/sitemap.xml'
     | '/terms'
@@ -305,6 +317,7 @@ export interface RootRouteChildren {
   MerchantRoute: typeof MerchantRoute
   MessagesRoute: typeof MessagesRoute
   PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
@@ -409,6 +422,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
@@ -489,6 +509,7 @@ const rootRouteChildren: RootRouteChildren = {
   MerchantRoute: MerchantRoute,
   MessagesRoute: MessagesRoute,
   PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
