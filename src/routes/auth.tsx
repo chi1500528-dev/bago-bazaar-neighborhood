@@ -96,6 +96,7 @@ function SignIn({ onForgot }: { onForgot: () => void }) {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
+    sessionStorage.removeItem("bm-owner-landed"); // owners land on My Shop right after signing in
     if (remember) { localStorage.setItem("bm.remember-email", email.trim()); localStorage.removeItem("bm.no-remember"); }
     else { localStorage.removeItem("bm.remember-email"); localStorage.setItem("bm.no-remember", "1"); }
   };
