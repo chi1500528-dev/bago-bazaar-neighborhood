@@ -26,6 +26,7 @@ Unchanged and protected: login, Resend email codes, the Supabase relay, the Goog
 - New rule: a product needs a **price above 0 before it can be shown to customers**. It may be saved hidden with 0, but "Show to customers" is blocked — enforced in the database, not just on screen.
 - Templates and CSV rows missing required details stay **unsaved on screen** until the owner fills them. No empty or fake-price products are stored.
 - Imported products always start **hidden from customers**.
+- **Existing products check (done read-only today):** the shop database has 2 products, and none are priced 0 (shown or hidden). Before the new rule is added, the same read-only check runs again. If any shown product is priced 0 at that time, nothing is changed automatically — the rule only applies when a product is next saved or shown, and the owner sees a "Set a price to keep this product visible" notice in their Products list. No product is hidden, deleted or edited by the app.
 
 ## 5. Milestone 1 — Product onboarding
 Builds:
@@ -43,18 +44,22 @@ Builds:
   - Same barcode or SKU twice in the file -> both rows flagged.
   - Row with no barcode and no SKU -> treated as new; if a product with the same name exists, a "possible duplicate" warning lets the owner Add anyway or Skip.
 - **Starter catalog sample**: small list (section 7), only after names are checked. Tick items, fill price + stock on the same screen, save. Incomplete picks are not saved.
+- **Single-product form: invalid sale price is now an error, not silently removed.** If the sale price is not lower than the price (or not a number), the form shows "Sale price must be lower than price" next to the box and Save waits until the owner fixes or clears it. The database keeps refusing invalid sale prices as a safety net instead of quietly dropping them.
+- **Starting stock from imports (no stock history yet):** Milestone 1 has no stock history. Each import saves a simple import record (date, who, file name, rows added/updated) so the owner can see what was imported. When stock history arrives in Milestone 2, each product's current stock is recorded once as its "starting balance", so history begins from a correct number. Milestone 1 does not promise per-product stock history.
 - Phone-friendly layout for these screens.
 
 You can review in Preview:
 1. Add a product with both SKU and barcode; search by each.
 2. Try to show a 0-price product to customers and see it blocked.
-3. Use "Draft description", edit the text, save.
-4. Download the example CSV.
-5. Import a test file with good and bad rows (missing price, bad sale price, duplicate barcode) and see each error; fix one on screen and save.
-6. Check imported products are hidden from customers.
-7. Re-import with changed price/stock; see the old vs new preview; confirm only what you tick.
-8. Try a file over 500 rows and see the limit message.
-9. Pick sample templates, fill price + stock, save; untouched picks are not saved.
+3. Enter a sale price higher than the price and see the error; fix it and save.
+4. Use "Draft description", edit the text, save.
+5. Download the example CSV.
+6. Import a test file with good and bad rows (missing price, bad sale price, duplicate barcode) and see each error; fix one on screen and save.
+7. Check imported products are hidden from customers.
+8. Re-import with changed price/stock; see the old vs new preview; confirm only what you tick.
+9. Try a file over 500 rows and see the limit message.
+10. Pick sample templates, fill price + stock, save; untouched picks are not saved.
+11. Open the import record list and see each import's summary.
 
 ## 6. Milestone 2 — Minimal in-store checkout + shared stock
 Builds:
@@ -65,7 +70,7 @@ Builds:
 - Sale numbers per shop (#0001, #0002…), unique and never reused, even after a void.
 - Sales list + today's total and totals per payment method (labelled revenue, not profit).
 - Void a sale with a reason -> stock returns once.
-- Stock history for every change (online order, cancel, in-store sale, void, manual edit, import).
+- Stock history for every change from this point on (online order, cancel, in-store sale, void, manual edit, import). On launch, each product's current stock is saved once as a "starting balance" entry.
 - Same stock is shared by online orders and in-store sales.
 
 You can review in Preview: sell a test item and see stock drop on the product and shop page; print the receipt; void it and see stock return and the number not reused; try an out-of-stock item and see it blocked; tap "Complete" twice and get one sale; place an online order and see it in stock history.
@@ -134,7 +139,8 @@ Your decisions recorded: 500-row limit; imports hidden by default; per-shop sale
 Still open: the checked Burmese names. Milestone 1 can be built without them — the template screen stays empty (or shows a "coming soon" note) until you send the approved list.
 
 ## Technical notes
-- `products.sku`, `products.barcode` (text, null) with partial unique indexes per shop; trigger rejects `is_active = true` when `price <= 0`.
+- `products.sku`, `products.barcode` (text, null) with partial unique indexes per shop. Pre-check query for `is_active and price <= 0`; trigger rejects showing a product with `price <= 0` only on insert/update (existing rows untouched). `products_validate` changed to raise an error for an invalid sale price instead of nulling it.
+- `product_imports` (shop, user, file name, added/updated counts), owner-only RLS.
 - `product_templates` (admin write, authenticated read), created empty. Template picks held in React state until valid; insert via existing products RLS.
 - CSV parsed in browser (papaparse) + zod; diff preview client-side; batched inserts/updates under RLS. Description draft is a pure function in `src/lib/domain` with tests.
-- Milestone 2: `pos_sales`, `pos_sale_items`, `stock_movements`, `pos_sale_counters`; RPCs `pos_create_sale(..., idempotency_key)`, `pos_void_sale(id, reason)`; `place_order` / `update_order_status` log movements. Rules mirrored in `src/lib/domain/rules.ts` with tests; labels in `dict.ts`; receipt via `window.print()`.
+- Milestone 2: `pos_sales`, `pos_sale_items`, `stock_movements`, `pos_sale_counters`; one-time opening-balance rows in `stock_movements` from current stock; RPCs `pos_create_sale(..., idempotency_key)`, `pos_void_sale(id, reason)`; `place_order` / `update_order_status` log movements. Rules mirrored in `src/lib/domain/rules.ts` with tests; labels in `dict.ts`; receipt via `window.print()`.
