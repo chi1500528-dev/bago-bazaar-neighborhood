@@ -12,6 +12,9 @@ import { formatMMK, slugify, isLowStock, LOW_STOCK_AT } from "@/lib/domain/rules
 import { MediaImg, StatusBadge, EmptyState } from "@/components/site/bits";
 import { RequireAuth } from "@/components/site/shell";
 import { ImageField } from "@/components/site/upload";
+import { CsvImport, ImportHistory, TemplatePicker } from "@/components/site/product-import";
+import { validateProduct, draftDescription, type DescDetails } from "@/lib/domain/products";
+import type { TKey } from "@/lib/i18n/dict";
 import { OrderDetail } from "@/components/site/order-detail";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -256,6 +259,8 @@ function ShopForm({ shop, onCreated }: { shop?: ShopRow; onCreated?: (id: string
 function MerchantProducts({ shop }: { shop: ShopRow }) {
   const { t, lang } = useApp();
   const [editing, setEditing] = useState<ProductRow | "new" | null>(null);
+  const [mode, setMode] = useState<"csv" | "tpl" | null>(null);
+  const [search, setSearch] = useState("");
   const q = useQuery({
     queryKey: ["my-products", shop.id],
     queryFn: async () => {
@@ -267,15 +272,23 @@ function MerchantProducts({ shop }: { shop: ShopRow }) {
   return (
     <div>
       <ShopCategories shopId={shop.id} />
-      <Button onClick={() => setEditing("new")} className="mb-4">+ {t("merchant.new_product")}</Button>
+      <ImportHistory shopId={shop.id} />
+      <p className="mb-2 text-sm font-semibold">{t("merchant.add_products")}</p>
+      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <Button className="h-11" onClick={() => setEditing("new")}><Plus className="size-4" />{t("merchant.add_one")}</Button>
+        <Button className="h-11" variant="outline" onClick={() => setMode("tpl")}>{t("merchant.from_catalog")}</Button>
+        <Button className="h-11" variant="outline" onClick={() => setMode("csv")}>{t("merchant.import_csv")}</Button>
+      </div>
+      <Input className="mb-3 h-11" placeholder={t("merchant.search_products")} value={search} onChange={(e) => setSearch(e.target.value)} />
       {(q.data ?? []).length === 0 ? <EmptyState text={t("product.empty")} /> : (
         <ul className="divide-y rounded-lg border bg-card">
-          {q.data!.map((p) => (
+          {q.data!.filter((p) => { const n = search.trim().toLowerCase(); return !n || p.name.toLowerCase().includes(n) || (p.sku ?? "").toLowerCase().includes(n) || (p.barcode ?? "") === search.trim() || (p.barcode ?? "").includes(n); }).map((p) => (
             <li key={p.id} className="flex items-center gap-3 p-3">
               <MediaImg path={p.images[0]} alt={p.name} className="size-14 shrink-0 rounded" />
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-1 font-medium">{p.name}</p>
-                <p className="text-xs text-muted-foreground">{formatMMK(p.sale_price ?? p.price, lang)} · {t("merchant.stock")}: {p.stock} · {p.is_active ? t("common.active") : t("common.inactive")}</p>
+                <p className="text-xs text-muted-foreground">{formatMMK(p.sale_price ?? p.price, lang)} · {t("merchant.stock")}: {p.stock} · {p.is_active ? t("common.active") : t("merchant.hidden")}{p.sku ? ` · ${p.sku}` : ""}</p>
+                {p.is_active && p.price <= 0 && <p className="text-xs text-destructive">{t("merchant.zero_notice")}</p>}
               </div>
               <Button size="sm" variant="outline" onClick={() => setEditing(p)}>{t("common.edit")}</Button>
             </li>
@@ -286,6 +299,13 @@ function MerchantProducts({ shop }: { shop: ShopRow }) {
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing === "new" ? t("merchant.new_product") : t("common.edit")}</DialogTitle></DialogHeader>
           {editing && <ProductForm shopId={shop.id} product={editing === "new" ? undefined : editing} onDone={() => setEditing(null)} />}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!mode} onOpenChange={(o) => !o && setMode(null)}>
+        <DialogContent className="max-h-[92vh] max-w-2xl overflow-y-auto">
+          <DialogHeader><DialogTitle>{mode === "csv" ? t("imp.title") : t("tpl.title")}</DialogTitle></DialogHeader>
+          {mode === "csv" && <CsvImport shopId={shop.id} onDone={() => setMode(null)} />}
+          {mode === "tpl" && <TemplatePicker shopId={shop.id} onDone={() => setMode(null)} />}
         </DialogContent>
       </Dialog>
     </div>
@@ -301,24 +321,32 @@ function ProductForm({ shopId, product, onDone }: { shopId: string; product?: Pr
     price: String(product?.price ?? ""), sale_price: product?.sale_price != null ? String(product.sale_price) : "",
     shop_category_id: product?.shop_category_id ?? "",
     stock: String(product?.stock ?? 0), is_active: product?.is_active ?? true, images: product?.images ?? [],
+    sku: product?.sku ?? "", barcode: product?.barcode ?? "",
   });
+  const [details, setDetails] = useState<DescDetails>({});
+  const [showDesc, setShowDesc] = useState(false);
+  const errs = validateProduct(f);
   const [busy, setBusy] = useState(false);
   const all = cats.data ?? [];
   const own = useQuery(shopCategoriesQuery(shopId));
   const save = async () => {
-    if (!f.name.trim() || !f.price) { toast.error(t("checkout.required")); return; }
+    if (errs.length) { toast.error(t(`pe.${errs[0]}` as TKey)); return; }
     setBusy(true);
     const payload = {
       name: f.name.trim(), description: f.description || null, category_id: f.category_id || null,
       shop_category_id: f.shop_category_id || null,
       price: Number(f.price), sale_price: f.sale_price ? Number(f.sale_price) : null, stock: Number(f.stock) || 0,
-      is_active: f.is_active, images: f.images,
+      is_active: f.is_active, images: f.images, sku: f.sku.trim() || null, barcode: f.barcode.trim() || null,
     };
     const { error } = product
       ? await supabase.from("products").update(payload).eq("id", product.id)
       : await supabase.from("products").insert({ ...payload, shop_id: shopId });
     setBusy(false);
-    if (error) { toast.error(t("err.generic")); return; }
+    if (error) {
+      const m = error.message ?? "";
+      toast.error(error.code === "23505" ? t("pe.code_taken") : m.includes("INVALID_SALE_PRICE") ? t("pe.sale_invalid") : m.includes("ZERO_PRICE_ACTIVE") ? t("pe.zero_price_visible") : t("err.generic"));
+      return;
+    }
     qc.invalidateQueries();
     onDone();
   };
@@ -326,7 +354,18 @@ function ProductForm({ shopId, product, onDone }: { shopId: string; product?: Pr
   return (
     <div className="space-y-3">
       <div className="space-y-1.5"><Label>{t("merchant.product_name")}</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
-      <div className="space-y-1.5"><Label>{t("merchant.description")}</Label><Textarea rows={3} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></div>
+      <div className="space-y-1.5"><Label>{t("merchant.description")}</Label><Textarea rows={3} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
+        <button type="button" onClick={() => setShowDesc(!showDesc)} className="text-sm font-medium text-primary">{t("desc.title")}</button>
+        {showDesc && <div className="space-y-2 rounded-md border p-3">
+          <p className="text-xs text-muted-foreground">{t("desc.hint")}</p>
+          <div className="grid grid-cols-2 gap-2">
+            {(["brand", "model", "size", "color", "material", "condition"] as const).map((k) => (
+              <Input key={k} placeholder={t(`desc.${k}` as TKey)} value={details[k] ?? ""} onChange={(e) => setDetails({ ...details, [k]: e.target.value })} className="h-10" />
+            ))}
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => { const d = draftDescription(details); if (d) setF({ ...f, description: d }); }}>{t("desc.make")}</Button>
+        </div>}
+      </div>
       <div className="space-y-1.5"><Label>{t("merchant.category")}</Label>
         <select className="h-9 w-full rounded-md border bg-card px-2 text-sm" value={f.category_id} onChange={(e) => setF({ ...f, category_id: e.target.value })}>
           <option value="">—</option>
@@ -344,8 +383,13 @@ function ProductForm({ shopId, product, onDone }: { shopId: string; product?: Pr
         <div className="space-y-1.5"><Label className="text-xs">{t("merchant.sale_price")}</Label><Input inputMode="numeric" value={f.sale_price} onChange={num("sale_price")} /></div>
         <div className="space-y-1.5"><Label className="text-xs">{t("merchant.stock")}</Label><Input inputMode="numeric" value={f.stock} onChange={num("stock")} /></div>
       </div>
+      {errs.filter((e) => e !== "name_required" && e !== "price_required").map((e) => <p key={e} className="text-sm text-destructive">{t(`pe.${e}` as TKey)}</p>)}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1.5"><Label className="text-xs">{t("merchant.sku")}</Label><Input value={f.sku} onChange={(e) => setF({ ...f, sku: e.target.value })} /></div>
+        <div className="space-y-1.5"><Label className="text-xs">{t("merchant.barcode")}</Label><Input inputMode="numeric" value={f.barcode} onChange={(e) => setF({ ...f, barcode: e.target.value })} /></div>
+      </div>
       <ImageField multiple label={t("merchant.images")} value={f.images} onChange={(v) => setF({ ...f, images: v })} />
-      <label className="flex items-center gap-2 text-sm"><Switch checked={f.is_active} onCheckedChange={(v) => setF({ ...f, is_active: v })} />{f.is_active ? t("common.active") : t("common.inactive")}</label>
+      <label className="flex items-center gap-2 text-sm"><Switch checked={f.is_active} onCheckedChange={(v) => setF({ ...f, is_active: v })} />{f.is_active ? t("common.active") : t("merchant.hidden")}</label>
       <Button onClick={save} disabled={busy} className="w-full">{t("common.save")}</Button>
     </div>
   );

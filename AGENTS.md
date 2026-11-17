@@ -24,3 +24,4 @@
 - Public pages (home, shop, product, category) pre-fill catalog data in route loaders via shared queryOptions in `src/lib/queries.ts` + `warm()` (time-capped) and SSR query hydration — first paint shows products without extra round-trips on slow Myanmar networks.
 - Shop owners (`merchant` role) are sent to `/merchant` once per browser session from `/`; the dashboard uses `?tab=` sub-pages, not separate route files — keeps one owner screen simple.
 - Shop-owned categories live in `shop_categories` (marketplace `categories` stay admin-only); renamed shops get a new slug and old slugs resolve via `shop_slug_history` (trigger-managed).
+- Product onboarding rules (form validation, CSV parse/match, description draft) live in `src/lib/domain/products.ts`; the `products_validate` trigger re-checks sale price and blocks showing price-0 products — UI never silently fixes owner input.
