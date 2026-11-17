@@ -12,71 +12,82 @@ Unchanged and protected: login, Resend email codes, the Supabase relay, the Goog
 
 ## 2. What is missing
 - Only one-at-a-time product adding. No CSV import, no templates, no description helper.
-- No SKU/barcode field.
+- No SKU or barcode fields.
 - No in-store sales, receipts or sales history.
 - No stock history. No cost price (so no profit).
 
-## 3. Important: what a CSV import is (and is not)
-- It is a **one-time copy** of the owner's product list from their other POS.
-- It is **not** a live connection. Sales made later in the other POS will not change Bago Market stock.
-- To keep online stock correct, a shop should record future in-store sales in Bago Market (Milestone 2). This message is shown on the import screen in Burmese and English.
+## 3. What a CSV import is (and is not)
+- A **one-time copy** of the owner's product list from their other POS.
+- **Not** a live connection. Sales made later in the other POS will not change Bago Market stock.
+- To keep online stock correct, the shop should record future in-store sales in Bago Market (Milestone 2). This is shown on the import screen in Burmese and English.
 
-## 4. Product price and stock rules (checked in the current database)
-- Price is **required** (a whole MMK number, 0 or more). Stock is required (defaults to 0, never below 0). Sale price must be lower than price or it is dropped.
-- So a product can never be saved without a price. Templates and CSV rows without a price stay as **unsaved drafts on the screen**: the owner fills price and stock, and only then are they saved. No empty or fake-price products are stored.
-- Saved imported products start **hidden from customers** by default; owner can tick "Show to customers now".
+## 4. Price and stock rules (checked in the current database)
+- Today: price is required (whole MMK, 0 or more); stock is required (default 0, never below 0); a sale price that isn't lower than the price is quietly removed on save.
+- New rule: a product needs a **price above 0 before it can be shown to customers**. It may be saved hidden with 0, but "Show to customers" is blocked — enforced in the database, not just on screen.
+- Templates and CSV rows missing required details stay **unsaved on screen** until the owner fills them. No empty or fake-price products are stored.
+- Imported products always start **hidden from customers**.
 
-## 5. Milestones
-
-### Milestone 1 — Product onboarding
+## 5. Milestone 1 — Product onboarding
 Builds:
-- SKU/barcode field on products (optional, unique within one shop).
+- **SKU and barcode as two separate optional fields.** A product can have both; each is unique within one shop. Search finds either. Scanning matches the barcode field only.
 - Products tab -> "Add products": Add one / From starter catalog / Import CSV.
+- **Draft description** (on the product form): owner fills optional boxes — brand, size, colour, model, material, condition — and taps "Draft description". The app joins only those words into simple Burmese and English sentences. No AI, no credits, nothing invented. The draft goes into the description box, stays editable, and saves only when the owner taps Save.
 - **CSV import**: download example file -> upload -> match columns -> preview -> save.
-  - Fields: name (required), price (required), sale price, stock, SKU/barcode, shop category (created if new), description. Photos are added afterwards.
-  - Row errors shown clearly, e.g. "Row 12: price is not a number", "Row 30: barcode used twice in this file". Rows with errors are not saved; the rest can be.
-  - Up to about 500 rows per file.
+  - Columns: name (required), price (required), sale price, stock, SKU, barcode, shop category (created if new), description. Photos added afterwards.
+  - Row errors shown clearly and fixable on screen, e.g. "Row 12: price is not a number", "Row 8: sale price must be lower than price", "Row 30: barcode used twice in this file". **Invalid sale prices are flagged, never silently dropped.** Rows with errors are not saved until fixed; valid rows can be saved.
+  - Price 0 rows: allowed only as hidden, with a warning.
+  - Limit: 500 rows per file.
 - **Safe re-import / duplicates**:
-  - Row barcode matches an existing product -> shown as "Update", with old vs new for every changed field (price, stock, name...). Nothing changes until the owner ticks each update (or "accept all shown") and confirms. Default is **don't change price or stock** unless the owner ticks them.
-  - Same barcode twice in the file -> both rows flagged, neither saved until fixed.
-  - Row has no barcode -> always treated as a new product; if a product with the same name already exists, a "possible duplicate" warning appears and the owner chooses Add anyway or Skip.
-- **Starter catalog sample** (small, see section 7): search, tick items, fill price + stock on the same screen, save. Nothing is saved for items left blank.
+  - A row matching an existing product by barcode **or** SKU is shown as "Update", with old vs new for every changed field. Nothing changes until the owner ticks the updates and confirms. Price and stock are never overwritten without that tick.
+  - Barcode and SKU point to two different existing products -> flagged as a conflict, not saved.
+  - Same barcode or SKU twice in the file -> both rows flagged.
+  - Row with no barcode and no SKU -> treated as new; if a product with the same name exists, a "possible duplicate" warning lets the owner Add anyway or Skip.
+- **Starter catalog sample**: small list (section 7), only after names are checked. Tick items, fill price + stock on the same screen, save. Incomplete picks are not saved.
 - Phone-friendly layout for these screens.
 
-Review in Preview: open My Shop -> Products -> Add products; download the example file, import a test file with good and bad rows, re-import it with a changed price and see the change preview; pick some sample templates and save them.
+You can review in Preview:
+1. Add a product with both SKU and barcode; search by each.
+2. Try to show a 0-price product to customers and see it blocked.
+3. Use "Draft description", edit the text, save.
+4. Download the example CSV.
+5. Import a test file with good and bad rows (missing price, bad sale price, duplicate barcode) and see each error; fix one on screen and save.
+6. Check imported products are hidden from customers.
+7. Re-import with changed price/stock; see the old vs new preview; confirm only what you tick.
+8. Try a file over 500 rows and see the limit message.
+9. Pick sample templates, fill price + stock, save; untouched picks are not saved.
 
-### Milestone 2 — Minimal in-store checkout + shared stock
+## 6. Milestone 2 — Minimal in-store checkout + shared stock
 Builds:
-- "Sell" tile: search by name or SKU/barcode (typing or a keyboard-style scanner), add to cart, change quantity, remove.
-- **Blocked when stock is 0 or too low**; message tells the owner to correct the stock count first.
-- Complete sale: payment method **Cash, KBZPay, Wave, Other** (+ optional note). These are only labels the owner records; Bago Market does not take or check payments. Optional "cash received" -> change.
-- Receipt: shop name, sale number, date/time, items, quantities, item prices, total, payment method, short thank-you line. No customer details needed. Printed with the phone/computer print dialog.
-- Sales list + today's total and totals by payment method (labelled revenue, not profit).
-- Void a sale with a reason -> stock goes back once.
-- Stock history: every change (online order, cancel, in-store sale, void, manual edit, import) is logged.
+- "Sell" tile: search by name, SKU or barcode (typing, or a keyboard-style scanner matching barcode), add to cart, change quantity, remove.
+- **Blocked when stock is 0 or too low**; the owner corrects the stock count first.
+- Payment method: **Cash, KBZPay, Wave, Other** (+ optional note). These are labels the owner records; Bago Market does not take or verify payments. Optional "cash received" -> change.
+- Receipt (print dialog): shop name, sale number, date/time, items, quantities, item prices, total, payment method, short thank-you line. No customer details needed.
+- Sale numbers per shop (#0001, #0002…), unique and never reused, even after a void.
+- Sales list + today's total and totals per payment method (labelled revenue, not profit).
+- Void a sale with a reason -> stock returns once.
+- Stock history for every change (online order, cancel, in-store sale, void, manual edit, import).
+- Same stock is shared by online orders and in-store sales.
 
-Review in Preview: sell a test item, see stock drop on the product and on the shop page, print the receipt, void it and see stock return, try selling an out-of-stock item and see it blocked, tap "Complete" twice and see only one sale.
+You can review in Preview: sell a test item and see stock drop on the product and shop page; print the receipt; void it and see stock return and the number not reused; try an out-of-stock item and see it blocked; tap "Complete" twice and get one sale; place an online order and see it in stock history.
 
-### Later — after shop-owner feedback
-- More templates and shop types.
-- Description drafting: version 1 is a simple template that only reuses what the owner typed (brand, size, colour, model, material, condition); owner edits before saving. No AI is set up now; AI would use Lovable credits and needs your approval later.
-- Cost price and profit estimates (also need expenses such as rent, staff, transport).
-- Partial refunds, staff accounts, stock-count screen, reports by week/month.
-- Direct printer / cash drawer / camera scanning — device testing needed, no guarantees.
+## 7. Later — only after shop-owner feedback
+- More templates and shop types; better description drafting (AI would need your approval for credits).
+- Cost price and profit (also needs expenses: rent, staff, transport).
+- Partial refunds, staff accounts, stock-count screen, weekly/monthly reports.
+- Direct printer, cash drawer, camera scanning — device testing needed, no guarantees.
 - Not in this plan: offline POS, payment processing, AI keys or paid AI.
 
-## 6. Database, security and stock safety (for Milestones 1-2)
-- Products get an optional SKU/barcode, unique per shop.
-- Starter templates stored in a read-only list (admin-managed); owners only copy from it.
-- New records: in-store sales, sale items (with **copied name and price at sale time**), stock movements.
-- Sales and voids only through secure database functions that check the caller owns the shop, lock each product, refuse if stock is too low, change stock exactly once, and save everything together or nothing.
-- **Duplicate taps / lost connection**: each sale carries a one-time key; resending returns the same sale.
-- **Online and in-store at the same moment**: both lock the same product row; the second waits a split second and is refused if stock ran out.
-- Sales and stock history cannot be edited or deleted directly; only the owner (and admin) can see them.
-- CSV updates go through the existing owner-only product rules.
+## 8. Database, security and stock safety
+- Products: separate optional SKU and barcode, each unique per shop; database blocks showing a product with price 0.
+- Starter templates: read-only list for owners, admin-managed. **Not seeded** until the names are approved.
+- Milestone 2 records: in-store sales, sale items (copied name and price at sale time), stock movements, a per-shop sale-number counter.
+- Sales and voids only through secure database functions: check the caller owns the shop, lock each product, refuse if stock too low, change stock exactly once, save all-or-nothing.
+- Duplicate taps / lost connection: each sale has a one-time key; resending returns the same sale.
+- Online and in-store at the same moment: both lock the same product; the second is refused if stock ran out.
+- Sales and stock history can't be edited or deleted directly; only the owner (and admin) can see them.
 
-## 7. Starter catalog sample (for your review — not seeded)
-Generic names only, no prices, no stock, no photos.
+## 9. Starter catalog sample (for your review only — not seeded)
+Generic names, no prices, no stock, no photos. **Local Burmese-speaking shop owners must check these names before any are used.**
 
 Baby & Mum / ကလေးနှင့်မိခင်
 - ကလေးသေးခံ (အရွယ် S/M/L) — Baby diapers (size S/M/L)
@@ -115,14 +126,15 @@ Stationery / စာရေးကိရိယာ
 - လေ့ကျင့်ခန်းစာအုပ် — Exercise book
 - ခဲဖျက် — Eraser
 
-## 8. Still needs your decision
-1. Are these Burmese/English names right, and which shop types should be in the first sample?
-2. CSV limit of about 500 rows per file — enough?
-3. Imported products hidden from customers by default — OK?
-4. Sale number style: per shop (e.g. #0001, #0002) — OK?
+## 10. Final order and open decision
+Order: Milestone 1 (product onboarding) -> Milestone 2 (in-store checkout + shared stock) -> Later (after feedback).
+
+Your decisions recorded: 500-row limit; imports hidden by default; per-shop sale numbers, unique, never reused; payment methods Cash/KBZPay/Wave/Other; zero-stock sales blocked.
+
+Still open: the checked Burmese names. Milestone 1 can be built without them — the template screen stays empty (or shows a "coming soon" note) until you send the approved list.
 
 ## Technical notes
-- `products.sku text null` + partial unique index (shop_id, lower(sku)).
-- `product_templates` (admin RLS write, authenticated read). Template picks held in React state until valid; insert via existing products RLS.
-- CSV parsed in browser (papaparse) + zod; diff preview computed client-side; updates in batches under RLS.
-- Milestone 2: `pos_sales`, `pos_sale_items`, `stock_movements`; RPCs `pos_create_sale(..., idempotency_key)`, `pos_void_sale(id, reason)`; `place_order` / `update_order_status` amended to log movements. Rules mirrored in `src/lib/domain/rules.ts` with tests. All labels in `dict.ts`. Receipt via `window.print()` + print CSS.
+- `products.sku`, `products.barcode` (text, null) with partial unique indexes per shop; trigger rejects `is_active = true` when `price <= 0`.
+- `product_templates` (admin write, authenticated read), created empty. Template picks held in React state until valid; insert via existing products RLS.
+- CSV parsed in browser (papaparse) + zod; diff preview client-side; batched inserts/updates under RLS. Description draft is a pure function in `src/lib/domain` with tests.
+- Milestone 2: `pos_sales`, `pos_sale_items`, `stock_movements`, `pos_sale_counters`; RPCs `pos_create_sale(..., idempotency_key)`, `pos_void_sale(id, reason)`; `place_order` / `update_order_status` log movements. Rules mirrored in `src/lib/domain/rules.ts` with tests; labels in `dict.ts`; receipt via `window.print()`.
