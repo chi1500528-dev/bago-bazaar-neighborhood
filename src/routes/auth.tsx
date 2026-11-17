@@ -31,7 +31,17 @@ function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("in");
   useEffect(() => {
-    if (session) navigate({ to: "/", replace: true });
+    if (!session) return;
+    let off = false;
+    // Shop owners go straight to My Shop; everyone else to the market.
+    supabase.from("shops").select("id").eq("owner_id", session.user.id).limit(1).then(({ data }) => {
+      if (off) return;
+      if (data && data.length) {
+        sessionStorage.setItem("bm-owner-landed", "1");
+        navigate({ to: "/merchant", search: {}, replace: true });
+      } else navigate({ to: "/", replace: true });
+    });
+    return () => { off = true; };
   }, [session, navigate]);
   const title = mode === "in" ? t("auth.title") : mode === "up" ? t("auth.signup_title") : t("auth.forgot_title");
   return (
