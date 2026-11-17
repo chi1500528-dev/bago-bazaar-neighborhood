@@ -318,8 +318,83 @@ export type Database = {
           },
         ]
       }
+      product_imports: {
+        Row: {
+          added: number
+          created_at: string
+          file_name: string | null
+          id: string
+          shop_id: string
+          updated: number
+          user_id: string
+        }
+        Insert: {
+          added?: number
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          shop_id: string
+          updated?: number
+          user_id?: string
+        }
+        Update: {
+          added?: number
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          shop_id?: string
+          updated?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_imports_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_templates: {
+        Row: {
+          created_at: string
+          group_en: string
+          group_my: string
+          id: string
+          is_active: boolean
+          name_en: string
+          name_my: string
+          sort: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          group_en: string
+          group_my: string
+          id?: string
+          is_active?: boolean
+          name_en: string
+          name_my: string
+          sort?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          group_en?: string
+          group_my?: string
+          id?: string
+          is_active?: boolean
+          name_en?: string
+          name_my?: string
+          sort?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
+          barcode: string | null
           category_id: string | null
           created_at: string
           description: string | null
@@ -331,10 +406,12 @@ export type Database = {
           sale_price: number | null
           shop_category_id: string | null
           shop_id: string
+          sku: string | null
           stock: number
           updated_at: string
         }
         Insert: {
+          barcode?: string | null
           category_id?: string | null
           created_at?: string
           description?: string | null
@@ -346,10 +423,12 @@ export type Database = {
           sale_price?: number | null
           shop_category_id?: string | null
           shop_id: string
+          sku?: string | null
           stock?: number
           updated_at?: string
         }
         Update: {
+          barcode?: string | null
           category_id?: string | null
           created_at?: string
           description?: string | null
@@ -361,6 +440,7 @@ export type Database = {
           sale_price?: number | null
           shop_category_id?: string | null
           shop_id?: string
+          sku?: string | null
           stock?: number
           updated_at?: string
         }
