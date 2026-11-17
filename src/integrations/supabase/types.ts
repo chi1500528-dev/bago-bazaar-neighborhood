@@ -322,6 +322,7 @@ export type Database = {
         Row: {
           added: number
           created_at: string
+          failed: number
           file_name: string | null
           id: string
           shop_id: string
@@ -331,6 +332,7 @@ export type Database = {
         Insert: {
           added?: number
           created_at?: string
+          failed?: number
           file_name?: string | null
           id?: string
           shop_id: string
@@ -340,6 +342,7 @@ export type Database = {
         Update: {
           added?: number
           created_at?: string
+          failed?: number
           file_name?: string | null
           id?: string
           shop_id?: string

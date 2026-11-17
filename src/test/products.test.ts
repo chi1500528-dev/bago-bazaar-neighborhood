@@ -42,3 +42,28 @@ describe("csv import", () => {
   });
   it("warns about same-name products without codes", () => { expect(parse("name,price\nwipes,100")[0]!.possibleDuplicate).toBe(true); });
 });
+
+describe("CSV re-import safety", () => {
+  const ex: ExistingProduct[] = [{ id: "p1", name: "Wipes", price: 3500, sale_price: 3000, stock: 5, sku: "BW-80", barcode: "885", description: "Soft", shop_category_id: "c1" }];
+  const row = (o: Partial<Record<string, string>>) => ({ name: "Wipes", price: "3500", sale_price: "3000", stock: "5", sku: "BW-80", barcode: "885", category: "Baby", description: "Soft", ...o });
+  const names = { c1: "Baby" };
+  it("offers SKU, barcode and category changes", () => {
+    const [r] = analyzeRows([row({ sku: "BW-81", category: "Care" })], ex, { categoryNames: names });
+    expect(r!.changes.map((c) => c.field).sort()).toEqual(["category", "sku"]);
+    const [r2] = analyzeRows([row({ barcode: "886" })], ex, { categoryNames: names });
+    expect(r2!.changes.map((c) => c.field)).toEqual(["barcode"]);
+  });
+  it("matches SKU like the database (trim + case)", () => {
+    const [r] = analyzeRows([row({ sku: " bw-80 ", barcode: "" })], ex, { categoryNames: names });
+    expect(r!.matchId).toBe("p1");
+    expect(r!.changes).toEqual([]);
+  });
+  it("empty cells clear only when opted in and the column is mapped", () => {
+    const empty = row({ sale_price: "", description: "", category: "" });
+    expect(analyzeRows([empty], ex, { categoryNames: names })[0]!.changes).toEqual([]);
+    const on = analyzeRows([empty], ex, { categoryNames: names, clearEmpty: true })[0]!.changes.map((c) => c.field).sort();
+    expect(on).toEqual(["category", "description", "sale_price"]);
+    const unmapped = analyzeRows([empty], ex, { categoryNames: names, clearEmpty: true, mapped: ["name", "price", "sku"] })[0]!.changes;
+    expect(unmapped).toEqual([]);
+  });
+});

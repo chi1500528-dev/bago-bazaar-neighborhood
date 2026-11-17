@@ -81,41 +81,63 @@ export function autoMap(headers: string[]): Partial<Record<CsvField, number>> {
   return m;
 }
 
-export interface ExistingProduct { id: string; name: string; price: number; sale_price: number | null; stock: number; sku: string | null; barcode: string | null; description: string | null }
+export interface ExistingProduct { id: string; name: string; price: number; sale_price: number | null; stock: number; sku: string | null; barcode: string | null; description: string | null; shop_category_id?: string | null }
 export type RowErr = ProductErr | "dup_in_file" | "code_conflict";
 export interface RowValues { name: string; price: string; sale_price: string; stock: string; sku: string; barcode: string; category: string; description: string }
+export type ChangeField = "name" | "price" | "sale_price" | "stock" | "description" | "sku" | "barcode" | "category";
 export interface ImportRow {
   line: number; values: RowValues; errors: RowErr[];
   matchId: string | null; possibleDuplicate: boolean;
-  changes: { field: "name" | "price" | "sale_price" | "stock" | "description"; from: string; to: string }[];
+  changes: { field: ChangeField; from: string; to: string }[];
 }
+export interface AnalyzeOpts { firstLine?: number; clearEmpty?: boolean; mapped?: CsvField[]; categoryNames?: Record<string, string> }
 
 export function rowValues(cells: string[], map: Partial<Record<CsvField, number>>): RowValues {
   const g = (f: CsvField) => (map[f] !== undefined ? (cells[map[f]!] ?? "").trim() : "");
   return { name: g("name"), price: g("price").replace(/,/g, ""), sale_price: g("sale_price").replace(/,/g, ""), stock: g("stock").replace(/,/g, ""), sku: g("sku"), barcode: g("barcode"), category: g("category"), description: g("description") };
 }
 
+/** Same normalisation as the database unique indexes: SKU trimmed + case-insensitive, barcode trimmed. */
+export const skuKey = (s: string | null | undefined) => (s ?? "").trim().toLowerCase();
+export const barcodeKey = (s: string | null | undefined) => (s ?? "").trim();
+
+/** Fields an empty cell may clear (only when that column is mapped and the owner opts in). Name/price/stock/codes never clear. */
+export const CLEARABLE: ChangeField[] = ["sale_price", "description", "category"];
+
 /** Validates rows and matches to existing products by barcode or SKU. Imports are hidden, so zero price is a warning not an error. */
-export function analyzeRows(rows: RowValues[], existing: ExistingProduct[], firstLine = 2): ImportRow[] {
+export function analyzeRows(rows: RowValues[], existing: ExistingProduct[], opts: AnalyzeOpts | number = {}): ImportRow[] {
+  const o: AnalyzeOpts = typeof opts === "number" ? { firstLine: opts } : opts;
+  const firstLine = o.firstLine ?? 2;
+  const mapped = new Set(o.mapped ?? CSV_FIELDS);
+  const catName = (id: string | null | undefined) => (id ? o.categoryNames?.[id] ?? "" : "");
   const count = (k: (r: RowValues) => string) => { const m = new Map<string, number>(); rows.forEach((r) => { const v = k(r); if (v) m.set(v, (m.get(v) ?? 0) + 1); }); return m; };
-  const bc = count((r) => r.barcode); const sk = count((r) => r.sku.toLowerCase());
-  const byBarcode = new Map(existing.filter((p) => p.barcode).map((p) => [p.barcode!, p]));
-  const bySku = new Map(existing.filter((p) => p.sku).map((p) => [p.sku!.toLowerCase(), p]));
+  const bc = count((r) => barcodeKey(r.barcode)); const sk = count((r) => skuKey(r.sku));
+  const byBarcode = new Map(existing.filter((p) => barcodeKey(p.barcode)).map((p) => [barcodeKey(p.barcode), p]));
+  const bySku = new Map(existing.filter((p) => skuKey(p.sku)).map((p) => [skuKey(p.sku), p]));
   const names = new Set(existing.map((p) => p.name.trim().toLowerCase()));
   return rows.map((v, i) => {
     const errors: RowErr[] = validateProduct({ ...v, is_active: false });
-    if ((v.barcode && bc.get(v.barcode)! > 1) || (v.sku && sk.get(v.sku.toLowerCase())! > 1)) errors.push("dup_in_file");
-    const a = v.barcode ? byBarcode.get(v.barcode) : undefined;
-    const b = v.sku ? bySku.get(v.sku.toLowerCase()) : undefined;
+    const vb = barcodeKey(v.barcode), vs = skuKey(v.sku);
+    if ((vb && bc.get(vb)! > 1) || (vs && sk.get(vs)! > 1)) errors.push("dup_in_file");
+    const a = vb ? byBarcode.get(vb) : undefined;
+    const b = vs ? bySku.get(vs) : undefined;
     if (a && b && a.id !== b.id) errors.push("code_conflict");
     const match = a ?? b ?? null;
     const changes: ImportRow["changes"] = [];
     if (match && !errors.length) {
-      const cmp = (field: ImportRow["changes"][number]["field"], from: string, to: string) => { if (to !== "" && from !== to) changes.push({ field, from, to }); };
+      const cmp = (field: ChangeField, from: string, to: string, same = from === to) => {
+        if (same) return;
+        if (to !== "") changes.push({ field, from, to });
+        else if (o.clearEmpty && from !== "" && CLEARABLE.includes(field) && mapped.has(field as CsvField)) changes.push({ field, from, to: "" });
+      };
       cmp("name", match.name, v.name); cmp("price", String(match.price), v.price);
       cmp("sale_price", match.sale_price == null ? "" : String(match.sale_price), v.sale_price);
       cmp("stock", String(match.stock), v.stock); cmp("description", match.description ?? "", v.description);
+      cmp("sku", match.sku ?? "", v.sku, skuKey(match.sku) === vs);
+      cmp("barcode", match.barcode ?? "", v.barcode, barcodeKey(match.barcode) === vb);
+      const cur = catName(match.shop_category_id);
+      cmp("category", cur, v.category, cur.trim().toLowerCase() === v.category.trim().toLowerCase());
     }
-    return { line: firstLine + i, values: v, errors, matchId: match?.id ?? null, possibleDuplicate: !match && !v.barcode && !v.sku && names.has(v.name.toLowerCase()), changes };
+    return { line: firstLine + i, values: v, errors, matchId: match?.id ?? null, possibleDuplicate: !match && !vb && !vs && names.has(v.name.trim().toLowerCase()), changes };
   });
 }

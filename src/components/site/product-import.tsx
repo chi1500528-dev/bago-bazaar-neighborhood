@@ -21,21 +21,35 @@ function useExisting(shopId: string) {
   return useQuery({
     queryKey: ["my-products-codes", shopId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("products").select("id,name,price,sale_price,stock,sku,barcode,description").eq("shop_id", shopId);
-      if (error) throw error;
-      return data as ExistingProduct[];
+      const all: ExistingProduct[] = [];
+      for (let from = 0; ; from += 1000) {
+        const { data, error } = await supabase.from("products").select("id,name,price,sale_price,stock,sku,barcode,description,shop_category_id").eq("shop_id", shopId).order("id").range(from, from + 999);
+        if (error) throw error;
+        all.push(...(data as ExistingProduct[]));
+        if (data.length < 1000) break;
+      }
+      return all;
     },
   });
 }
 
 async function ensureCategories(shopId: string, names: string[], existing: { id: string; name: string }[]) {
   const map = new Map(existing.map((c) => [c.name.trim().toLowerCase(), c.id]));
+  const failed = new Set<string>();
   for (const n of [...new Set(names.map((x) => x.trim()).filter(Boolean))]) {
     if (map.has(n.toLowerCase())) continue;
-    const { data } = await supabase.from("shop_categories").insert({ shop_id: shopId, name: n.slice(0, 60), sort: map.size }).select("id").single();
-    if (data) map.set(n.toLowerCase(), data.id);
+    const { data, error } = await supabase.from("shop_categories").insert({ shop_id: shopId, name: n.slice(0, 60), sort: map.size }).select("id").single();
+    if (data && !error) map.set(n.toLowerCase(), data.id); else failed.add(n.toLowerCase());
   }
-  return map;
+  return { map, failed };
+}
+
+type FailReason = "impf.category" | "impf.code" | "impf.sale" | "impf.other";
+function reason(e: { message?: string; code?: string } | null): FailReason {
+  const m = `${e?.code ?? ""} ${e?.message ?? ""}`;
+  if (m.includes("23505") || /duplicate|sku_uniq|barcode_uniq/i.test(m)) return "impf.code";
+  if (m.includes("INVALID_SALE_PRICE")) return "impf.sale";
+  return "impf.other";
 }
 
 export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => void }) {
@@ -50,8 +64,12 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
   const [ticked, setTicked] = useState<Record<string, boolean>>({});
   const [dupOk, setDupOk] = useState<Record<number, boolean>>({});
   const [busy, setBusy] = useState(false);
+  const [clearEmpty, setClearEmpty] = useState(false);
+  const [result, setResult] = useState<{ added: number; updated: number; failed: { line: number; name: string; why: FailReason }[]; historyErr: boolean } | null>(null);
+  const catNames = useMemo(() => Object.fromEntries((cats.data ?? []).map((c) => [c.id, c.name])), [cats.data]);
+  const mapped = useMemo(() => CSV_FIELDS.filter((f) => map[f] !== undefined), [map]);
 
-  const analyzed = useMemo(() => (rows ? analyzeRows(rows, existing.data ?? []) : []), [rows, existing.data]);
+  const analyzed = useMemo(() => (rows ? analyzeRows(rows, existing.data ?? [], { clearEmpty, mapped, categoryNames: catNames }) : []), [rows, existing.data, clearEmpty, mapped, catNames]);
 
   const download = () => {
     const url = URL.createObjectURL(new Blob(["\uFEFF" + CSV_EXAMPLE], { type: "text/csv" }));
@@ -70,40 +88,72 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
     if (!rows) return;
     setBusy(true);
     try {
+      const failed: { line: number; name: string; why: FailReason }[] = [];
       const fresh = analyzed.filter((r) => !r.errors.length && !r.matchId && (!r.possibleDuplicate || dupOk[r.line]));
-      const catMap = await ensureCategories(shopId, fresh.map((r) => r.values.category), cats.data ?? []);
-      let added = 0, updated = 0, failed = 0;
-      if (fresh.length) {
-        const payload = fresh.map(({ values: v }) => ({
-          shop_id: shopId, name: v.name.slice(0, 200), price: Number(v.price), sale_price: v.sale_price ? Number(v.sale_price) : null,
-          stock: v.stock ? Number(v.stock) : 0, sku: v.sku || null, barcode: v.barcode || null, description: v.description || null,
-          shop_category_id: v.category ? catMap.get(v.category.trim().toLowerCase()) ?? null : null, is_active: false,
-        }));
-        for (let i = 0; i < payload.length; i += 100) {
-          const chunk = payload.slice(i, i + 100);
-          const { error } = await supabase.from("products").insert(chunk);
-          if (error) failed += chunk.length; else added += chunk.length;
+      const upds = analyzed.filter((r) => r.matchId && !r.errors.length && r.changes.some((c) => ticked[`${r.line}:${c.field}`]));
+      const catNamesNeeded = [...fresh.map((r) => r.values.category), ...upds.filter((r) => r.changes.some((c) => c.field === "category" && c.to && ticked[`${r.line}:category`])).map((r) => r.values.category)];
+      const { map: catMap, failed: catFailed } = await ensureCategories(shopId, catNamesNeeded, cats.data ?? []);
+      const catOf = (n: string) => (n.trim() ? catMap.get(n.trim().toLowerCase()) ?? null : null);
+      const catBad = (n: string) => !!n.trim() && catFailed.has(n.trim().toLowerCase());
+      let added = 0, updated = 0;
+      const ok = fresh.filter((r) => { if (catBad(r.values.category)) { failed.push({ line: r.line, name: r.values.name, why: "impf.category" }); return false; } return true; });
+      const toRow = ({ values: v }: (typeof ok)[number]) => ({
+        shop_id: shopId, name: v.name.slice(0, 200), price: Number(v.price), sale_price: v.sale_price ? Number(v.sale_price) : null,
+        stock: v.stock ? Number(v.stock) : 0, sku: v.sku || null, barcode: v.barcode || null, description: v.description || null,
+        shop_category_id: catOf(v.category), is_active: false,
+      });
+      for (let i = 0; i < ok.length; i += 100) {
+        const chunk = ok.slice(i, i + 100);
+        const { error } = await supabase.from("products").insert(chunk.map(toRow));
+        if (!error) { added += chunk.length; continue; }
+        // One bad row must not sink the rest: retry this chunk one row at a time.
+        for (const r of chunk) {
+          const { error: e1 } = await supabase.from("products").insert(toRow(r));
+          if (e1) failed.push({ line: r.line, name: r.values.name, why: reason(e1) }); else added++;
         }
       }
-      for (const r of analyzed) {
-        if (!r.matchId || r.errors.length) continue;
+      for (const r of upds) {
         const ch = r.changes.filter((c) => ticked[`${r.line}:${c.field}`]);
-        if (!ch.length) continue;
         const cur = existing.data!.find((p) => p.id === r.matchId)!;
-        const upd: { name?: string; price?: number; sale_price?: number | null; stock?: number; description?: string } = {};
-        for (const c of ch) { if (c.field === "price" || c.field === "stock") upd[c.field] = Number(c.to); else if (c.field === "sale_price") upd.sale_price = c.to ? Number(c.to) : null; else upd[c.field] = c.to; }
+        const upd: { name?: string; price?: number; sale_price?: number | null; stock?: number; description?: string | null; sku?: string | null; barcode?: string | null; shop_category_id?: string | null } = {};
+        let bad: FailReason | null = null;
+        for (const c of ch) {
+          if (c.field === "price" || c.field === "stock") upd[c.field] = Number(c.to);
+          else if (c.field === "sale_price") upd.sale_price = c.to ? Number(c.to) : null;
+          else if (c.field === "category") { if (catBad(c.to)) bad = "impf.category"; else upd.shop_category_id = catOf(c.to); }
+          else if (c.field === "description" || c.field === "sku" || c.field === "barcode") upd[c.field] = c.to || null;
+          else upd.name = c.to;
+        }
         const price = upd.price ?? cur.price; const sale = "sale_price" in upd ? upd.sale_price : cur.sale_price;
-        if (sale != null && Number(sale) >= price) { failed++; continue; }
-        const { error } = await supabase.from("products").update(upd).eq("id", r.matchId);
-        if (error) failed++; else updated++;
+        if (!bad && sale != null && Number(sale) >= price) bad = "impf.sale";
+        if (bad) { failed.push({ line: r.line, name: r.values.name, why: bad }); continue; }
+        const { error } = await supabase.from("products").update(upd).eq("id", r.matchId!);
+        if (error) failed.push({ line: r.line, name: r.values.name, why: reason(error) }); else updated++;
       }
-      await supabase.from("product_imports").insert({ shop_id: shopId, file_name: file.slice(0, 200), added, updated });
+      const { error: hErr } = await supabase.from("product_imports").insert({ shop_id: shopId, file_name: file.slice(0, 200), added, updated, failed: failed.length });
       qc.invalidateQueries();
-      toast.success(t("imp.done", { a: added, u: updated }));
-      if (failed) toast.error(t("err.generic"));
-      onDone();
+      failed.sort((x, y) => x.line - y.line);
+      setResult({ added, updated, failed, historyErr: !!hErr });
+      if (!failed.length && !hErr) { toast.success(t("imp.done", { a: added, u: updated })); onDone(); }
     } finally { setBusy(false); }
   };
+
+  if (result) return (
+    <div className="space-y-3">
+      <p className="font-semibold">{t("imp.result")}</p>
+      <p className="text-sm">{t("imp.result_line", { a: result.added, u: result.updated, f: result.failed.length })}</p>
+      {result.historyErr && <p className="text-sm text-destructive">{t("imp.history_failed")}</p>}
+      {result.failed.length > 0 && (
+        <div>
+          <p className="mb-1 text-sm font-medium text-destructive">{t("imp.failed_rows")}</p>
+          <ul className="max-h-[40vh] divide-y overflow-y-auto rounded-lg border bg-card text-sm">
+            {result.failed.map((f) => <li key={f.line} className="p-2">{t("imp.row", { n: f.line })} · {f.name || "—"} — <span className="text-destructive">{t(f.why)}</span></li>)}
+          </ul>
+        </div>
+      )}
+      <Button className="w-full" onClick={onDone}>{t("imp.close")}</Button>
+    </div>
+  );
 
   const nNew = analyzed.filter((r) => !r.errors.length && !r.matchId).length;
   const nUpd = analyzed.filter((r) => r.changes.length).length;
@@ -141,6 +191,7 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
         <div className="space-y-3">
           <p className="text-sm font-medium">{t("imp.summary", { a: nNew, u: nUpd, e: nErr })}</p>
           <p className="text-xs text-muted-foreground">{t("imp.hidden_note")}</p>
+          <label className="flex items-center gap-2 text-sm"><Checkbox checked={clearEmpty} onCheckedChange={(v) => setClearEmpty(v === true)} />{t("imp.clear_empty")}</label>
           <ul className="max-h-[50vh] divide-y overflow-y-auto rounded-lg border bg-card">
             {analyzed.map((r, i) => (
               <li key={r.line} className="space-y-2 p-3 text-sm">
@@ -151,17 +202,11 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
                   </span>
                 </div>
                 {r.errors.map((e) => <p key={e} className="flex items-center gap-1 text-destructive"><AlertTriangle className="size-3.5" />{t(errKey(e))}</p>)}
-                {r.errors.some((e) => e !== "dup_in_file" && e !== "code_conflict") && (
+                {r.errors.length > 0 && (
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {(["name", "price", "sale_price", "stock"] as const).map((k) => (
-                      <Input key={k} aria-label={k} placeholder={k} value={r.values[k]} onChange={(e) => edit(i, k, e.target.value)} className="h-9" />
+                    {CSV_FIELDS.map((k) => (
+                      <Input key={k} aria-label={k} placeholder={k} value={r.values[k]} onChange={(e) => edit(i, k, e.target.value)} className={`h-9 ${k === "description" ? "col-span-2 sm:col-span-4" : ""}`} />
                     ))}
-                  </div>
-                )}
-                {(r.errors.includes("dup_in_file") || r.errors.includes("code_conflict")) && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input aria-label="sku" placeholder="SKU" value={r.values.sku} onChange={(e) => edit(i, "sku", e.target.value)} className="h-9" />
-                    <Input aria-label="barcode" placeholder="Barcode" value={r.values.barcode} onChange={(e) => edit(i, "barcode", e.target.value)} className="h-9" />
                   </div>
                 )}
                 {!r.errors.length && !r.matchId && r.values.price === "0" && <p className="text-xs text-muted-foreground">{t("imp.zero_warn")}</p>}
@@ -202,7 +247,7 @@ export function ImportHistory({ shopId }: { shopId: string }) {
     <details className="surface mb-5 p-4 text-sm">
       <summary className="cursor-pointer font-semibold">{t("imp.history")}</summary>
       <ul className="mt-2 space-y-1 text-muted-foreground">
-        {q.data!.map((r) => <li key={r.id}>{new Date(r.created_at).toLocaleString()} · {r.file_name} · {t("imp.done", { a: r.added, u: r.updated })}</li>)}
+        {q.data!.map((r) => <li key={r.id}>{new Date(r.created_at).toLocaleString()} · {r.file_name} · {t("imp.result_line", { a: r.added, u: r.updated, f: r.failed ?? 0 })}</li>)}
       </ul>
     </details>
   );
