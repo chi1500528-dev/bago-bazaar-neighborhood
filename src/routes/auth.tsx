@@ -203,28 +203,68 @@ function SignUp() {
 
 function Forgot({ onBack }: { onBack: () => void }) {
   const { t } = useApp();
-  const [email, setEmail] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [sent, setSent] = useState(false);
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset-password` });
-    setBusy(false);
+  const [f, setF] = useState({ email: "", code: "", password: "", confirm: "" });
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [wait, setWait] = useState(0);
+  const [busy, setBusy] = useState<"send" | "save" | null>(null);
+  useEffect(() => {
+    if (wait <= 0) return;
+    const id = setTimeout(() => setWait((w) => w - 1), 1000);
+    return () => clearTimeout(id);
+  }, [wait]);
+  const pwBad = f.password.length > 0 && !passwordOk(f.password);
+  const mismatch = f.confirm.length > 0 && f.confirm !== f.password;
+  const sendCode = async () => {
+    const email = f.email.trim();
+    if (!email) { toast.error(t("checkout.required")); return; }
+    setBusy("send");
+    // No redirect link is used: the email shows a code ({{ .Token }}) typed in here.
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    setBusy(null);
     if (error) { toast.error(error.message); return; }
-    setSent(true);
+    setSentTo(email); setWait(60);
+    toast.success(t("auth.otp_sent"));
   };
-  return sent ? (
-    <div className="space-y-4 text-center">
-      <p className="text-sm">{t("auth.forgot_sent")}</p>
-      <Button variant="outline" className="w-full" onClick={onBack}>{t("auth.back_signin")}</Button>
-    </div>
-  ) : (
-    <form onSubmit={submit} className="space-y-4">
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sentTo || f.code.length < 6) { toast.error(t("auth.code_needed")); return; }
+    if (!passwordOk(f.password)) { toast.error(t("auth.pw_weak")); return; }
+    if (f.confirm !== f.password) { toast.error(t("auth.pw_mismatch")); return; }
+    setBusy("save");
+    const v = await supabase.auth.verifyOtp({ email: sentTo, token: f.code, type: "recovery" });
+    if (v.error) { setBusy(null); toast.error(t("auth.otp_invalid")); return; }
+    const { error } = await supabase.auth.updateUser({ password: f.password });
+    setBusy(null);
+    if (error) { toast.error(error.message); return; }
+    sessionStorage.removeItem("bm-owner-landed");
+    toast.success(t("auth.reset_done"));
+  };
+  return (
+    <form onSubmit={save} className="space-y-4" noValidate>
       <p className="text-sm text-muted-foreground">{t("auth.forgot_hint")}</p>
       <div className="space-y-1.5"><Label htmlFor="fe">{t("auth.email")}</Label>
-        <Input id="fe" type="email" autoComplete="email" className="h-11" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-      <Button type="submit" className="h-11 w-full" disabled={busy}>{busy ? t("common.loading") : t("auth.forgot_send")}</Button>
+        <Input id="fe" type="email" autoComplete="email" className="h-11" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} required /></div>
+      <div className="space-y-1.5 rounded-xl border border-dashed p-3">
+        <Label htmlFor="fotp" className="flex items-center gap-1.5"><Mail className="size-4" />{t("auth.otp_code")}</Label>
+        <div className="flex gap-2">
+          <Input id="fotp" inputMode="numeric" autoComplete="one-time-code" maxLength={8} placeholder="••••••" disabled={!sentTo}
+            value={f.code} onChange={(e) => setF({ ...f, code: e.target.value.replace(/\D/g, "").slice(0, 8) })}
+            className="h-11 flex-1 text-center text-lg tracking-[0.4em]" />
+          <Button type="button" variant="outline" className="h-11 shrink-0" onClick={sendCode} disabled={busy !== null || wait > 0}>
+            {busy === "send" ? t("common.loading") : wait > 0 ? `${wait}s` : sentTo ? t("auth.otp_resend") : t("auth.forgot_send")}
+          </Button>
+        </div>
+        {sentTo && <p className="text-xs text-muted-foreground">{t("auth.otp_hint")} <span className="font-medium text-foreground">{sentTo}</span></p>}
+      </div>
+      <div className="space-y-1.5"><Label htmlFor="fp">{t("auth.reset_title")}</Label>
+        <PasswordInput id="fp" value={f.password} onChange={(v) => setF({ ...f, password: v })} autoComplete="new-password" invalid={pwBad} />
+        <p className={`flex items-center gap-1 text-xs ${passwordOk(f.password) ? "text-primary" : pwBad ? "text-destructive" : "text-muted-foreground"}`}>
+          {passwordOk(f.password) && <Check className="size-3.5" />}{t("auth.pw_rule")}</p></div>
+      <div className="space-y-1.5"><Label htmlFor="fc">{t("auth.confirm")}</Label>
+        <PasswordInput id="fc" value={f.confirm} onChange={(v) => setF({ ...f, confirm: v })} autoComplete="new-password" invalid={mismatch} />
+        {mismatch && <p className="text-xs text-destructive">{t("auth.pw_mismatch")}</p>}</div>
+      <Button type="submit" className="h-11 w-full" disabled={busy !== null || !sentTo || f.code.length < 6}>
+        {busy === "save" ? t("common.loading") : t("auth.reset_save")}</Button>
       <button type="button" onClick={onBack} className="block w-full text-center text-sm text-muted-foreground hover:underline">{t("auth.back_signin")}</button>
     </form>
   );
