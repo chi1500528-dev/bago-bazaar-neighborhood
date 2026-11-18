@@ -159,3 +159,10 @@
 
 /* Keep focused fields clear of the phone keyboard and the sticky bars. */
 input, textarea, select { scroll-margin-bottom: 9rem; }
+
+@media print {
+  body * { visibility: hidden; }
+  .receipt, .receipt * { visibility: visible; }
+  .receipt { position: absolute; left: 0; top: 0; padding: 0; }
+  .no-print { display: none; }
+}

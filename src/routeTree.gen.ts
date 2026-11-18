@@ -30,6 +30,7 @@ import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as OrdersIndexRouteImport } from './routes/orders.index'
 import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 import { Route as PIdRouteImport } from './routes/p.$id'
+import { Route as ReceiptIdRouteImport } from './routes/receipt.$id'
 import { Route as ShopsSlugRouteImport } from './routes/shops.$slug'
 import { Route as ApiPublicSbSplatRouteImport } from './routes/api/public/sb/$'
 
@@ -138,6 +139,11 @@ const PIdRoute = PIdRouteImport.update({
   path: '/p/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReceiptIdRoute = ReceiptIdRouteImport.update({
+  id: '/receipt/$id',
+  path: '/receipt/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopsSlugRoute = ShopsSlugRouteImport.update({
   id: '/shops/$slug',
   path: '/shops/$slug',
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/c/$slug': typeof CSlugRoute
   '/orders/$id': typeof OrdersIdRoute
   '/p/$id': typeof PIdRoute
+  '/receipt/$id': typeof ReceiptIdRoute
   '/shops/$slug': typeof ShopsSlugRoute
   '/orders/': typeof OrdersIndexRoute
   '/api/public/sb/$': typeof ApiPublicSbSplatRoute
@@ -195,6 +202,7 @@ export interface FileRoutesByTo {
   '/c/$slug': typeof CSlugRoute
   '/orders/$id': typeof OrdersIdRoute
   '/p/$id': typeof PIdRoute
+  '/receipt/$id': typeof ReceiptIdRoute
   '/shops/$slug': typeof ShopsSlugRoute
   '/orders': typeof OrdersIndexRoute
   '/api/public/sb/$': typeof ApiPublicSbSplatRoute
@@ -221,6 +229,7 @@ export interface FileRoutesById {
   '/c/$slug': typeof CSlugRoute
   '/orders/$id': typeof OrdersIdRoute
   '/p/$id': typeof PIdRoute
+  '/receipt/$id': typeof ReceiptIdRoute
   '/shops/$slug': typeof ShopsSlugRoute
   '/orders/': typeof OrdersIndexRoute
   '/api/public/sb/$': typeof ApiPublicSbSplatRoute
@@ -248,6 +257,7 @@ export interface FileRouteTypes {
     | '/c/$slug'
     | '/orders/$id'
     | '/p/$id'
+    | '/receipt/$id'
     | '/shops/$slug'
     | '/orders/'
     | '/api/public/sb/$'
@@ -273,6 +283,7 @@ export interface FileRouteTypes {
     | '/c/$slug'
     | '/orders/$id'
     | '/p/$id'
+    | '/receipt/$id'
     | '/shops/$slug'
     | '/orders'
     | '/api/public/sb/$'
@@ -298,6 +309,7 @@ export interface FileRouteTypes {
     | '/c/$slug'
     | '/orders/$id'
     | '/p/$id'
+    | '/receipt/$id'
     | '/shops/$slug'
     | '/orders/'
     | '/api/public/sb/$'
@@ -324,6 +336,7 @@ export interface RootRouteChildren {
   CSlugRoute: typeof CSlugRoute
   OrdersIdRoute: typeof OrdersIdRoute
   PIdRoute: typeof PIdRoute
+  ReceiptIdRoute: typeof ReceiptIdRoute
   ShopsSlugRoute: typeof ShopsSlugRoute
   OrdersIndexRoute: typeof OrdersIndexRoute
   ApiPublicSbSplatRoute: typeof ApiPublicSbSplatRoute
@@ -478,6 +491,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/receipt/$id': {
+      id: '/receipt/$id'
+      path: '/receipt/$id'
+      fullPath: '/receipt/$id'
+      preLoaderRoute: typeof ReceiptIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shops/$slug': {
       id: '/shops/$slug'
       path: '/shops/$slug'
@@ -516,6 +536,7 @@ const rootRouteChildren: RootRouteChildren = {
   CSlugRoute: CSlugRoute,
   OrdersIdRoute: OrdersIdRoute,
   PIdRoute: PIdRoute,
+  ReceiptIdRoute: ReceiptIdRoute,
   ShopsSlugRoute: ShopsSlugRoute,
   OrdersIndexRoute: OrdersIndexRoute,
   ApiPublicSbSplatRoute: ApiPublicSbSplatRoute,

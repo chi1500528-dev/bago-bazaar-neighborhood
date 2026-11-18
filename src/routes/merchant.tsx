@@ -1,7 +1,7 @@
 import { ChatInbox } from "@/components/site/chat";
 import { useUnreadCounts } from "@/lib/notify";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight, MessageCircle, Package, Receipt, Settings2, Eye, Plus, Pencil, Trash2, Check, X, AlertTriangle, ShoppingBag } from "lucide-react";
+import { ChevronRight, MessageCircle, Package, Receipt, Settings2, Eye, Store, Plus, Pencil, Trash2, Check, X, AlertTriangle, ShoppingBag } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import { CsvImport, ImportHistory, TemplatePicker } from "@/components/site/prod
 import { validateProduct, draftDescription, type DescDetails } from "@/lib/domain/products";
 import type { TKey } from "@/lib/i18n/dict";
 import { OrderDetail } from "@/components/site/order-detail";
+import { PosSell, StockHistory } from "@/components/site/pos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,7 +28,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type ShopRow = Database["public"]["Tables"]["shops"]["Row"];
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
-const TABS = ["orders", "chat", "products", "shop"] as const;
+const TABS = ["sell", "orders", "chat", "products", "shop"] as const;
 type Tab = (typeof TABS)[number];
 
 export const Route = createFileRoute("/merchant")({
@@ -133,6 +134,7 @@ function Dash({ s, shops, onPick, onNew }: { s: ShopRow; shops: ShopRow[]; onPic
   const { tab } = Route.useSearch();
   const alerts = useUnreadCounts();
   const tiles = [
+    { id: "sell" as const, label: t("pos.tab"), sub: t("pos.tile"), icon: Store, n: 0 },
     { id: "orders" as const, label: t("merchant.orders"), sub: t("merchant.tile_orders"), icon: Receipt, n: alerts.newOrders },
     { id: "chat" as const, label: t("chat.title"), sub: t("merchant.tile_chat"), icon: MessageCircle, n: alerts.shopMessages },
     { id: "products" as const, label: t("merchant.products"), sub: t("merchant.tile_products"), icon: Package, n: 0 },
@@ -178,6 +180,7 @@ function Dash({ s, shops, onPick, onNew }: { s: ShopRow; shops: ShopRow[]; onPic
             <ChevronRight className="size-4 text-muted-foreground" />
             <h2 className="font-semibold">{current.label}</h2>
           </div>
+          {tab === "sell" && <PosSell shopId={s.id} />}
           {tab === "orders" && <MerchantOrders shopId={s.id} />}
           {tab === "chat" && <ChatInbox side="shop" shopId={s.id} />}
           {tab === "products" && <MerchantProducts shop={s} />}
@@ -390,6 +393,7 @@ function ProductForm({ shopId, product, onDone }: { shopId: string; product?: Pr
       </div>
       <ImageField multiple label={t("merchant.images")} value={f.images} onChange={(v) => setF({ ...f, images: v })} />
       <label className="flex items-center gap-2 text-sm"><Switch checked={f.is_active} onCheckedChange={(v) => setF({ ...f, is_active: v })} />{f.is_active ? t("common.active") : t("merchant.hidden")}</label>
+      {product && <StockHistory productId={product.id} />}
       <Button onClick={save} disabled={busy} className="w-full">{t("common.save")}</Button>
     </div>
   );

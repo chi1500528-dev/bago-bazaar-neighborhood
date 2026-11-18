@@ -104,3 +104,24 @@ export const LOW_STOCK_AT = 5;
 export function isLowStock(p: { stock: number; is_active: boolean }) {
   return p.is_active && p.stock <= LOW_STOCK_AT;
 }
+
+/* ---------- In-store checkout (display only; public.pos_checkout is the authority) ---------- */
+export const PAY_METHODS = ["cash", "kbzpay", "wave", "other"] as const;
+export type PayMethod = (typeof PAY_METHODS)[number];
+
+
+/** Change for cash sales. null = no cash amount entered or not a cash sale; "too_low" = less than total. */
+export function cashChange(method: PayMethod, total: number, received: number | null): number | null | "too_low" {
+  if (method !== "cash" || received == null) return null;
+  return received < total ? "too_low" : received - total;
+}
+
+/** Lines whose current price differs from the price shown when they were added. */
+export function changedPrices<T extends { productId: string; unitPrice: number }>(lines: T[], current: Record<string, number>) {
+  return lines.filter((l) => current[l.productId] !== undefined && current[l.productId] !== l.unitPrice);
+}
+
+/** Calendar date (YYYY-MM-DD) in Myanmar time — "today" for daily sales. */
+export function yangonDay(d: Date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Yangon", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+}
