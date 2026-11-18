@@ -47,8 +47,9 @@ function ProductPage() {
     <div className="grid gap-6 py-6 md:grid-cols-2 md:gap-10">
       {dialog}
       <div className="space-y-3">
-        <div className="aspect-square overflow-hidden rounded-xl border bg-muted">
+        <div className="relative aspect-square overflow-hidden rounded-xl border bg-muted">
           <MediaImg path={p.images[img]} alt={p.name} className="size-full" eager />
+          <HeartButton productId={p.id} className="absolute right-3 top-3 size-11" />
         </div>
         {p.images.length > 1 && (
           <div className="flex gap-2 overflow-x-auto">
@@ -87,11 +88,9 @@ function ProductPage() {
           {out ? t("product.out_of_stock") : t("product.add_to_cart")}
         </Button>
         <ChatWithShop shopId={p.shops.id} shopName={p.shops.name} product={{ id: p.id, name: p.name }} className="hidden md:ml-3 md:inline-flex" />
-        <HeartButton productId={p.id} className="hidden size-11 border md:ml-2 md:inline-grid" />
         {p.description && <p className="whitespace-pre-line break-words border-t pt-4 text-sm leading-relaxed">{p.description}</p>}
       </div>
       <StickyActionBar>
-        <HeartButton productId={p.id} className="size-12 shrink-0 border" />
         <ChatWithShop iconOnly shopId={p.shops.id} shopName={p.shops.name} product={{ id: p.id, name: p.name }} className="size-12 shrink-0 text-primary" />
         <span className="min-w-0 flex-1 truncate text-lg font-bold text-primary">{formatMMK(effectivePrice(p) * (out ? 1 : qty), lang)}</span>
         <Button size="lg" className="h-12 shrink-0" disabled={out} onClick={() => add(p, qty)}>
