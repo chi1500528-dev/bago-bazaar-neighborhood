@@ -56,8 +56,11 @@ function Home() {
   const products = useQuery(homeProductsQuery);
 
   const allShops = shops.data ?? [];
-  const featured = allShops.filter((s) => !s.is_food).slice(0, 8);
-  const food = allShops.filter((s) => s.is_food).slice(0, 4);
+  // Food section follows the shop's category, not a separate switch.
+  const foodId = top.find((c) => c.slug === "food")?.id;
+  const isFood = (s: (typeof allShops)[number]) => !!foodId && s.category_id === foodId;
+  const featured = allShops.filter((s) => !isFood(s)).slice(0, 8);
+  const food = allShops.filter(isFood).slice(0, 4);
 
   return (
     <>

@@ -21,17 +21,35 @@ export function validateProduct(p: ProductInput): ProductErr[] {
 }
 
 export interface DescDetails { brand?: string; size?: string; color?: string; model?: string; material?: string; condition?: string }
-const LABELS: Record<keyof DescDetails, [string, string]> = {
-  brand: ["အမှတ်တံဆိပ်", "Brand"], model: ["မော်ဒယ်", "Model"], size: ["အရွယ်အစား", "Size"],
-  color: ["အရောင်", "Colour"], material: ["ပစ္စည်းအမျိုးအစား", "Material"], condition: ["အခြေအနေ", "Condition"],
+export type DraftLang = "my" | "en";
+const LABELS: Record<keyof DescDetails, Record<DraftLang, string>> = {
+  brand: { my: "အမှတ်တံဆိပ်", en: "Brand" }, model: { my: "မော်ဒယ်", en: "Model" }, size: { my: "အရွယ်အစား", en: "Size" },
+  color: { my: "အရောင်", en: "Colour" }, material: { my: "ပစ္စည်းသား", en: "Material" }, condition: { my: "အခြေအနေ", en: "Condition" },
 };
-/** Joins only the owner's own words. Never adds claims. Empty when nothing given. */
-export function draftDescription(d: DescDetails): string {
+const HEADING: Record<DraftLang, string> = { my: "အသေးစိတ်အချက်အလက်များ", en: "Product details" };
+
+/** Myanmar wording for common condition words; anything else is kept as the owner typed it. */
+export function conditionText(v: string, lang: DraftLang): string {
+  if (lang !== "my") return v;
+  const n = v.trim().toLowerCase();
+  if (n === "new" || n === "အသစ်") return "အသစ် (New)";
+  if (["used", "second-hand", "second hand", "secondhand", "တစ်ပတ်ရစ်"].includes(n)) return "တစ်ပတ်ရစ်";
+  return v.trim();
+}
+
+/** Intro line + one bullet per filled field, in one language. Uses only the owner's own words; empty when nothing given. */
+export function draftDescription(d: DescDetails, lang: DraftLang = "my", name = ""): string {
   const keys = (Object.keys(LABELS) as (keyof DescDetails)[]).filter((k) => d[k]?.trim());
   if (!keys.length) return "";
-  const my = keys.map((k) => `${LABELS[k][0]} - ${d[k]!.trim()}`).join("။ ") + "။";
-  const en = keys.map((k) => `${LABELS[k][1]}: ${d[k]!.trim()}`).join(". ") + ".";
-  return `${my}\n${en}`;
+  const intro = name.trim() ? `${name.trim()} — ${HEADING[lang]}` : HEADING[lang];
+  const lines = keys.map((k) => `• ${LABELS[k][lang]} - ${k === "condition" ? conditionText(d[k]!, lang) : d[k]!.trim()}`);
+  return `${intro}\n\n${lines.join("\n")}`;
+}
+
+/** Never overwrite what the owner typed: append the draft below existing text. */
+export function applyDraft(existing: string, draft: string): string {
+  if (!draft) return existing;
+  return existing.trim() ? `${existing.replace(/\s+$/, "")}\n\n${draft}` : draft;
 }
 
 /** Minimal RFC4180 CSV parser (quotes, commas, newlines in quotes, BOM). */

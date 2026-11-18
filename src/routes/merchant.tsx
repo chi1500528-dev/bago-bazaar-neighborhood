@@ -13,7 +13,7 @@ import { MediaImg, StatusBadge, EmptyState } from "@/components/site/bits";
 import { RequireAuth } from "@/components/site/shell";
 import { ImageField } from "@/components/site/upload";
 import { CsvImport, ImportHistory, TemplatePicker } from "@/components/site/product-import";
-import { validateProduct, draftDescription, type DescDetails } from "@/lib/domain/products";
+import { validateProduct, draftDescription, applyDraft, type DescDetails, type DraftLang } from "@/lib/domain/products";
 import type { TKey } from "@/lib/i18n/dict";
 import { OrderDetail } from "@/components/site/order-detail";
 import { PosSell, StockHistory } from "@/components/site/pos";
@@ -201,9 +201,12 @@ function ShopForm({ shop, onCreated }: { shop?: ShopRow; onCreated?: (id: string
     township_id: shop?.township_id ?? "", address: shop?.address ?? "", phone: shop?.phone ?? "",
     opening_hours: shop?.opening_hours ?? "", offers_delivery: shop?.offers_delivery ?? true, offers_pickup: shop?.offers_pickup ?? true,
     delivery_fee: String(shop?.delivery_fee ?? 0), delivery_note: shop?.delivery_note ?? "", pickup_info: shop?.pickup_info ?? "",
-    is_food: shop?.is_food ?? false, logo: shop?.logo_url ? [shop.logo_url] : [], cover: shop?.cover_url ? [shop.cover_url] : [],
+    logo: shop?.logo_url ? [shop.logo_url] : [], cover: shop?.cover_url ? [shop.cover_url] : [],
   });
   const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (!shop && !f.township_id && towns.data) { const b = towns.data.find((x) => x.slug === "bago"); if (b) setF((o) => ({ ...o, township_id: b.id })); }
+  }, [shop, towns.data, f.township_id]);
   const save = async () => {
     if (!f.name.trim()) { toast.error(`${t("merchant.shop_name")}: ${t("checkout.required")}`); return; }
     if (!f.offers_delivery && !f.offers_pickup) { toast.error(t("err.METHOD_UNAVAILABLE")); return; }
@@ -212,7 +215,8 @@ function ShopForm({ shop, onCreated }: { shop?: ShopRow; onCreated?: (id: string
       name: f.name.trim(), description: f.description || null, category_id: f.category_id || null, township_id: f.township_id || null,
       address: f.address || null, phone: f.phone || null, opening_hours: f.opening_hours || null,
       offers_delivery: f.offers_delivery, offers_pickup: f.offers_pickup, delivery_fee: 0,
-      delivery_note: f.delivery_note || null, pickup_info: f.pickup_info || null, is_food: f.is_food,
+      delivery_note: f.delivery_note || null, pickup_info: f.pickup_info || null,
+      is_food: top.find((c) => c.id === f.category_id)?.slug === "food",
       logo_url: f.logo[0] ?? null, cover_url: f.cover[0] ?? null,
     };
     let error;
@@ -235,7 +239,7 @@ function ShopForm({ shop, onCreated }: { shop?: ShopRow; onCreated?: (id: string
       <div className="space-y-1.5 sm:col-span-2"><Label>{t("merchant.shop_name")}</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
       <div className="space-y-1.5 sm:col-span-2"><Label>{t("merchant.description")}</Label><Textarea rows={3} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></div>
       <div className="space-y-1.5"><Label>{t("merchant.category")}</Label>
-        <select className={sel} value={f.category_id} onChange={(e) => setF({ ...f, category_id: e.target.value, is_food: f.is_food || top.find((c) => c.id === e.target.value)?.slug === "food" })}>
+        <select className={sel} value={f.category_id} onChange={(e) => setF({ ...f, category_id: e.target.value })}>
           <option value="">—</option>{top.map((c) => <option key={c.id} value={c.id}>{pick(c.name_my, c.name_en)}</option>)}
         </select></div>
       <div className="space-y-1.5"><Label>{t("nav.township")}</Label>
@@ -244,14 +248,10 @@ function ShopForm({ shop, onCreated }: { shop?: ShopRow; onCreated?: (id: string
         </select></div>
       <div className="space-y-1.5"><Label>{t("shop.address")}</Label><Input value={f.address} onChange={(e) => setF({ ...f, address: e.target.value })} /></div>
       <div className="space-y-1.5"><Label>{t("shop.phone")}</Label><Input type="tel" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} /></div>
-      <div className="space-y-1.5 sm:col-span-2"><Label>{t("shop.hours")}</Label><Input placeholder="8:00 – 20:00" value={f.opening_hours} onChange={(e) => setF({ ...f, opening_hours: e.target.value })} /></div>
+      <div className="space-y-1.5 sm:col-span-2"><Label>{t("shop.hours")}</Label><HoursPicker value={f.opening_hours} onChange={(v) => setF({ ...f, opening_hours: v })} /></div>
       <label className="flex items-center gap-2 text-sm"><Switch checked={f.offers_delivery} onCheckedChange={(v) => setF({ ...f, offers_delivery: v })} />{t("shop.delivery")}</label>
       <label className="flex items-center gap-2 text-sm"><Switch checked={f.offers_pickup} onCheckedChange={(v) => setF({ ...f, offers_pickup: v })} />{t("shop.pickup")}</label>
-      {f.offers_delivery && <>
-        <div className="space-y-1.5"><Label>{t("merchant.delivery_note")}</Label><Input value={f.delivery_note} onChange={(e) => setF({ ...f, delivery_note: e.target.value })} /></div>
-      </>}
       {f.offers_pickup && <div className="space-y-1.5 sm:col-span-2"><Label>{t("merchant.pickup_info")}</Label><Input value={f.pickup_info} onChange={(e) => setF({ ...f, pickup_info: e.target.value })} /></div>}
-      <label className="flex items-center gap-2 text-sm sm:col-span-2"><Switch checked={f.is_food} onCheckedChange={(v) => setF({ ...f, is_food: v })} />{t("merchant.is_food")}</label>
       <ImageField label={t("merchant.logo")} value={f.logo} onChange={(v) => setF({ ...f, logo: v })} />
       <ImageField label={t("merchant.cover")} value={f.cover} onChange={(v) => setF({ ...f, cover: v })} />
       <div className="sm:col-span-2"><Button onClick={save} disabled={busy}>{busy ? t("common.loading") : shop ? t("common.save") : t("merchant.create")}</Button></div>
@@ -316,7 +316,8 @@ function MerchantProducts({ shop }: { shop: ShopRow }) {
 }
 
 function ProductForm({ shopId, product, onDone }: { shopId: string; product?: ProductRow | undefined; onDone: () => void }) {
-  const { t, pick } = useApp();
+  const { t, pick, lang } = useApp();
+  const [draftLang, setDraftLang] = useState<DraftLang>(lang);
   const qc = useQueryClient();
   const cats = useQuery(categoriesQuery);
   const [f, setF] = useState({
@@ -366,7 +367,13 @@ function ProductForm({ shopId, product, onDone }: { shopId: string; product?: Pr
               <Input key={k} placeholder={t(`desc.${k}` as TKey)} value={details[k] ?? ""} onChange={(e) => setDetails({ ...details, [k]: e.target.value })} className="h-10" />
             ))}
           </div>
-          <Button type="button" variant="outline" size="sm" onClick={() => { const d = draftDescription(details); if (d) setF({ ...f, description: d }); }}>{t("desc.make")}</Button>
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={() => { const d = draftDescription(details, draftLang, f.name); if (d) setF({ ...f, description: applyDraft(f.description, d) }); }}>{t("desc.make")}</Button>
+            <div className="inline-flex overflow-hidden rounded-md border text-xs font-semibold" role="group" aria-label={t("account.language")}>
+              {(["my", "en"] as const).map((l) => <button key={l} type="button" aria-pressed={draftLang === l} onClick={() => setDraftLang(l)}
+                className={`px-2.5 py-1.5 ${draftLang === l ? "bg-primary text-primary-foreground" : "bg-card"}`}>{l === "my" ? "MY" : "EN"}</button>)}
+            </div>
+          </div>
         </div>}
       </div>
       <div className="space-y-1.5"><Label>{t("merchant.category")}</Label>
@@ -487,6 +494,36 @@ function ShopCategories({ shopId }: { shopId: string }) {
       <div className="flex gap-2">
         <Input value={name} placeholder={t("merchant.cat_placeholder")} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} className="max-w-xs" />
         <Button variant="outline" onClick={add}><Plus className="size-4" />{t("merchant.cat_add")}</Button>
+      </div>
+    </div>
+  );
+}
+
+const HOUR_OPTS = Array.from({ length: 48 }, (_, i) => `${String(Math.floor(i / 2)).padStart(2, "0")}:${i % 2 ? "30" : "00"}`);
+const ALL_DAY = "24/7";
+/** Opening hours as two time pickers + quick presets; stored as "08:00 – 20:00" (or "24/7"). */
+function HoursPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { t } = useApp();
+  const m = value.match(/(\d{1,2}):(\d{2}).*?(\d{1,2}):(\d{2})/);
+  const norm = (h: string, mm: string) => `${h.padStart(2, "0")}:${mm}`;
+  const open = m ? norm(m[1]!, m[2]!) : "08:00";
+  const close = m ? norm(m[3]!, m[4]!) : "20:00";
+  const allDay = value.trim() === ALL_DAY;
+  const set = (o: string, c: string) => onChange(`${o} – ${c}`);
+  const sel = "h-10 rounded-md border bg-card px-2 text-sm tabular-nums disabled:opacity-50";
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <select aria-label={t("hours.open")} className={sel} disabled={allDay} value={open} onChange={(e) => set(e.target.value, close)}>{HOUR_OPTS.map((h) => <option key={h}>{h}</option>)}</select>
+        <span className="text-sm text-muted-foreground">–</span>
+        <select aria-label={t("hours.close")} className={sel} disabled={allDay} value={close} onChange={(e) => set(open, e.target.value)}>{HOUR_OPTS.map((h) => <option key={h}>{h}</option>)}</select>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {[["08:00", "20:00"], ["09:00", "21:00"], ["06:00", "18:00"]].map(([o, c]) => (
+          <button key={o} type="button" onClick={() => set(o!, c!)} className={`rounded-full border px-3 py-1 text-xs tabular-nums ${!allDay && open === o && close === c && m ? "border-primary bg-primary-soft text-primary" : "bg-card"}`}>{o} – {c}</button>
+        ))}
+        <button type="button" onClick={() => onChange(allDay ? "08:00 – 20:00" : ALL_DAY)} className={`rounded-full border px-3 py-1 text-xs ${allDay ? "border-primary bg-primary-soft text-primary" : "bg-card"}`}>{t("hours.all_day")}</button>
+        {value && <button type="button" onClick={() => onChange("")} className="rounded-full px-3 py-1 text-xs text-muted-foreground underline">{t("hours.clear")}</button>}
       </div>
     </div>
   );

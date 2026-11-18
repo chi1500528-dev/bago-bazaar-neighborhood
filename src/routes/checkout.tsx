@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
 import { cartTotals, errorKey, formatMMK, type DeliveryMethod } from "@/lib/domain/rules";
 import { townshipsQuery, useCartShop } from "@/lib/queries";
+import { addressesQueryKey, addressesTable, fetchAddresses, type Address } from "@/lib/addresses";
 import { EmptyState, StickyActionBar } from "@/components/site/bits";
 import { useTownshipName } from "@/components/site/cards";
 import { RequireAuth } from "@/components/site/shell";
@@ -38,7 +39,16 @@ function Checkout() {
   const [form, setForm] = useState({ name: "", phone: "", township: township ?? "", address: "", note: "" });
   const [errors, setErrors] = useState<Partial<Record<"name"|"phone"|"township"|"address"|"note", string>>>({});
   const [busy, setBusy] = useState(false);
+  const [saveAddr, setSaveAddr] = useState(false);
+  const [addrId, setAddrId] = useState<string | null>(null);
+  const addrs = useQuery({ queryKey: addressesQueryKey(session?.user.id), enabled: !!session, queryFn: fetchAddresses });
   const key = useRef<string>("");
+  const pickAddr = (a: Address) => { setAddrId(a.id); setForm((f) => ({ ...f, name: a.recipient_name, phone: a.phone, township: a.township_id ?? "", address: a.address })); };
+  useEffect(() => {
+    const d = addrs.data?.find((a) => a.is_default) ?? addrs.data?.[0];
+    if (d && addrId === null) pickAddr(d);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addrs.data]);
 
   useEffect(() => {
     key.current = crypto.randomUUID();
@@ -83,6 +93,9 @@ function Checkout() {
       toast.error(t(errorKey(error?.message)));
       return;
     }
+    if (saveAddr && method === "delivery" && session) {
+      await addressesTable().insert({ user_id: session.user.id, recipient_name: form.name.trim(), phone: form.phone.trim(), township_id: form.township || null, address: form.address.trim(), is_default: !(addrs.data ?? []).length });
+    }
     clearCart();
     toast.success(t("checkout.success"));
     navigate({ to: "/orders/$id", params: { id: data } });
@@ -120,13 +133,23 @@ function Checkout() {
           {field("phone", t("checkout.phone"), <Input id="phone" type="tel" inputMode="tel" autoComplete="tel" className="h-11" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />)}
           {method === "delivery" ? (
             <>
+              {(addrs.data ?? []).length > 0 && (
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label>{t("addr.saved")}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {addrs.data!.map((a) => <button key={a.id} type="button" onClick={() => pickAddr(a)}
+                      className={cn("rounded-full border px-3 py-1.5 text-xs", addrId === a.id ? "border-primary bg-primary-soft text-primary" : "bg-card")}>{a.label || a.recipient_name}</button>)}
+                  </div>
+                </div>
+              )}
               {field("township", t("checkout.township"), (
                 <select id="township" value={form.township} onChange={(e) => setForm({ ...form, township: e.target.value })} className="h-11 w-full rounded-md border bg-card px-2 text-sm">
                   <option value="">—</option>
                   {towns.data?.map((x) => <option key={x.id} value={x.id}>{pick(x.name_my, x.name_en)}</option>)}
                 </select>
               ))}
-              <div className="sm:col-span-2">{field("address", t("checkout.address"), <Textarea id="address" autoComplete="street-address" rows={2} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />)}</div>
+              <div className="sm:col-span-2">{field("address", t("checkout.address"), <Textarea id="address" autoComplete="street-address" rows={2} value={form.address} onChange={(e) => { setAddrId(""); setForm({ ...form, address: e.target.value }); }} />)}</div>
+              {addrId === "" || !(addrs.data ?? []).length ? <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" checked={saveAddr} onChange={(e) => setSaveAddr(e.target.checked)} />{t("addr.save_this")}</label> : null}
             </>
           ) : (
             <div className="rounded-md bg-primary-soft p-3 text-sm sm:col-span-2">

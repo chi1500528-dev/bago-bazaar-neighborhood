@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateProduct, draftDescription, parseCsv, analyzeRows, autoMap, rowValues, type ExistingProduct } from "@/lib/domain/products";
+import { validateProduct, draftDescription, conditionText, applyDraft, parseCsv, analyzeRows, autoMap, rowValues, type ExistingProduct } from "@/lib/domain/products";
 
 const base = { name: "Soap", price: "1000", sale_price: "", stock: "5", is_active: true };
 
@@ -15,10 +15,24 @@ describe("product form rules", () => {
 });
 
 describe("draft description", () => {
-  it("uses only the owner's words", () => {
-    const d = draftDescription({ brand: "Pigeon", size: "M" });
-    expect(d).toContain("Pigeon"); expect(d).toContain("Size: M"); expect(d).not.toContain("Colour");
+  it("writes intro + bullets in Myanmar with exact labels, skipping empty fields", () => {
+    const d = draftDescription({ brand: "Philips", model: "HD9306/03", material: "SUS304", condition: "New", color: " " }, "my", "Philips Kettle");
+    expect(d).toBe("Philips Kettle — အသေးစိတ်အချက်အလက်များ\n\n• အမှတ်တံဆိပ် - Philips\n• မော်ဒယ် - HD9306/03\n• ပစ္စည်းသား - SUS304\n• အခြေအနေ - အသစ် (New)");
     expect(draftDescription({})).toBe("");
+  });
+  it("uses only one language", () => {
+    const d = draftDescription({ size: "M" }, "en");
+    expect(d).toBe("Product details\n\n• Size - M");
+    expect(d).not.toContain("အရွယ်အစား");
+  });
+  it("maps used / second-hand to တစ်ပတ်ရစ်", () => {
+    expect(conditionText("Used", "my")).toBe("တစ်ပတ်ရစ်");
+    expect(conditionText("Second-hand", "my")).toBe("တစ်ပတ်ရစ်");
+    expect(conditionText("Used", "en")).toBe("Used");
+  });
+  it("appends below existing text instead of overwriting", () => {
+    expect(applyDraft("", "X")).toBe("X");
+    expect(applyDraft("Owner text", "X")).toBe("Owner text\n\nX");
   });
 });
 

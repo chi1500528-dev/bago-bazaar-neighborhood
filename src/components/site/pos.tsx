@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 type Line = { productId: string; name: string; image: string | null; unitPrice: number; quantity: number; stock: number };
 const newKey = () => crypto.randomUUID();
 /** No answer from the server (dropped connection, timeout, relay error): outcome unknown. */
-const isNetwork = (e: { message: string; code?: string }) => !e.code || /fetch|network|timeout|load failed/i.test(e.message);
+const isNetwork = (e: { message: string; code?: string }) => /failed to fetch|networkerror|network request failed|load failed|timeout|aborted/i.test(e.message ?? "");
 
 export function PosSell({ shopId }: { shopId: string }) {
   const { t, lang } = useApp();
@@ -98,12 +98,14 @@ export function PosSell({ shopId }: { shopId: string }) {
         if (code === "PRICE_CHANGED") { setChanged([]); toast.warning(t("pos.price_changed")); qc.invalidateQueries({ queryKey: ["pos-products", shopId] }); return; }
         if (code === "OUT_OF_STOCK") { toast.error(`${t("pos.no_stock")}: ${lines.find((l) => l.productId === pid)?.name ?? ""}`); return; }
         if (code === "CASH_TOO_LOW") { toast.error(t("pos.too_low")); return; }
-        toast.error(t("err.generic")); return;
+        console.error("pos_checkout", error);
+        toast.error(`${t("err.generic")} (${error.code || ""} ${error.message})`.trim()); return;
       }
       setDone({ id: data!.sale_id, n: data!.sale_number, change: data!.change_due });
       setLines([]); setCash(""); setChanged([]); setUncertain(false); key.current = newKey();
       qc.invalidateQueries({ queryKey: ["pos-day", shopId] }); qc.invalidateQueries({ queryKey: ["pos-products", shopId] }); qc.invalidateQueries({ queryKey: ["my-products", shopId] });
-    } catch {
+    } catch (e) {
+      console.error("pos_checkout network", e);
       setUncertain(true); // key and cart kept as-is: retry returns the saved sale instead of a second one
       toast.error(t("pos.retrying"));
     } finally { setBusy(false); }

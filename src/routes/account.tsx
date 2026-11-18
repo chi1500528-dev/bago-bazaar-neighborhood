@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { toast } from "sonner";
 import {
-  Bell, ChevronRight, FileText, Globe, Info, LogOut, MessageSquare, Receipt, ShieldCheck, Store, Trash2, UserRound, Lock,
+  Bell, ChevronRight, Heart, MapPin, FileText, Globe, Info, LogOut, MessageSquare, Receipt, ShieldCheck, Store, Trash2, UserRound, Lock,
 } from "lucide-react";
 import { deleteOwnAccount } from "@/lib/account.functions";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -114,6 +114,8 @@ function Account() {
 
       <Group title={t("account.g_activity")}>
         <Row to="/orders" icon={Receipt} label={t("orders.title")} />
+        <Row to="/wishlist" icon={Heart} label={t("wish.title")} />
+        <Row to="/addresses" icon={MapPin} label={t("addr.title")} />
         <Row to="/messages" icon={MessageSquare} label={t("chat.title")} badge={counts.messages} />
         <Row to="/merchant" icon={Store} label={t("nav.merchant")} badge={counts.shopMessages + counts.newOrders} />
         {roles.includes("admin") && <Row to="/admin" icon={ShieldCheck} label={t("nav.admin")} />}

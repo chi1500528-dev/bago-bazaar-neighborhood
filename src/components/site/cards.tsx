@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Bike, Store } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { MediaImg } from "./bits";
+import { HeartButton } from "@/lib/wishlist";
 import { useApp } from "@/lib/app-state";
 import { discountPercent, effectivePrice, formatMMK } from "@/lib/domain/rules";
 import { townshipsQuery, type Product, type Shop } from "@/lib/queries";
@@ -67,6 +68,7 @@ export function ProductCard({ p, onAdd }: { p: Product; onAdd: (p: Product) => v
     <div className="group lift zoom-img flex flex-col overflow-hidden rounded-xl bg-card">
       <Link to="/p/$id" params={{ id: p.id }} className="relative block aspect-square overflow-hidden bg-muted">
         <MediaImg path={p.images[0]} alt={p.name} className="size-full" />
+        <HeartButton productId={p.id} className="absolute right-2 top-2" />
         {off > 0 && (
           <span className="absolute left-2 top-2 rounded-md bg-gold px-2 py-0.5 text-xs font-semibold text-gold-foreground">
             -{off}%
