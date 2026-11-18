@@ -1,8 +1,4 @@
--- Release B: in-store checkout (POS) + stock movement ledger.
--- NOT APPLIED. Review, then apply through the Lovable migration tool after approval.
--- Additive: new tables/functions; place_order and update_order_status keep the same inputs/outputs.
-
--- 1. Stock ledger -----------------------------------------------------------
+-- 1. Stock ledger
 create table public.stock_movements (
   id uuid primary key default gen_random_uuid(),
   shop_id uuid not null references public.shops(id),
@@ -26,9 +22,6 @@ alter table public.stock_movements enable row level security;
 create policy "Owners and admins read stock movements" on public.stock_movements for select to authenticated
   using (public.is_shop_owner(shop_id) or public.has_role(auth.uid(),'admin'));
 
--- Every stock change on products writes exactly one ledger row in the same transaction.
--- Functions set bm.stock_reason / bm.stock_ref (transaction-local) to label their changes;
--- direct edits from the product form or CSV import are labelled manual_edit / new_product.
 create or replace function public.products_stock_ledger()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare
@@ -52,11 +45,10 @@ end $$;
 create trigger products_stock_ledger_trg after insert or update of stock on public.products
   for each row execute function public.products_stock_ledger();
 
--- Opening balance: one row per existing product with its current stock.
 insert into public.stock_movements(shop_id, product_id, product_name, sku, barcode, delta, stock_after, reason)
 select shop_id, id, name, sku, barcode, stock, stock, 'opening_balance' from public.products;
 
--- 2. POS sales -------------------------------------------------------------
+-- 2. POS sales
 create table public.pos_counters (shop_id uuid primary key references public.shops(id), last_no bigint not null default 0);
 grant all on public.pos_counters to service_role;
 alter table public.pos_counters enable row level security;
@@ -108,10 +100,6 @@ alter table public.pos_sale_items enable row level security;
 create policy "Owners and admins read sale items" on public.pos_sale_items for select to authenticated
   using (exists (select 1 from public.pos_sales s where s.id = sale_id and (public.is_shop_owner(s.shop_id) or public.has_role(auth.uid(),'admin'))));
 
--- Checkout: server reads prices, locks products in ascending id order, checks stock, issues sale number.
--- p_expected_total is what the screen showed; a mismatch raises PRICE_CHANGED so the owner confirms first.
--- Idempotency: same (shop, key) requests are serialized by an advisory lock; a replay with the same
--- canonical payload returns the saved sale, a different payload raises IDEMPOTENCY_MISMATCH.
 create or replace function public.pos_checkout(p_shop_id uuid, p_items jsonb, p_payment text, p_cash_received integer, p_expected_total integer, p_idempotency_key text)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
@@ -131,7 +119,6 @@ begin
   if p_payment <> 'cash' and p_cash_received is not null then raise exception 'CASH_NOT_ALLOWED'; end if;
   if p_cash_received is not null and p_cash_received < 0 then raise exception 'CASH_TOO_LOW'; end if;
 
-  -- Strict item validation before any cast: array of 1..100 objects {product_id: uuid string, quantity: integer 1..999}.
   if p_items is null or jsonb_typeof(p_items) is distinct from 'array' or jsonb_array_length(p_items) = 0 or jsonb_array_length(p_items) > 100 then
     raise exception 'INVALID_ITEMS'; end if;
   for v_e in select * from jsonb_array_elements(p_items) loop
@@ -149,12 +136,10 @@ begin
   if not exists (select 1 from _pos_req) then raise exception 'INVALID_ITEMS'; end if;
   if exists (select 1 from _pos_req where qty < 1 or qty > 999) then raise exception 'INVALID_QUANTITY'; end if;
 
-  -- Canonical payload: merged items sorted by product id + payment + cash.
   select md5(jsonb_build_object(
       'items', (select jsonb_agg(jsonb_build_array(product_id::text, qty) order by product_id) from _pos_req),
       'payment', p_payment, 'cash', p_cash_received)::text) into v_hash;
 
-  -- Serialize same-key requests, then check for an existing sale.
   perform pg_advisory_xact_lock(hashtextextended('pos:' || p_shop_id::text || ':' || p_idempotency_key, 0));
   select * into v_sale from public.pos_sales where shop_id = p_shop_id and idempotency_key = p_idempotency_key;
   if found then
@@ -162,7 +147,6 @@ begin
     return jsonb_build_object('sale_id', v_sale.id, 'sale_number', v_sale.sale_number, 'total', v_sale.total, 'change_due', v_sale.change_due, 'replayed', true);
   end if;
 
-  -- Lock in ascending id order (same order as online orders/cancellations: deadlock-safe).
   perform 1 from public.products p where p.id in (select product_id from _pos_req) order by p.id for update;
   if (select count(*) from public.products p join _pos_req r on r.product_id = p.id where p.shop_id = p_shop_id) <> (select count(*) from _pos_req) then
     raise exception 'PRODUCT_UNAVAILABLE'; end if;
@@ -219,7 +203,6 @@ begin
   update public.pos_sales set status = 'voided', voided_at = now(), voided_by = v_uid, void_reason = left(btrim(p_reason), 200) where id = p_sale_id;
 end $$;
 
--- Sales for one Yangon calendar day (default today) with totals that exclude voided sales.
 create or replace function public.pos_day(p_shop_id uuid, p_day date default null)
 returns jsonb language plpgsql stable security definer set search_path = public as $$
 declare v_day date := coalesce(p_day, (now() at time zone 'Asia/Yangon')::date);
@@ -245,7 +228,7 @@ grant execute on function public.pos_checkout(uuid,jsonb,text,integer,integer,te
 grant execute on function public.pos_void_sale(uuid,text,boolean) to authenticated;
 grant execute on function public.pos_day(uuid,date) to authenticated;
 
--- 3. Label online-order stock changes (same inputs/outputs as before) --------
+-- 3. Online orders
 create or replace function public.place_order(p_shop_id uuid, p_items jsonb, p_method delivery_method, p_recipient_name text, p_phone text, p_township_id uuid, p_address text, p_note text, p_idempotency_key text)
  returns uuid language plpgsql security definer set search_path to 'public' as $function$
 declare
@@ -267,8 +250,6 @@ begin
   insert into public.orders (customer_id, shop_id, delivery_method, recipient_name, phone, township_id, address, note, subtotal, delivery_fee, total, idempotency_key)
   values (v_uid, p_shop_id, p_method, trim(p_recipient_name), trim(p_phone), p_township_id, nullif(trim(coalesce(p_address,'')),''), nullif(trim(coalesce(p_note,'')),''), 0, v_fee, 0, p_idempotency_key)
   returning id into v_order;
-  -- Lock every product in ascending id order first (same order as POS: deadlock-safe).
-  -- Only well-formed ids are pre-locked; the loop below keeps the original validation and errors.
   perform 1 from public.products where id in (
     select (e->>'product_id')::uuid from jsonb_array_elements(p_items) e
     where jsonb_typeof(e) = 'object' and (e->>'product_id') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'

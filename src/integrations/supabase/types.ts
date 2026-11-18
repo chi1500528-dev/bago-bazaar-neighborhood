@@ -318,6 +318,145 @@ export type Database = {
           },
         ]
       }
+      pos_counters: {
+        Row: {
+          last_no: number
+          shop_id: string
+        }
+        Insert: {
+          last_no?: number
+          shop_id: string
+        }
+        Update: {
+          last_no?: number
+          shop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_counters_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: true
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pos_sale_items: {
+        Row: {
+          barcode: string | null
+          id: string
+          line_total: number
+          name: string
+          product_id: string | null
+          quantity: number
+          sale_id: string
+          sku: string | null
+          unit_price: number
+        }
+        Insert: {
+          barcode?: string | null
+          id?: string
+          line_total: number
+          name: string
+          product_id?: string | null
+          quantity: number
+          sale_id: string
+          sku?: string | null
+          unit_price: number
+        }
+        Update: {
+          barcode?: string | null
+          id?: string
+          line_total?: number
+          name?: string
+          product_id?: string | null
+          quantity?: number
+          sale_id?: string
+          sku?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_sale_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "pos_sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pos_sales: {
+        Row: {
+          cash_received: number | null
+          change_due: number | null
+          created_at: string
+          created_by: string
+          id: string
+          idempotency_key: string
+          payment_method: string
+          request_hash: string
+          sale_number: number
+          shop_id: string
+          status: string
+          subtotal: number
+          total: number
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+        }
+        Insert: {
+          cash_received?: number | null
+          change_due?: number | null
+          created_at?: string
+          created_by: string
+          id?: string
+          idempotency_key: string
+          payment_method: string
+          request_hash: string
+          sale_number: number
+          shop_id: string
+          status?: string
+          subtotal: number
+          total: number
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Update: {
+          cash_received?: number | null
+          change_due?: number | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          idempotency_key?: string
+          payment_method?: string
+          request_hash?: string
+          sale_number?: number
+          shop_id?: string
+          status?: string
+          subtotal?: number
+          total?: number
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_sales_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_imports: {
         Row: {
           added: number
@@ -711,6 +850,69 @@ export type Database = {
           },
         ]
       }
+      stock_movements: {
+        Row: {
+          barcode: string | null
+          created_at: string
+          created_by: string | null
+          delta: number
+          id: string
+          product_id: string | null
+          product_name: string
+          reason: string
+          ref_id: string | null
+          ref_type: string | null
+          shop_id: string
+          sku: string | null
+          stock_after: number
+        }
+        Insert: {
+          barcode?: string | null
+          created_at?: string
+          created_by?: string | null
+          delta: number
+          id?: string
+          product_id?: string | null
+          product_name: string
+          reason: string
+          ref_id?: string | null
+          ref_type?: string | null
+          shop_id: string
+          sku?: string | null
+          stock_after: number
+        }
+        Update: {
+          barcode?: string | null
+          created_at?: string
+          created_by?: string | null
+          delta?: number
+          id?: string
+          product_id?: string | null
+          product_name?: string
+          reason?: string
+          ref_id?: string | null
+          ref_type?: string | null
+          shop_id?: string
+          sku?: string | null
+          stock_after?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       townships: {
         Row: {
           created_at: string
@@ -788,6 +990,22 @@ export type Database = {
           p_township_id: string
         }
         Returns: string
+      }
+      pos_checkout: {
+        Args: {
+          p_cash_received: number
+          p_expected_total: number
+          p_idempotency_key: string
+          p_items: Json
+          p_payment: string
+          p_shop_id: string
+        }
+        Returns: Json
+      }
+      pos_day: { Args: { p_day?: string; p_shop_id: string }; Returns: Json }
+      pos_void_sale: {
+        Args: { p_items_returned: boolean; p_reason: string; p_sale_id: string }
+        Returns: undefined
       }
       shop_is_public: { Args: { _shop_id: string }; Returns: boolean }
       update_order_status: {

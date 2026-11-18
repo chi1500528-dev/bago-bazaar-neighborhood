@@ -1,6 +1,5 @@
-// Typed access to the in-store checkout tables/functions. They are added by
-// supabase/pending/20261118_release_b_pos_stock_ledger.sql and are not yet in the
-// generated types, so calls go through these narrow untyped wrappers.
+// Typed access to the in-store checkout tables/functions (not yet in the generated
+// types), so calls go through these narrow untyped wrappers.
 import { supabase } from "@/integrations/supabase/client";
 import type { PayMethod } from "@/lib/domain/rules";
 
