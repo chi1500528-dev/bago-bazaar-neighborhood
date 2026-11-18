@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { shopCategoriesQuery } from "@/lib/queries";
 import {
-  CSV_EXAMPLE, CSV_FIELDS, CSV_MAX_ROWS, analyzeRows, unresolvedRows, autoMap, parseCsv, rowValues, validateProduct,
+  CSV_EXAMPLE, CSV_FIELDS, CSV_MAX_ROWS, analyzeRows, unresolvedRows, activeSkips, importCounts, autoMap, parseCsv, rowValues, validateProduct,
   type CsvField, type ExistingProduct, type RowValues, type RowErr,
 } from "@/lib/domain/products";
 import type { TKey } from "@/lib/i18n/dict";
@@ -63,7 +63,7 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
   const [rows, setRows] = useState<RowValues[] | null>(null);
   const [ticked, setTicked] = useState<Record<string, boolean>>({});
   const [dupOk, setDupOk] = useState<Record<number, boolean>>({});
-  const [skip, setSkip] = useState<Record<number, boolean>>({});
+  const [rawSkip, setSkip] = useState<Record<number, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [clearEmpty, setClearEmpty] = useState(false);
   const [result, setResult] = useState<{ added: number; updated: number; failed: { line: number; name: string; why: FailReason }[]; skipped: { line: number; name: string }[]; historyErr: boolean } | null>(null);
@@ -71,6 +71,8 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
   const mapped = useMemo(() => CSV_FIELDS.filter((f) => map[f] !== undefined), [map]);
 
   const analyzed = useMemo(() => (rows ? analyzeRows(rows, existing.data ?? [], { clearEmpty, mapped, categoryNames: catNames }) : []), [rows, existing.data, clearEmpty, mapped, catNames]);
+
+  const skip = useMemo(() => activeSkips(analyzed, rawSkip), [analyzed, rawSkip]);
 
   const download = () => {
     const url = URL.createObjectURL(new Blob(["\uFEFF" + CSV_EXAMPLE], { type: "text/csv" }));
@@ -132,7 +134,7 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
         const { error } = await supabase.from("products").update(upd).eq("id", r.matchId!);
         if (error) failed.push({ line: r.line, name: r.values.name, why: reason(error) }); else updated++;
       }
-      const { error: hErr } = await supabase.from("product_imports").insert({ shop_id: shopId, file_name: file.slice(0, 200), added, updated, failed: failed.length + skipped.length });
+      const { error: hErr } = await supabase.from("product_imports").insert({ shop_id: shopId, file_name: file.slice(0, 200), added, updated, failed: importCounts(added, updated, failed.length, skipped.length).notSaved });
       qc.invalidateQueries();
       failed.sort((x, y) => x.line - y.line);
       setResult({ added, updated, failed, skipped, historyErr: !!hErr });
@@ -143,7 +145,7 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
   if (result) return (
     <div className="space-y-3">
       <p className="font-semibold">{t("imp.result")}</p>
-      <p className="text-sm">{t("imp.result_line", { a: result.added, u: result.updated, f: result.failed.length })}</p>
+      <p className="text-sm">{t("imp.result_counts", { a: result.added, u: result.updated, f: result.failed.length, s: result.skipped.length })}</p>
       {result.historyErr && <p className="text-sm text-destructive">{t("imp.history_failed")}</p>}
       {result.skipped.length > 0 && (
         <div>
@@ -225,7 +227,7 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
                   <label className="flex items-center gap-2 text-xs"><Checkbox checked={!!dupOk[r.line]} onCheckedChange={(v) => setDupOk({ ...dupOk, [r.line]: !!v })} />{t("imp.possible_dup")}</label>
                 )}
                 {(r.errors.length > 0 || (!r.matchId && r.possibleDuplicate)) && (
-                  <label className="flex items-center gap-2 text-xs"><Checkbox checked={!!skip[r.line]} onCheckedChange={(v) => setSkip({ ...skip, [r.line]: !!v })} />{t("imp.skip_row")}</label>
+                  <label className="flex items-center gap-2 text-xs"><Checkbox checked={!!skip[r.line]} onCheckedChange={(v) => setSkip({ ...rawSkip, [r.line]: !!v })} />{t("imp.skip_row")}</label>
                 )}
                 {r.changes.map((c) => (
                   <label key={c.field} className="flex items-center gap-2 text-xs">

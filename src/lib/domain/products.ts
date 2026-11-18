@@ -146,3 +146,15 @@ export function analyzeRows(rows: RowValues[], existing: ExistingProduct[], opts
 export function unresolvedRows(rows: ImportRow[], dupOk: Record<number, boolean>, skip: Record<number, boolean>): number[] {
   return rows.filter((r) => !skip[r.line] && (r.errors.length > 0 || (!r.matchId && r.possibleDuplicate && !dupOk[r.line]))).map((r) => r.line);
 }
+
+/** A skip only sticks while the row still needs a decision; once an edit makes it valid, the skip is cleared. */
+export function activeSkips(rows: ImportRow[], skip: Record<number, boolean>): Record<number, boolean> {
+  const out: Record<number, boolean> = {};
+  for (const r of rows) if (skip[r.line] && (r.errors.length > 0 || (!r.matchId && r.possibleDuplicate))) out[r.line] = true;
+  return out;
+}
+
+/** Result counts: failed and skipped are reported separately and both counted in the history total. */
+export function importCounts(added: number, updated: number, failed: number, skipped: number) {
+  return { added, updated, failed, skipped, notSaved: failed + skipped };
+}

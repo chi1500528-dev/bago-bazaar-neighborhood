@@ -82,3 +82,19 @@ describe("unresolvedRows", () => {
     expect(unresolvedRows([mk(3, { possibleDuplicate: true })], {}, { 3: true })).toEqual([]);
   });
 });
+
+import { activeSkips, importCounts } from "@/lib/domain/products";
+describe("skip choice after editing", () => {
+  it("clears the skip when an edited row becomes valid", () => {
+    const bad = analyzeRows([{ name: "Q", price: "100", sale_price: "200", stock: "", sku: "", barcode: "", category: "", description: "" }], []);
+    expect(activeSkips(bad, { 2: true })).toEqual({ 2: true });
+    const fixed = analyzeRows([{ name: "Q", price: "100", sale_price: "90", stock: "", sku: "", barcode: "", category: "", description: "" }], []);
+    expect(activeSkips(fixed, { 2: true })).toEqual({});
+    expect(unresolvedRows(fixed, {}, activeSkips(fixed, { 2: true }))).toEqual([]);
+  });
+});
+describe("import result counts", () => {
+  it("counts failed and skipped rows separately and together", () => {
+    expect(importCounts(3, 1, 2, 4)).toEqual({ added: 3, updated: 1, failed: 2, skipped: 4, notSaved: 6 });
+  });
+});
