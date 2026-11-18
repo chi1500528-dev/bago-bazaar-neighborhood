@@ -67,3 +67,18 @@ describe("CSV re-import safety", () => {
     expect(unmapped).toEqual([]);
   });
 });
+
+import { unresolvedRows } from "@/lib/domain/products";
+describe("unresolvedRows", () => {
+  const mk = (line: number, o: Partial<{ errors: string[]; matchId: string | null; possibleDuplicate: boolean }>) =>
+    ({ line, values: {} as never, errors: [], matchId: null, possibleDuplicate: false, changes: [], ...o }) as never;
+  it("blocks error rows until skipped", () => {
+    expect(unresolvedRows([mk(2, { errors: ["x"] })], {}, {})).toEqual([2]);
+    expect(unresolvedRows([mk(2, { errors: ["x"] })], {}, { 2: true })).toEqual([]);
+  });
+  it("blocks unconfirmed same-name rows until confirmed or skipped", () => {
+    expect(unresolvedRows([mk(3, { possibleDuplicate: true })], {}, {})).toEqual([3]);
+    expect(unresolvedRows([mk(3, { possibleDuplicate: true })], { 3: true }, {})).toEqual([]);
+    expect(unresolvedRows([mk(3, { possibleDuplicate: true })], {}, { 3: true })).toEqual([]);
+  });
+});

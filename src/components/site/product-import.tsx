@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { shopCategoriesQuery } from "@/lib/queries";
 import {
-  CSV_EXAMPLE, CSV_FIELDS, CSV_MAX_ROWS, analyzeRows, autoMap, parseCsv, rowValues, validateProduct,
+  CSV_EXAMPLE, CSV_FIELDS, CSV_MAX_ROWS, analyzeRows, unresolvedRows, autoMap, parseCsv, rowValues, validateProduct,
   type CsvField, type ExistingProduct, type RowValues, type RowErr,
 } from "@/lib/domain/products";
 import type { TKey } from "@/lib/i18n/dict";
@@ -63,9 +63,10 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
   const [rows, setRows] = useState<RowValues[] | null>(null);
   const [ticked, setTicked] = useState<Record<string, boolean>>({});
   const [dupOk, setDupOk] = useState<Record<number, boolean>>({});
+  const [skip, setSkip] = useState<Record<number, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [clearEmpty, setClearEmpty] = useState(false);
-  const [result, setResult] = useState<{ added: number; updated: number; failed: { line: number; name: string; why: FailReason }[]; historyErr: boolean } | null>(null);
+  const [result, setResult] = useState<{ added: number; updated: number; failed: { line: number; name: string; why: FailReason }[]; skipped: { line: number; name: string }[]; historyErr: boolean } | null>(null);
   const catNames = useMemo(() => Object.fromEntries((cats.data ?? []).map((c) => [c.id, c.name])), [cats.data]);
   const mapped = useMemo(() => CSV_FIELDS.filter((f) => map[f] !== undefined), [map]);
 
@@ -85,12 +86,13 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
   const edit = (i: number, k: keyof RowValues, v: string) => setRows((r) => r!.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
 
   const save = async () => {
-    if (!rows) return;
+    if (!rows || unresolvedRows(analyzed, dupOk, skip).length) return;
     setBusy(true);
     try {
       const failed: { line: number; name: string; why: FailReason }[] = [];
-      const fresh = analyzed.filter((r) => !r.errors.length && !r.matchId && (!r.possibleDuplicate || dupOk[r.line]));
-      const upds = analyzed.filter((r) => r.matchId && !r.errors.length && r.changes.some((c) => ticked[`${r.line}:${c.field}`]));
+      const fresh = analyzed.filter((r) => !skip[r.line] && !r.errors.length && !r.matchId && (!r.possibleDuplicate || dupOk[r.line]));
+      const skipped = analyzed.filter((r) => skip[r.line]).map((r) => ({ line: r.line, name: r.values.name }));
+      const upds = analyzed.filter((r) => !skip[r.line] && r.matchId && !r.errors.length && r.changes.some((c) => ticked[`${r.line}:${c.field}`]));
       const catNamesNeeded = [...fresh.map((r) => r.values.category), ...upds.filter((r) => r.changes.some((c) => c.field === "category" && c.to && ticked[`${r.line}:category`])).map((r) => r.values.category)];
       const { map: catMap, failed: catFailed } = await ensureCategories(shopId, catNamesNeeded, cats.data ?? []);
       const catOf = (n: string) => (n.trim() ? catMap.get(n.trim().toLowerCase()) ?? null : null);
@@ -130,11 +132,11 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
         const { error } = await supabase.from("products").update(upd).eq("id", r.matchId!);
         if (error) failed.push({ line: r.line, name: r.values.name, why: reason(error) }); else updated++;
       }
-      const { error: hErr } = await supabase.from("product_imports").insert({ shop_id: shopId, file_name: file.slice(0, 200), added, updated, failed: failed.length });
+      const { error: hErr } = await supabase.from("product_imports").insert({ shop_id: shopId, file_name: file.slice(0, 200), added, updated, failed: failed.length + skipped.length });
       qc.invalidateQueries();
       failed.sort((x, y) => x.line - y.line);
-      setResult({ added, updated, failed, historyErr: !!hErr });
-      if (!failed.length && !hErr) { toast.success(t("imp.done", { a: added, u: updated })); onDone(); }
+      setResult({ added, updated, failed, skipped, historyErr: !!hErr });
+      if (!failed.length && !skipped.length && !hErr) { toast.success(t("imp.done", { a: added, u: updated })); onDone(); }
     } finally { setBusy(false); }
   };
 
@@ -143,6 +145,14 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
       <p className="font-semibold">{t("imp.result")}</p>
       <p className="text-sm">{t("imp.result_line", { a: result.added, u: result.updated, f: result.failed.length })}</p>
       {result.historyErr && <p className="text-sm text-destructive">{t("imp.history_failed")}</p>}
+      {result.skipped.length > 0 && (
+        <div>
+          <p className="mb-1 text-sm font-medium">{t("imp.skipped_rows", { n: result.skipped.length })}</p>
+          <ul className="max-h-[30vh] divide-y overflow-y-auto rounded-lg border bg-card text-sm">
+            {result.skipped.map((f) => <li key={f.line} className="p-2">{t("imp.row", { n: f.line })} · {f.name || "—"}</li>)}
+          </ul>
+        </div>
+      )}
       {result.failed.length > 0 && (
         <div>
           <p className="mb-1 text-sm font-medium text-destructive">{t("imp.failed_rows")}</p>
@@ -158,6 +168,7 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
   const nNew = analyzed.filter((r) => !r.errors.length && !r.matchId).length;
   const nUpd = analyzed.filter((r) => r.changes.length).length;
   const nErr = analyzed.filter((r) => r.errors.length).length;
+  const pending = unresolvedRows(analyzed, dupOk, skip);
 
   return (
     <div className="space-y-4">
@@ -213,6 +224,9 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
                 {!r.errors.length && r.possibleDuplicate && (
                   <label className="flex items-center gap-2 text-xs"><Checkbox checked={!!dupOk[r.line]} onCheckedChange={(v) => setDupOk({ ...dupOk, [r.line]: !!v })} />{t("imp.possible_dup")}</label>
                 )}
+                {(r.errors.length > 0 || (!r.matchId && r.possibleDuplicate)) && (
+                  <label className="flex items-center gap-2 text-xs"><Checkbox checked={!!skip[r.line]} onCheckedChange={(v) => setSkip({ ...skip, [r.line]: !!v })} />{t("imp.skip_row")}</label>
+                )}
                 {r.changes.map((c) => (
                   <label key={c.field} className="flex items-center gap-2 text-xs">
                     <Checkbox checked={!!ticked[`${r.line}:${c.field}`]} onCheckedChange={(v) => setTicked({ ...ticked, [`${r.line}:${c.field}`]: !!v })} />
@@ -222,9 +236,10 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
               </li>
             ))}
           </ul>
+          {pending.length > 0 && <p className="flex items-center gap-1 text-sm text-destructive"><AlertTriangle className="size-4" />{t("imp.unresolved", { n: pending.length })}</p>}
           <div className="flex gap-2">
             <Button variant="ghost" onClick={() => setRows(null)}>{t("imp.back")}</Button>
-            <Button onClick={save} disabled={busy}>{busy ? t("common.loading") : t("imp.save")}</Button>
+            <Button onClick={save} disabled={busy || pending.length > 0}>{busy ? t("common.loading") : t("imp.save")}</Button>
           </div>
         </div>
       )}

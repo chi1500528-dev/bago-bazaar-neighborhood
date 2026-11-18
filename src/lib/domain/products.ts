@@ -141,3 +141,8 @@ export function analyzeRows(rows: RowValues[], existing: ExistingProduct[], opts
     return { line: firstLine + i, values: v, errors, matchId: match?.id ?? null, possibleDuplicate: !match && !vb && !vs && names.has(v.name.trim().toLowerCase()), changes };
   });
 }
+
+/** Rows the owner must decide on before saving: errors or unconfirmed same-name rows, unless explicitly skipped. Never skip silently. */
+export function unresolvedRows(rows: ImportRow[], dupOk: Record<number, boolean>, skip: Record<number, boolean>): number[] {
+  return rows.filter((r) => !skip[r.line] && (r.errors.length > 0 || (!r.matchId && r.possibleDuplicate && !dupOk[r.line]))).map((r) => r.line);
+}
