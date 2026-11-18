@@ -18,6 +18,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 type Line = { productId: string; name: string; image: string | null; unitPrice: number; quantity: number; stock: number };
 const newKey = () => crypto.randomUUID();
+/** No answer from the server (dropped connection, timeout, relay error): outcome unknown. */
+const isNetwork = (e: { message: string; code?: string }) => !e.code || /fetch|network|timeout|load failed/i.test(e.message);
 
 export function PosSell({ shopId }: { shopId: string }) {
   const { t, lang } = useApp();
@@ -37,6 +39,8 @@ export function PosSell({ shopId }: { shopId: string }) {
   const [cash, setCash] = useState("");
   const [busy, setBusy] = useState(false);
   const [changed, setChanged] = useState<string[]>([]);
+  // true after a network failure with unknown outcome: the cart is frozen so the retry sends the exact same request.
+  const [uncertain, setUncertain] = useState(false);
   const [done, setDone] = useState<{ id: string; n: number; change: number | null } | null>(null);
   const key = useRef(newKey()); // same key for this cart across retries
   const searchRef = useRef<HTMLInputElement>(null);
@@ -51,6 +55,8 @@ export function PosSell({ shopId }: { shopId: string }) {
   if (notInstalled(day.data?.error ?? null)) return <EmptyState text={t("pos.setup")} />;
 
   const add = (p: NonNullable<typeof products.data>[number]) => {
+    if (uncertain) return;
+    if (effectivePrice(p) <= 0) { toast.error(`${t("pos.zero_price")}: ${p.name}`); return; }
     const cur = lines.find((l) => l.productId === p.id)?.quantity ?? 0;
     if (cur + 1 > p.stock) { toast.error(`${t("pos.no_stock")}: ${p.name}`); return; }
     setLines(cur ? lines.map((l) => l.productId === p.id ? { ...l, quantity: l.quantity + 1 } : l)
@@ -61,14 +67,14 @@ export function PosSell({ shopId }: { shopId: string }) {
     const exact = (products.data ?? []).find((p) => p.barcode && p.barcode === q.trim()) ?? (matches.length === 1 ? matches[0] : undefined);
     if (exact) add(exact); else if (q.trim()) toast.error(t("pos.not_found"));
   };
-  const setQty = (id: string, n: number) => setLines(n <= 0 ? lines.filter((l) => l.productId !== id)
+  const setQty = (id: string, n: number) => !uncertain && setLines(n <= 0 ? lines.filter((l) => l.productId !== id)
     : lines.map((l) => l.productId === id ? { ...l, quantity: Math.min(n, l.stock) } : l));
 
   const finish = async () => {
     if (change === "too_low" || !lines.length) return;
     setBusy(true);
     try {
-      if (!changed.length) {
+      if (!changed.length && !uncertain) {
         // Refresh prices first; if any differ, show them and ask before selling.
         const { data: fresh, error } = await supabase.from("products").select("id,price,sale_price,stock").in("id", lines.map((l) => l.productId));
         if (error) throw error;
@@ -82,17 +88,24 @@ export function PosSell({ shopId }: { shopId: string }) {
       }
       const { data, error } = await pos.checkout({ shopId, items: lines.map((l) => ({ product_id: l.productId, quantity: l.quantity })), payment: method, cash: received, expectedTotal: total, key: key.current });
       if (error) {
+        if (isNetwork(error)) throw error;
+        // Definite answer from the database: nothing was saved under this key, so the cart can change again.
+        setUncertain(false); key.current = newKey();
         const code = error.message.split(":")[0];
+        const pid = error.message.split(":")[1];
+        if (code === "ZERO_PRICE") { toast.error(`${t("pos.zero_price")}: ${lines.find((l) => l.productId === pid)?.name ?? ""}`); return; }
+        if (code === "IDEMPOTENCY_MISMATCH") { toast.error(t("pos.mismatch")); return; }
         if (code === "PRICE_CHANGED") { setChanged([]); toast.warning(t("pos.price_changed")); qc.invalidateQueries({ queryKey: ["pos-products", shopId] }); return; }
-        if (code === "OUT_OF_STOCK") { const id = error.message.split(":")[1]; toast.error(`${t("pos.no_stock")}: ${lines.find((l) => l.productId === id)?.name ?? ""}`); return; }
+        if (code === "OUT_OF_STOCK") { toast.error(`${t("pos.no_stock")}: ${lines.find((l) => l.productId === pid)?.name ?? ""}`); return; }
         if (code === "CASH_TOO_LOW") { toast.error(t("pos.too_low")); return; }
-        throw error;
+        toast.error(t("err.generic")); return;
       }
       setDone({ id: data!.sale_id, n: data!.sale_number, change: data!.change_due });
-      setLines([]); setCash(""); setChanged([]); key.current = newKey();
+      setLines([]); setCash(""); setChanged([]); setUncertain(false); key.current = newKey();
       qc.invalidateQueries({ queryKey: ["pos-day", shopId] }); qc.invalidateQueries({ queryKey: ["pos-products", shopId] }); qc.invalidateQueries({ queryKey: ["my-products", shopId] });
     } catch {
-      toast.error(t("pos.retrying")); // key kept: retry returns the saved sale instead of a second one
+      setUncertain(true); // key and cart kept as-is: retry returns the saved sale instead of a second one
+      toast.error(t("pos.retrying"));
     } finally { setBusy(false); }
   };
 
@@ -111,7 +124,7 @@ export function PosSell({ shopId }: { shopId: string }) {
     <div className="space-y-5">
       <div className="grid gap-4 md:grid-cols-[1fr_20rem]">
         <div className="space-y-3">
-          <Input ref={searchRef} autoFocus className="h-12 text-base" placeholder={t("pos.search")} value={q}
+          <Input ref={searchRef} autoFocus disabled={uncertain} className="h-12 text-base" placeholder={t("pos.search")} value={q}
             onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onEnter(); } }} />
           {matches.length > 0 && <ul className="divide-y rounded-lg border bg-card">
             {matches.map((p) => <li key={p.id}><button disabled={p.stock <= 0} onClick={() => add(p)} className="flex w-full items-center gap-3 p-2.5 text-left hover:bg-muted/50 disabled:opacity-50">
@@ -124,10 +137,10 @@ export function PosSell({ shopId }: { shopId: string }) {
             {!lines.length ? <p className="py-6 text-center text-sm text-muted-foreground">{t("pos.empty")}</p> : <ul className="divide-y">
               {lines.map((l) => <li key={l.productId} className={`flex items-center gap-2 py-2 ${changed.includes(l.productId) ? "rounded bg-gold-soft/60 px-2" : ""}`}>
                 <span className="min-w-0 flex-1"><span className="line-clamp-1 text-sm font-medium">{l.name}</span><span className="text-xs text-muted-foreground tabular-nums">{formatMMK(l.unitPrice, lang)}</span></span>
-                <Button size="icon" variant="outline" className="size-9" onClick={() => setQty(l.productId, l.quantity - 1)} aria-label="-"><Minus className="size-4" /></Button>
+                <Button size="icon" variant="outline" className="size-9" disabled={uncertain} onClick={() => setQty(l.productId, l.quantity - 1)} aria-label="-"><Minus className="size-4" /></Button>
                 <span className="w-7 text-center tabular-nums">{l.quantity}</span>
-                <Button size="icon" variant="outline" className="size-9" onClick={() => setQty(l.productId, l.quantity + 1)} disabled={l.quantity >= l.stock} aria-label="+"><Plus className="size-4" /></Button>
-                <Button size="icon" variant="ghost" className="size-9" onClick={() => setQty(l.productId, 0)} aria-label="remove"><Trash2 className="size-4" /></Button>
+                <Button size="icon" variant="outline" className="size-9" onClick={() => setQty(l.productId, l.quantity + 1)} disabled={uncertain || l.quantity >= l.stock} aria-label="+"><Plus className="size-4" /></Button>
+                <Button size="icon" variant="ghost" className="size-9" disabled={uncertain} onClick={() => setQty(l.productId, 0)} aria-label="remove"><Trash2 className="size-4" /></Button>
               </li>)}
             </ul>}
           </div>
@@ -135,15 +148,16 @@ export function PosSell({ shopId }: { shopId: string }) {
         <div className="surface h-fit space-y-3 p-4">
           <Label>{t("pos.pay")}</Label>
           <div className="grid grid-cols-2 gap-2">
-            {PAY_METHODS.map((m) => <Button key={m} type="button" variant={method === m ? "default" : "outline"} className="h-11" onClick={() => { setMethod(m); if (m !== "cash") setCash(""); }}>{t(`pay.${m}` as TKey)}</Button>)}
+            {PAY_METHODS.map((m) => <Button key={m} type="button" variant={method === m ? "default" : "outline"} className="h-11" disabled={uncertain} onClick={() => { setMethod(m); if (m !== "cash") setCash(""); }}>{t(`pay.${m}` as TKey)}</Button>)}
           </div>
           {method === "cash" && <div className="space-y-1.5"><Label className="text-xs">{t("pos.received")}</Label>
-            <Input inputMode="numeric" className="h-11" value={cash} onChange={(e) => setCash(e.target.value.replace(/\D/g, ""))} /></div>}
+            <Input inputMode="numeric" className="h-11" disabled={uncertain} value={cash} onChange={(e) => setCash(e.target.value.replace(/\D/g, ""))} /></div>}
           <div className="flex items-baseline justify-between border-t pt-3"><span>{t("pos.total")}</span><b className="text-2xl tabular-nums">{formatMMK(total, lang)}</b></div>
           {typeof change === "number" && <p className="flex justify-between text-sm"><span>{t("pos.change")}</span><b className="tabular-nums">{formatMMK(change, lang)}</b></p>}
           {change === "too_low" && <p className="text-sm text-destructive">{t("pos.too_low")}</p>}
+          {uncertain && <p className="rounded-md bg-gold-soft/60 p-2 text-sm">{t("pos.locked")}</p>}
           {changed.length > 0 && <p className="text-sm text-gold-foreground">{t("pos.price_changed")}</p>}
-          <Button className="h-12 w-full text-base" disabled={busy || !lines.length || change === "too_low"} onClick={finish}>{changed.length ? t("pos.confirm_new") : t("pos.finish")}</Button>
+          <Button className="h-12 w-full text-base" disabled={busy || !lines.length || change === "too_low"} onClick={finish}>{uncertain ? t("pos.retry") : changed.length ? t("pos.confirm_new") : t("pos.finish")}</Button>
         </div>
       </div>
       <PosDay shopId={shopId} />

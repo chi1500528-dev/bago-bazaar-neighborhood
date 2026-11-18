@@ -72,6 +72,7 @@ create table public.pos_sales (
   cash_received integer,
   change_due integer,
   idempotency_key text not null,
+  request_hash text not null,
   created_by uuid not null,
   created_at timestamptz not null default now(),
   voided_at timestamptz,
@@ -107,8 +108,10 @@ alter table public.pos_sale_items enable row level security;
 create policy "Owners and admins read sale items" on public.pos_sale_items for select to authenticated
   using (exists (select 1 from public.pos_sales s where s.id = sale_id and (public.is_shop_owner(s.shop_id) or public.has_role(auth.uid(),'admin'))));
 
--- Checkout: server reads prices, locks products in id order, checks stock, issues sale number.
+-- Checkout: server reads prices, locks products in ascending id order, checks stock, issues sale number.
 -- p_expected_total is what the screen showed; a mismatch raises PRICE_CHANGED so the owner confirms first.
+-- Idempotency: same (shop, key) requests are serialized by an advisory lock; a replay with the same
+-- canonical payload returns the saved sale, a different payload raises IDEMPOTENCY_MISMATCH.
 create or replace function public.pos_checkout(p_shop_id uuid, p_items jsonb, p_payment text, p_cash_received integer, p_expected_total integer, p_idempotency_key text)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare
@@ -116,40 +119,70 @@ declare
   v_sale public.pos_sales%rowtype;
   v_no bigint;
   v_line record;
+  v_e jsonb;
   v_total int := 0;
+  v_hash text;
   v_id uuid;
 begin
   if v_uid is null then raise exception 'AUTH_REQUIRED'; end if;
-  if not (public.is_shop_owner(p_shop_id) or public.has_role(v_uid,'admin')) then raise exception 'FORBIDDEN'; end if;
-  if p_idempotency_key is null or length(p_idempotency_key) < 8 then raise exception 'INVALID_KEY'; end if;
-  select * into v_sale from public.pos_sales where shop_id = p_shop_id and idempotency_key = p_idempotency_key;
-  if found then return jsonb_build_object('sale_id', v_sale.id, 'sale_number', v_sale.sale_number, 'total', v_sale.total, 'change_due', v_sale.change_due, 'replayed', true); end if;
-  if p_payment not in ('cash','kbzpay','wave','other') then raise exception 'INVALID_PAYMENT'; end if;
+  if p_shop_id is null or not (public.is_shop_owner(p_shop_id) or public.has_role(v_uid,'admin')) then raise exception 'FORBIDDEN'; end if;
+  if p_idempotency_key is null or length(p_idempotency_key) < 8 or length(p_idempotency_key) > 100 then raise exception 'INVALID_KEY'; end if;
+  if p_payment is null or p_payment not in ('cash','kbzpay','wave','other') then raise exception 'INVALID_PAYMENT'; end if;
   if p_payment <> 'cash' and p_cash_received is not null then raise exception 'CASH_NOT_ALLOWED'; end if;
-  if jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) = 0 or jsonb_array_length(p_items) > 100 then raise exception 'INVALID_ITEMS'; end if;
+  if p_cash_received is not null and p_cash_received < 0 then raise exception 'CASH_TOO_LOW'; end if;
 
-  create temp table if not exists _pos_req(product_id uuid primary key, qty int) on commit drop;
+  -- Strict item validation before any cast: array of 1..100 objects {product_id: uuid string, quantity: integer 1..999}.
+  if p_items is null or jsonb_typeof(p_items) is distinct from 'array' or jsonb_array_length(p_items) = 0 or jsonb_array_length(p_items) > 100 then
+    raise exception 'INVALID_ITEMS'; end if;
+  for v_e in select * from jsonb_array_elements(p_items) loop
+    if jsonb_typeof(v_e) is distinct from 'object'
+      or jsonb_typeof(v_e->'product_id') is distinct from 'string'
+      or (v_e->>'product_id') !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then raise exception 'INVALID_ITEMS'; end if;
+    if jsonb_typeof(v_e->'quantity') is distinct from 'number' or (v_e->>'quantity') !~ '^[0-9]{1,3}$'
+      or (v_e->>'quantity')::int < 1 then raise exception 'INVALID_QUANTITY'; end if;
+  end loop;
+
+  create temp table if not exists _pos_req(product_id uuid primary key, qty int not null) on commit drop;
   truncate _pos_req;
   insert into _pos_req
     select (e->>'product_id')::uuid, sum((e->>'quantity')::int) from jsonb_array_elements(p_items) e group by 1;
-  if exists (select 1 from _pos_req where qty is null or qty < 1 or qty > 999) then raise exception 'INVALID_QUANTITY'; end if;
+  if not exists (select 1 from _pos_req) then raise exception 'INVALID_ITEMS'; end if;
+  if exists (select 1 from _pos_req where qty < 1 or qty > 999) then raise exception 'INVALID_QUANTITY'; end if;
 
-  -- lock in id order (deadlock-safe with concurrent sales/orders)
-  perform 1 from public.products p join _pos_req r on r.product_id = p.id order by p.id for update of p;
+  -- Canonical payload: merged items sorted by product id + payment + cash.
+  select md5(jsonb_build_object(
+      'items', (select jsonb_agg(jsonb_build_array(product_id::text, qty) order by product_id) from _pos_req),
+      'payment', p_payment, 'cash', p_cash_received)::text) into v_hash;
+
+  -- Serialize same-key requests, then check for an existing sale.
+  perform pg_advisory_xact_lock(hashtextextended('pos:' || p_shop_id::text || ':' || p_idempotency_key, 0));
+  select * into v_sale from public.pos_sales where shop_id = p_shop_id and idempotency_key = p_idempotency_key;
+  if found then
+    if v_sale.request_hash <> v_hash then raise exception 'IDEMPOTENCY_MISMATCH'; end if;
+    return jsonb_build_object('sale_id', v_sale.id, 'sale_number', v_sale.sale_number, 'total', v_sale.total, 'change_due', v_sale.change_due, 'replayed', true);
+  end if;
+
+  -- Lock in ascending id order (same order as online orders/cancellations: deadlock-safe).
+  perform 1 from public.products p where p.id in (select product_id from _pos_req) order by p.id for update;
   if (select count(*) from public.products p join _pos_req r on r.product_id = p.id where p.shop_id = p_shop_id) <> (select count(*) from _pos_req) then
     raise exception 'PRODUCT_UNAVAILABLE'; end if;
+  for v_line in select p.id from public.products p join _pos_req r on r.product_id = p.id
+      where (case when p.sale_price is not null and p.sale_price < p.price then p.sale_price else p.price end) <= 0 order by p.id limit 1 loop
+    raise exception 'ZERO_PRICE:%', v_line.id;
+  end loop;
   for v_line in select p.id from public.products p join _pos_req r on r.product_id = p.id where p.stock < r.qty order by p.id limit 1 loop
     raise exception 'OUT_OF_STOCK:%', v_line.id;
   end loop;
-  select coalesce(sum(r.qty * (case when p.sale_price is not null and p.sale_price < p.price then p.sale_price else p.price end)),0)::int into v_total
+  select sum(r.qty * (case when p.sale_price is not null and p.sale_price < p.price then p.sale_price else p.price end))::int into v_total
     from public.products p join _pos_req r on r.product_id = p.id;
+  if v_total is null or v_total <= 0 then raise exception 'INVALID_ITEMS'; end if;
   if p_expected_total is distinct from v_total then raise exception 'PRICE_CHANGED:%', v_total; end if;
   if p_cash_received is not null and p_cash_received < v_total then raise exception 'CASH_TOO_LOW'; end if;
 
   insert into public.pos_counters(shop_id, last_no) values (p_shop_id, 1)
     on conflict (shop_id) do update set last_no = public.pos_counters.last_no + 1 returning last_no into v_no;
-  insert into public.pos_sales(shop_id, sale_number, payment_method, subtotal, total, cash_received, change_due, idempotency_key, created_by)
-    values (p_shop_id, v_no, p_payment, v_total, v_total, p_cash_received, case when p_cash_received is null then null else p_cash_received - v_total end, p_idempotency_key, v_uid)
+  insert into public.pos_sales(shop_id, sale_number, payment_method, subtotal, total, cash_received, change_due, idempotency_key, request_hash, created_by)
+    values (p_shop_id, v_no, p_payment, v_total, v_total, p_cash_received, case when p_cash_received is null then null else p_cash_received - v_total end, p_idempotency_key, v_hash, v_uid)
     returning id into v_id;
   insert into public.pos_sale_items(sale_id, product_id, name, sku, barcode, unit_price, quantity, line_total)
     select v_id, p.id, p.name, p.sku, p.barcode, x.price, r.qty, x.price * r.qty
@@ -234,6 +267,12 @@ begin
   insert into public.orders (customer_id, shop_id, delivery_method, recipient_name, phone, township_id, address, note, subtotal, delivery_fee, total, idempotency_key)
   values (v_uid, p_shop_id, p_method, trim(p_recipient_name), trim(p_phone), p_township_id, nullif(trim(coalesce(p_address,'')),''), nullif(trim(coalesce(p_note,'')),''), 0, v_fee, 0, p_idempotency_key)
   returning id into v_order;
+  -- Lock every product in ascending id order first (same order as POS: deadlock-safe).
+  -- Only well-formed ids are pre-locked; the loop below keeps the original validation and errors.
+  perform 1 from public.products where id in (
+    select (e->>'product_id')::uuid from jsonb_array_elements(p_items) e
+    where jsonb_typeof(e) = 'object' and (e->>'product_id') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+  ) order by id for update;
   perform set_config('bm.stock_reason','online_order',true);
   perform set_config('bm.stock_ref', v_order::text, true);
   for v_item in select * from jsonb_array_elements(p_items) loop
@@ -277,6 +316,7 @@ begin
   end if;
   if not v_ok then raise exception 'INVALID_TRANSITION'; end if;
   if p_status = 'cancelled' then
+    perform 1 from public.products where id in (select product_id from public.order_items where order_id = v_o.id) order by id for update;
     perform set_config('bm.stock_reason','order_cancelled',true);
     perform set_config('bm.stock_ref', v_o.id::text, true);
     update public.products p set stock = p.stock + i.qty
