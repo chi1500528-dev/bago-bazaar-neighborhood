@@ -45,6 +45,17 @@ export function methodsReconcile(m: ByMethod, completedTotal: number) {
   return PAY_METHODS.reduce((s, k) => s + m[k], 0) === completedTotal;
 }
 
+/* ---------- Export cap ---------- */
+export const EXPORT_ROW_CAP = 5000;
+/** True when the export holds fewer rows than the selected range contains. */
+export function exportLimited(exported: number, total: number | null | undefined) {
+  return total != null && Number(total) > exported;
+}
+/** Top products ordered by quantity as a number (then amount), never as text. */
+export function sortTop<T extends { qty: number | string; total: number | string }>(rows: T[]) {
+  return [...rows].sort((a, b) => Number(b.qty) - Number(a.qty) || Number(b.total) - Number(a.total));
+}
+
 /* ---------- CSV (no customer names, phones or addresses) ---------- */
 function cell(v: unknown) {
   const s = v == null ? "" : String(v);

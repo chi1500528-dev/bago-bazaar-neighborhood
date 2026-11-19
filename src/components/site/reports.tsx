@@ -4,7 +4,7 @@ import { Download, Info, CheckCircle2, AlertTriangle } from "lucide-react";
 import { useApp } from "@/lib/app-state";
 import { formatMMK, PAY_METHODS } from "@/lib/domain/rules";
 import {
-  presetRange, validRange, fullByMethod, methodsReconcile, posCsv, ordersCsv, RANGE_PRESETS,
+  presetRange, validRange, fullByMethod, methodsReconcile, posCsv, ordersCsv, RANGE_PRESETS, exportLimited, sortTop, EXPORT_ROW_CAP,
   type RangePreset, type DayRange,
 } from "@/lib/domain/reports";
 import { reports, type TopRow } from "@/lib/reports";
@@ -66,7 +66,7 @@ function Top({ rows }: { rows: TopRow[] }) {
     <div className="surface p-4">
       <h3 className="mb-2 font-semibold">{t("rep.top")}</h3>
       <table className="w-full text-sm"><thead><tr className="text-left text-xs text-muted-foreground"><th className="py-1 font-normal"></th><th className="font-normal text-right">{t("rep.qty")}</th><th className="font-normal text-right">{t("rep.amount")}</th></tr></thead>
-        <tbody>{rows.map((r) => <tr key={r.name} className="border-t"><td className="py-1.5 pr-2">{r.name}</td><td className="text-right tabular-nums">{r.qty}</td><td className="text-right tabular-nums">{formatMMK(r.total, lang)}</td></tr>)}</tbody>
+        <tbody>{sortTop(rows).map((r) => <tr key={r.name} className="border-t"><td className="py-1.5 pr-2">{r.name}</td><td className="text-right tabular-nums">{r.qty}</td><td className="text-right tabular-nums">{formatMMK(r.total, lang)}</td></tr>)}</tbody>
       </table>
     </div>
   );
@@ -108,6 +108,7 @@ function PosReportView({ shopId, range }: { shopId: string; range: DayRange }) {
         <div className="flex flex-wrap items-center gap-3">
           <Button variant="outline" size="sm" onClick={() => download(`pos-${range.start}_${range.end}.csv`, posCsv(d.sales))}><Download className="size-4" />{t("rep.csv")}</Button>
           <span className="text-xs text-muted-foreground">{t("rep.csv_note")}</span>
+          {exportLimited(d.sales.length, d.sales_row_count) && <p className="flex w-full items-center gap-1.5 text-xs text-destructive"><AlertTriangle className="size-4" />{t("rep.csv_limited", { n: d.sales.length, total: Number(d.sales_row_count), cap: EXPORT_ROW_CAP })}</p>}
         </div>
       )}
     </div>
@@ -151,6 +152,7 @@ function OrdersReportView({ shopId, range }: { shopId: string; range: DayRange }
         <div className="flex flex-wrap items-center gap-3">
           <Button variant="outline" size="sm" onClick={() => download(`orders-${range.start}_${range.end}.csv`, ordersCsv(d.orders))}><Download className="size-4" />{t("rep.csv")}</Button>
           <span className="text-xs text-muted-foreground">{t("rep.csv_note")}</span>
+          {exportLimited(d.orders.length, d.orders_row_count) && <p className="flex w-full items-center gap-1.5 text-xs text-destructive"><AlertTriangle className="size-4" />{t("rep.csv_limited", { n: d.orders.length, total: Number(d.orders_row_count), cap: EXPORT_ROW_CAP })}</p>}
         </div>
       )}
     </div>

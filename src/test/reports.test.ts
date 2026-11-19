@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { presetRange, rangeBounds, fullByMethod, methodsReconcile, posCsv, ordersCsv, normalizeReceipt, validRange } from "@/lib/domain/reports";
+import { presetRange, rangeBounds, fullByMethod, methodsReconcile, posCsv, ordersCsv, normalizeReceipt, validRange, exportLimited, sortTop } from "@/lib/domain/reports";
 
 describe("Yangon report ranges", () => {
   const at = new Date("2026-11-19T18:00:00Z"); // 00:30 on 20 Nov in Yangon
@@ -41,5 +41,15 @@ describe("receipt settings", () => {
   });
   it("keeps English and 80mm when chosen", () => {
     expect(normalizeReceipt({ lang: "en", paper_width: 80, show_logo: false })).toMatchObject({ lang: "en", paper_width: 80, show_logo: false });
+  });
+});
+
+describe("report export and ranking", () => {
+  it("flags an export that holds fewer rows than the range", () => {
+    expect(exportLimited(5000, 5001)).toBe(true);
+    expect(exportLimited(5000, 5000)).toBe(false);
+  });
+  it("ranks top products by quantity as a number, not text", () => {
+    expect(sortTop([{ name: "a", qty: 9, total: 1 }, { name: "b", qty: 10, total: 1 }]).map((r) => r.name)).toEqual(["b", "a"]);
   });
 });

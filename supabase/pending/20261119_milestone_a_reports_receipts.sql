@@ -35,7 +35,8 @@ begin
         'other',  coalesce((select sum(total) from c where payment_method = 'other'), 0)),
       'voided_count', (select count(*) from v),
       'voided_value', coalesce((select sum(total) from v), 0),
-      'top_products', coalesce((select jsonb_agg(x order by x->>'qty' desc) from (
+      'sales_row_count', (select count(*) from s),  -- full count; CSV rows below are capped at 5000
+      'top_products', coalesce((select jsonb_agg(x order by (x->>'qty')::numeric desc, (x->>'total')::numeric desc) from (
           select jsonb_build_object('name', i.name, 'qty', sum(i.quantity), 'total', sum(i.line_total)) x
           from public.pos_sale_items i join c on c.id = i.sale_id
           group by i.name order by sum(i.quantity) desc, sum(i.line_total) desc limit 10) t), '[]'::jsonb),
@@ -70,9 +71,10 @@ begin
       'merchandise_subtotal', coalesce((select sum(subtotal) from c), 0),
       'delivery_fees', coalesce((select sum(delivery_fee) from c), 0),
       'completed_value', coalesce((select sum(total) from c), 0),
+      'orders_row_count', (select count(*) from c) + (select count(*) from placed where status = 'cancelled'),  -- CSV capped at 5000
       'pipeline', coalesce((select jsonb_object_agg(status, jsonb_build_object('count', n, 'subtotal', st)) from (
           select status::text, count(*) n, sum(subtotal) st from placed group by status) p), '{}'::jsonb),
-      'top_products', coalesce((select jsonb_agg(x order by x->>'qty' desc) from (
+      'top_products', coalesce((select jsonb_agg(x order by (x->>'qty')::numeric desc, (x->>'total')::numeric desc) from (
           select jsonb_build_object('name', i.name, 'qty', sum(i.quantity), 'total', sum(i.line_total)) x
           from public.order_items i join c on c.id = i.order_id
           group by i.name order by sum(i.quantity) desc, sum(i.line_total) desc limit 10) t), '[]'::jsonb),
