@@ -125,3 +125,14 @@ export function changedPrices<T extends { productId: string; unitPrice: number }
 export function yangonDay(d: Date = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Yangon", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
 }
+
+/** Owner order-list filter groups (by order status). */
+export const ORDER_FILTERS = {
+  pending: ["pending"], active: ["confirmed", "preparing"], ready: ["ready", "out_for_delivery"],
+  completed: ["completed"], cancelled: ["cancelled"],
+} as const;
+export type OrderFilter = keyof typeof ORDER_FILTERS;
+/** Active products at or below the low-stock line, lowest stock first. */
+export function lowStockList<T extends { stock: number; is_active: boolean }>(rows: T[]) {
+  return rows.filter(isLowStock).sort((a, b) => a.stock - b.stock);
+}

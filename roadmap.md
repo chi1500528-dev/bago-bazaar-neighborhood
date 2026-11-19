@@ -8,6 +8,10 @@
   - [ ] Signed-in end-to-end testing — pending.
   - [ ] VPS deployment — pending (VPS not yet updated).
 
+- [x] Owner daily overview: separate In-store / Online today cards (Yangon day), low-stock filter, order status filters.
+  - [ ] Signed-in owner check in Preview — pending (owner).
+- Delivery fee stays 0 on shop save (owner decision).
+
 ## Future candidates (not approved for build)
 Phase 3 and Phase 4 are future candidates to validate with Bago shop owners first. They are not current build approval and have no dates.
 

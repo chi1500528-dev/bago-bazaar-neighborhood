@@ -53,3 +53,20 @@ describe("report export and ranking", () => {
     expect(sortTop([{ name: "a", qty: 9, total: 1 }, { name: "b", qty: 10, total: 1 }]).map((r) => r.name)).toEqual(["b", "a"]);
   });
 });
+
+import { lowStockList, ORDER_FILTERS } from "@/lib/domain/rules";
+import { presetRange as pr2, rangeBounds as rb2 } from "@/lib/domain/reports";
+describe("owner today panel", () => {
+  it("Yangon today: 23:50 and 00:10 Yangon fall on different days", () => {
+    expect(pr2("today", new Date("2026-11-19T17:20:00Z")).start).toBe("2026-11-19"); // 23:50 Yangon
+    expect(pr2("today", new Date("2026-11-19T17:40:00Z")).start).toBe("2026-11-20"); // 00:10 Yangon
+    expect(rb2(pr2("today", new Date("2026-11-19T17:40:00Z"))).from.toISOString()).toBe("2026-11-19T17:30:00.000Z");
+  });
+  it("low stock list keeps active items with 5 or fewer, lowest first", () => {
+    const r = lowStockList([{ stock: 5, is_active: true }, { stock: 6, is_active: true }, { stock: 0, is_active: false }, { stock: 1, is_active: true }]);
+    expect(r.map((x) => x.stock)).toEqual([1, 5]);
+  });
+  it("ready filter covers both pickup-ready and out-for-delivery", () => {
+    expect([...ORDER_FILTERS.ready]).toEqual(["ready", "out_for_delivery"]);
+  });
+});

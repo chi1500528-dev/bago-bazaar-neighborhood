@@ -8,7 +8,10 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
 import { categoriesQuery, shopCategoriesQuery, townshipsQuery } from "@/lib/queries";
-import { formatMMK, slugify, isLowStock, LOW_STOCK_AT } from "@/lib/domain/rules";
+import { formatMMK, slugify, isLowStock, LOW_STOCK_AT, ORDER_FILTERS, lowStockList, type OrderFilter } from "@/lib/domain/rules";
+import { presetRange, rangeBounds } from "@/lib/domain/reports";
+import { pos } from "@/lib/pos";
+import { reports } from "@/lib/reports";
 import { MediaImg, StatusBadge, EmptyState } from "@/components/site/bits";
 import { RequireAuth } from "@/components/site/shell";
 import { ImageField } from "@/components/site/upload";
@@ -42,8 +45,10 @@ export const Route = createFileRoute("/merchant")({
       { property: "og:description", content: "Open a shop and reach customers across Bago Region." },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>): { tab?: Tab } =>
-    TABS.includes(s["tab"] as Tab) ? { tab: s["tab"] as Tab } : {},
+  validateSearch: (s: Record<string, unknown>): { tab?: Tab; low?: boolean } => ({
+    ...(TABS.includes(s["tab"] as Tab) ? { tab: s["tab"] as Tab } : {}),
+    ...(s["low"] === true || s["low"] === "1" || s["low"] === 1 ? { low: true } : {}),
+  }),
   component: () => <RequireAuth><Merchant /></RequireAuth>,
 });
 
@@ -99,9 +104,10 @@ function TodaySummary({ shopId, unread }: { shopId: string; unread: number }) {
     queryKey: ["shop-today", shopId],
     refetchInterval: 30000,
     queryFn: async () => {
-      const start = new Date(); start.setHours(0, 0, 0, 0);
+      const { from, to } = rangeBounds(presetRange("today"));
       const [today, pending, prods] = await Promise.all([
-        supabase.from("orders").select("id", { count: "exact", head: true }).eq("shop_id", shopId).gte("created_at", start.toISOString()),
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("shop_id", shopId).neq("status", "cancelled")
+          .gte("created_at", from.toISOString()).lt("created_at", to.toISOString()),
         supabase.from("orders").select("id", { count: "exact", head: true }).eq("shop_id", shopId).eq("status", "pending"),
         supabase.from("products").select("stock, is_active").eq("shop_id", shopId).eq("is_active", true).lte("stock", LOW_STOCK_AT),
       ]);
@@ -109,24 +115,49 @@ function TodaySummary({ shopId, unread }: { shopId: string; unread: number }) {
     },
   });
   const d = q.data;
+  const money = useQuery({
+    queryKey: ["shop-today-money", shopId],
+    refetchInterval: 60000,
+    queryFn: async () => {
+      const [p, o] = await Promise.all([pos.day(shopId), reports.orders(shopId, presetRange("today"))]);
+      return { pos: p.error ? null : p.data, online: o.error ? null : o.data };
+    },
+  });
+  const { lang } = useApp();
+  const m = money.data;
   const cards = [
     { label: t("merchant.today_orders"), n: d?.today, tab: "orders" as const, icon: Receipt },
     { label: t("merchant.pending_orders"), n: d?.pending, tab: "orders" as const, icon: Receipt, hot: (d?.pending ?? 0) > 0 },
     { label: t("merchant.unread"), n: unread, tab: "chat" as const, icon: MessageCircle, hot: unread > 0 },
-    { label: t("merchant.low_stock"), sub: t("merchant.low_stock_hint"), n: d?.low, tab: "products" as const, icon: AlertTriangle, hot: (d?.low ?? 0) > 0 },
+    { label: t("merchant.low_stock"), sub: t("merchant.low_stock_hint"), n: d?.low, tab: "products" as const, low: true, icon: AlertTriangle, hot: (d?.low ?? 0) > 0 },
   ];
+  const mmk = (n: number | undefined) => (n == null ? "–" : formatMMK(n, lang));
   return (
     <section className="mb-5" aria-label={t("merchant.today")}>
       <h2 className="mb-2 text-sm font-semibold text-muted-foreground">{t("merchant.today")}</h2>
       <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
         {cards.map((c) => (
-          <Link key={c.label} to="/merchant" search={{ tab: c.tab }} className={`surface p-3 transition hover:border-primary/40 ${c.hot ? "border-gold/60 bg-gold-soft/40" : ""}`}>
+          <Link key={c.label} to="/merchant" search={{ tab: c.tab, ...("low" in c ? { low: true } : {}) }} className={`surface p-3 transition hover:border-primary/40 ${c.hot ? "border-gold/60 bg-gold-soft/40" : ""}`}>
             <c.icon className="mb-1 size-4 text-primary" />
             <p className="text-2xl font-semibold tabular-nums">{c.n ?? "–"}</p>
             <p className="text-xs leading-tight text-muted-foreground">{c.label}{c.sub && <span className="block opacity-80">{c.sub}</span>}</p>
           </Link>
         ))}
       </div>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <Link to="/merchant" search={{ tab: "reports" }} className="surface p-4 transition hover:border-primary/40">
+          <p className="text-xs font-medium text-muted-foreground">{t("merchant.instore_today")}</p>
+          <p className="mt-1 text-xl font-semibold tabular-nums">{mmk(m?.pos?.revenue)}</p>
+          <p className="text-xs text-muted-foreground">{t("rep.pos_total")} · {t("rep.tickets", { n: m?.pos?.count ?? 0 })}{(m?.pos?.voided ?? 0) > 0 ? ` · ${t("rep.voided_count")}: ${m!.pos!.voided}` : ""}</p>
+        </Link>
+        <Link to="/merchant" search={{ tab: "reports" }} className="surface p-4 transition hover:border-primary/40">
+          <p className="text-xs font-medium text-muted-foreground">{t("merchant.online_today")}</p>
+          <p className="mt-1 text-xl font-semibold tabular-nums">{mmk(m?.online?.merchandise_subtotal)}</p>
+          <p className="text-xs text-muted-foreground">{t("rep.subtotal")} · {t("rep.orders_n", { n: m?.online?.completed_count ?? 0 })}</p>
+          <p className="text-xs text-muted-foreground">{t("rep.fees")}: {mmk(m?.online?.delivery_fees)}</p>
+        </Link>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">{t("merchant.channels_note")} {t("rep.tz_note")}</p>
     </section>
   );
 }
@@ -268,6 +299,9 @@ function MerchantProducts({ shop }: { shop: ShopRow }) {
   const [editing, setEditing] = useState<ProductRow | "new" | null>(null);
   const [mode, setMode] = useState<"csv" | "tpl" | null>(null);
   const [search, setSearch] = useState("");
+  const { low: lowParam } = Route.useSearch();
+  const [low, setLow] = useState(!!lowParam);
+  useEffect(() => { setLow(!!lowParam); }, [lowParam]);
   const q = useQuery({
     queryKey: ["my-products", shop.id],
     queryFn: async () => {
@@ -287,9 +321,17 @@ function MerchantProducts({ shop }: { shop: ShopRow }) {
         <Button className="h-11" variant="outline" onClick={() => setMode("csv")}>{t("merchant.import_csv")}</Button>
       </div>
       <Input className="mb-3 h-11" placeholder={t("merchant.search_products")} value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="mb-3 flex flex-wrap gap-2">
+        {([false, true] as const).map((v) => (
+          <button key={String(v)} type="button" aria-pressed={low === v} onClick={() => setLow(v)}
+            className={`min-h-9 rounded-full border px-3 text-sm ${low === v ? "border-primary bg-primary/10 font-medium text-primary" : "bg-card"}`}>
+            {v ? `${t("merchant.low_filter")} (${t("merchant.low_stock_hint")})` : t("merchant.all")}
+          </button>
+        ))}
+      </div>
       {(q.data ?? []).length === 0 ? <EmptyState text={t("product.empty")} /> : (
         <ul className="divide-y rounded-lg border bg-card">
-          {q.data!.filter((p) => { const n = search.trim().toLowerCase(); return !n || p.name.toLowerCase().includes(n) || (p.sku ?? "").toLowerCase().includes(n) || (p.barcode ?? "") === search.trim() || (p.barcode ?? "").includes(n); }).map((p) => (
+          {(low ? lowStockList(q.data!) : q.data!).filter((p) => { const n = search.trim().toLowerCase(); return !n || p.name.toLowerCase().includes(n) || (p.sku ?? "").toLowerCase().includes(n) || (p.barcode ?? "") === search.trim() || (p.barcode ?? "").includes(n); }).map((p) => (
             <li key={p.id} className="flex items-center gap-3 p-3">
               <MediaImg path={p.images[0]} alt={p.name} className="size-14 shrink-0 rounded" />
               <div className="min-w-0 flex-1">
@@ -414,11 +456,19 @@ function MerchantOrders({ shopId }: { shopId: string }) {
   const { t, lang } = useApp();
   const qc = useQueryClient();
   const [open, setOpen] = useState<string | null>(null);
+  const [filter, setFilter] = useState<OrderFilter | "all" | null>(null);
+  const pendingN = useQuery({
+    queryKey: ["shop-orders", shopId, "pending-count"],
+    queryFn: async () => (await supabase.from("orders").select("id", { count: "exact", head: true }).eq("shop_id", shopId).eq("status", "pending")).count ?? 0,
+  });
+  const f: OrderFilter | "all" = filter ?? ((pendingN.data ?? 0) > 0 ? "pending" : "all");
   const q = useQuery({
-    queryKey: ["shop-orders", shopId],
+    queryKey: ["shop-orders", shopId, f],
+    enabled: filter !== null || pendingN.isFetched,
     queryFn: async () => {
-      const { data, error } = await supabase.from("orders").select("id, order_no, status, total, delivery_method, recipient_name, created_at")
-        .eq("shop_id", shopId).order("created_at", { ascending: false }).limit(100);
+      let qb = supabase.from("orders").select("id, order_no, status, total, delivery_method, recipient_name, created_at").eq("shop_id", shopId);
+      if (f !== "all") qb = qb.in("status", [...ORDER_FILTERS[f]]);
+      const { data, error } = await qb.order("created_at", { ascending: false }).limit(100);
       if (error) throw error;
       return data;
     },
@@ -428,10 +478,18 @@ function MerchantOrders({ shopId }: { shopId: string }) {
     const id = setInterval(() => qc.invalidateQueries({ queryKey: ["shop-orders", shopId] }), 10000);
     return () => clearInterval(id);
   }, [shopId, qc]);
-  if ((q.data ?? []).length === 0) return <EmptyState text={t("merchant.no_orders")} />;
+  const chips: (OrderFilter | "all")[] = ["all", ...(Object.keys(ORDER_FILTERS) as OrderFilter[])];
   return (
     <>
-      <ul className="divide-y rounded-lg border bg-card">
+      <div className="mb-3 flex gap-2 overflow-x-auto overscroll-x-contain pb-1">
+        {chips.map((c) => (
+          <button key={c} type="button" aria-pressed={f === c} onClick={() => setFilter(c)}
+            className={`min-h-9 shrink-0 rounded-full border px-3 text-sm ${f === c ? "border-primary bg-primary/10 font-medium text-primary" : "bg-card"}`}>
+            {c === "all" ? t("merchant.all") : t(`of.${c}` as TKey)}{c === "pending" && (pendingN.data ?? 0) > 0 ? ` (${pendingN.data})` : ""}
+          </button>
+        ))}
+      </div>
+      {(q.data ?? []).length === 0 ? <EmptyState text={t("merchant.no_orders")} /> : <ul className="divide-y rounded-lg border bg-card">
         {q.data!.map((o) => (
           <li key={o.id}>
             <button onClick={() => setOpen(o.id)} className="flex w-full flex-wrap items-center justify-between gap-2 p-4 text-left hover:bg-muted/50">
@@ -441,7 +499,7 @@ function MerchantOrders({ shopId }: { shopId: string }) {
             </button>
           </li>
         ))}
-      </ul>
+      </ul>}
       <Dialog open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader><DialogTitle className="sr-only">Order</DialogTitle></DialogHeader>
