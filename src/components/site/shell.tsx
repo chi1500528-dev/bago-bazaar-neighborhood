@@ -166,11 +166,11 @@ export function Header() {
   const { t } = useApp();
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-md" style={{ paddingTop: "var(--safe-area-inset-top, env(safe-area-inset-top, 0px))" }}>
-      <div className="container-page flex h-16 items-center gap-3 md:gap-5">
+      <div className="container-page flex h-16 min-w-0 items-center gap-2 sm:gap-3 md:gap-5">
         <Logo />
         <SearchBox className="hidden flex-1 md:block md:max-w-2xl" />
         <span className="hidden items-center gap-1 rounded-full bg-primary-soft px-3 py-1 text-xs font-medium text-primary xl:inline-flex"><MapPin className="size-3.5" />{t("nav.bago_city")}</span>
-        <nav className="ml-auto flex items-center gap-1 md:ml-0">
+        <nav className="ml-auto flex shrink-0 items-center gap-1 md:ml-0">
           <Link to="/categories" className="hidden h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-accent lg:inline-flex">
             {t("nav.categories")}
           </Link>
@@ -184,9 +184,9 @@ export function Header() {
           <span className="hidden md:inline-flex"><CartLink /></span>
         </nav>
       </div>
-      <div className="container-page flex items-center gap-2 pb-3 md:hidden">
-        <SearchBox className="flex-1" />
-        <LangSwitch className="sm:hidden" />
+      <div className="container-page flex min-w-0 items-center gap-2 pb-3 md:hidden">
+        <SearchBox className="min-w-0 flex-1" />
+        <LangSwitch className="shrink-0 sm:hidden" />
       </div>
     </header>
   );
@@ -276,7 +276,7 @@ function BackButton() {
 
 export function PageShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col overflow-x-clip">
+    <div className="flex min-h-screen min-w-0 flex-col">
       <Header />
       <main className="container-page min-w-0 flex-1 pb-24 md:pb-8"><BackButton />{children}</main>
       <Footer />

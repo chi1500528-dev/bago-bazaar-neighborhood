@@ -47,7 +47,7 @@ function ProductPage() {
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6 py-6 md:grid-cols-2 md:gap-10">
       {dialog}
       <div className="min-w-0 space-y-3">
-        <div className="relative aspect-square overflow-hidden rounded-2xl border bg-muted">
+        <div className="relative aspect-square w-full max-w-full overflow-hidden rounded-2xl border bg-muted">
           <MediaImg path={p.images[img]} alt={p.name} className="size-full object-contain" eager />
           <HeartButton productId={p.id} className="absolute right-3 top-3 size-11" />
         </div>
@@ -92,9 +92,9 @@ function ProductPage() {
         {p.description && <p className="whitespace-pre-line break-words border-t pt-4 text-sm leading-relaxed">{p.description}</p>}
       </div>
       <StickyActionBar>
-        <ChatWithShop iconOnly shopId={p.shops.id} shopName={p.shops.name} product={{ id: p.id, name: p.name }} className="size-12 shrink-0 text-primary" />
+        <ChatWithShop iconOnly shopId={p.shops.id} shopName={p.shops.name} product={{ id: p.id, name: p.name }} className="size-11 shrink-0 text-primary" />
         <span className="min-w-0 flex-1 truncate text-base font-bold tabular-nums text-primary sm:text-lg">{formatMMK(effectivePrice(p) * (out ? 1 : qty), lang)}</span>
-        <Button size="lg" className="h-12 min-w-0 shrink whitespace-normal px-4 leading-tight" disabled={out} onClick={() => add(p, qty)}>
+        <Button size="lg" className="h-12 min-w-0 max-w-[60%] shrink whitespace-normal break-words px-3 text-xs leading-tight sm:px-4 sm:text-sm" disabled={out} onClick={() => add(p, qty)}>
           {out ? t("product.out_of_stock") : t("product.add_to_cart")}
         </Button>
       </StickyActionBar>

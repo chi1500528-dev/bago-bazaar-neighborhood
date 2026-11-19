@@ -50,13 +50,13 @@ export function ProductBrowser({ categoryIds, q }: { categoryIds?: string[]; q?:
     },
   });
   const items = query.data?.pages.flat() ?? [];
-  const sel = "h-11 min-w-0 w-full rounded-md border bg-card px-2 text-sm sm:h-9 sm:w-auto";
+  const sel = "h-11 min-w-0 w-full max-w-full truncate rounded-md border bg-card px-2 text-sm sm:h-9 sm:w-auto";
 
   return (
     <div>
       {dialog}
-      <div className="mb-4 grid grid-cols-2 items-center gap-2 sm:flex sm:flex-wrap">
-        <select className={sel} value={tw} onChange={(e) => setTw(e.target.value)} aria-label={t("nav.township")}>
+      <div className="mb-4 grid grid-cols-[repeat(2,minmax(0,1fr))] items-center gap-2 sm:flex sm:flex-wrap">
+        <select className={`${sel} col-span-2 sm:col-span-1`} value={tw} onChange={(e) => setTw(e.target.value)} aria-label={t("nav.township")}>
           <option value="">{t("nav.all_townships")}</option>
           {townships.data?.map((x) => <option key={x.id} value={x.id}>{pick(x.name_my, x.name_en)}</option>)}
         </select>
@@ -71,7 +71,7 @@ export function ProductBrowser({ categoryIds, q }: { categoryIds?: string[]; q?:
           <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} className="accent-[var(--primary)]" />
           {t("filter.in_stock")}
         </label>
-        <select className={`${sel} sm:ml-auto`} value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label={t("filter.sort")}>
+        <select className={`${sel} col-span-2 sm:col-span-1 sm:ml-auto`} value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label={t("filter.sort")}>
           <option value="relevance">{t("filter.relevance")}</option>
           <option value="newest">{t("filter.newest")}</option>
           <option value="price_asc">{t("filter.price_asc")}</option>

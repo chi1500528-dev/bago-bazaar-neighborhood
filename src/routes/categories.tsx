@@ -41,9 +41,9 @@ function Categories() {
                 <span className="min-w-0 break-words text-base font-semibold leading-relaxed">{pick(c.name_my, c.name_en)}</span>
               </Link>
               {subs.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
+                <div className="mt-3 flex min-w-0 flex-wrap gap-1.5">
                   {subs.map((s) => (
-                    <Link key={s.id} to="/c/$slug" params={{ slug: s.slug }} className="inline-flex min-h-9 max-w-full items-center break-words rounded-full border px-3 text-xs hover:border-primary hover:text-primary">
+                    <Link key={s.id} to="/c/$slug" params={{ slug: s.slug }} className="inline-flex min-h-9 max-w-full items-center break-words [overflow-wrap:anywhere] rounded-full border px-3 text-xs hover:border-primary hover:text-primary">
                       {pick(s.name_my, s.name_en)}
                     </Link>
                   ))}

@@ -130,8 +130,8 @@ export function StickyActionBar({ children }: { children: ReactNode }) {
   return (
     <>
       <div className="h-24 md:hidden" aria-hidden />
-      <div className="fixed inset-x-0 z-30 border-t bg-card/95 px-4 py-3 shadow-lg backdrop-blur md:hidden" style={{ bottom: "calc(3.5rem + 1px + max(0.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))))" }}>
-        <div className="mx-auto flex min-w-0 max-w-full items-center gap-3">{children}</div>
+      <div className="fixed inset-x-0 z-30 border-t bg-card/95 px-3 py-2.5 shadow-lg backdrop-blur md:hidden sm:px-4"  style={{ bottom: "calc(3.5rem + 1px + max(0.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))))" }}>
+        <div className="mx-auto flex min-w-0 max-w-full items-center gap-2 sm:gap-3">{children}</div>
       </div>
     </>
   );

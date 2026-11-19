@@ -65,24 +65,24 @@ function Home() {
     <>
       {dialog}
       {/* Search-led start: calm, no heavy imagery */}
-      <section className="mt-4 rounded-3xl border border-border/70 bg-sage/60 px-5 py-8 md:mt-6 md:px-12 md:py-14">
+      <section className="mt-4 rounded-3xl border border-border/70 bg-sage/60 min-w-0 px-4 py-6 sm:px-5 sm:py-8 md:mt-6 md:px-12 md:py-14">
         <span className="eyebrow">{t("hero.eyebrow")}</span>
-        <h1 className="mt-2 max-w-[680px] break-words font-display text-[1.5rem] font-semibold leading-[1.6] text-foreground md:text-[2.4rem]">{t("hero.title")}</h1>
-        <p className="mt-2 max-w-[560px] text-sm leading-relaxed text-muted-foreground md:text-base">{t("hero.sub")}</p>
+        <h1 className="mt-2 max-w-[680px] break-words [overflow-wrap:anywhere] font-display text-[1.3rem] sm:text-[1.5rem] font-semibold leading-[1.6] text-foreground md:text-[2.4rem]">{t("hero.title")}</h1>
+        <p className="mt-2 max-w-[560px] break-words text-sm leading-relaxed text-muted-foreground md:text-base">{t("hero.sub")}</p>
         <form
           role="search"
           className="mt-5 flex w-full min-w-0 max-w-[640px] items-center gap-2 rounded-full border border-border bg-card p-1.5 shadow-soft focus-within:border-primary"
           onSubmit={(e) => { e.preventDefault(); const q = String(new FormData(e.currentTarget).get("q") ?? "").trim(); navigate({ to: "/search", search: { q } }); }}
         >
-          <Search className="ml-3 size-5 shrink-0 text-muted-foreground" aria-hidden />
+          <Search className="ml-2 size-5 sm:ml-3 shrink-0 text-muted-foreground" aria-hidden />
           <input name="q" type="search" aria-label={t("nav.search_placeholder")} placeholder={t("nav.search_placeholder")}
             className="h-11 min-w-0 flex-1 bg-transparent text-base outline-none" />
-          <Button type="submit" className="h-11 shrink-0 rounded-full px-4 sm:px-5">{t("hero.search_go")}</Button>
+          <Button type="submit" className="h-11 shrink-0 rounded-full px-3 sm:px-5">{t("hero.search_go")}</Button>
         </form>
         {top.length > 0 && (
           <div className="mt-5">
             <p className="mb-2 text-xs font-medium text-muted-foreground">{t("home.quick")}</p>
-            <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 md:mx-0 md:flex-wrap md:px-0">
+            <div className="-mx-4 flex gap-2 overflow-x-auto overscroll-x-contain px-4 pb-1 sm:-mx-5 sm:px-5 md:mx-0 md:flex-wrap md:px-0">
               {top.slice(0, 8).map((c) => (
                 <Link key={c.id} to="/c/$slug" params={{ slug: c.slug }}
                   className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm hover:border-primary hover:text-primary">
@@ -99,7 +99,7 @@ function Home() {
           <div className="grid h-80 grid-cols-3 gap-3">{[0, 1, 2].map((i) => <div key={i} className="animate-pulse rounded-2xl bg-muted" />)}</div>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:grid-rows-2 md:gap-4">
+            <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-3 md:grid-cols-4 md:grid-rows-2 md:gap-4">
               {top.slice(0, 3).map((c, i) => (
                 <CatTile key={c.id} slug={c.slug} icon={c.icon} name={pick(c.name_my, c.name_en)}
                   className={i === 0 ? "col-span-2 aspect-[16/10] md:row-span-2 md:aspect-auto" : "aspect-square md:col-span-2 md:aspect-auto md:h-52"} big={i === 0} />
@@ -178,7 +178,7 @@ function CatTile({ slug, icon, name, className, big }: { slug: string; icon: str
       {img ? <img src={img} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
         : <span className="absolute inset-0 grid place-items-center text-primary"><CategoryIcon name={icon} className="size-10" /></span>}
       <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/80 via-foreground/30 to-transparent p-4 pt-12">
-        <span className={`block font-semibold leading-relaxed text-primary-foreground ${big ? "text-xl md:text-2xl" : "text-sm md:text-base"}`}>{name}</span>
+        <span className={`block break-words font-semibold leading-relaxed text-primary-foreground ${big ? "text-xl md:text-2xl" : "text-sm md:text-base"}`}>{name}</span>
         <span className="mt-1 inline-flex items-center gap-1 text-xs text-primary-foreground/80"><ArrowRight className="size-3 transition-transform group-hover:translate-x-1" /></span>
       </span>
     </Link>
