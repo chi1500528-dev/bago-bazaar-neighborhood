@@ -10,7 +10,7 @@ export const townshipsQuery = queryOptions({
   queryKey: ["townships"],
   staleTime: 60 * 60 * 1000,
   queryFn: async () => {
-    const { data, error } = await supabase.from("townships").select("id, slug, name_my, name_en").order("sort");
+    const { data, error } = await supabase.from("townships").select("id, slug, name_my, name_en").eq("is_active", true).order("sort");
     if (error) throw error;
     return data;
   },

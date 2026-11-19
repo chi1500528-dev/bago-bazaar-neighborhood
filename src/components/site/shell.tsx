@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, Home, LayoutGrid, MapPin, Receipt, Search, ShoppingCart, Store, User } from "lucide-react";
+import { ChevronLeft, Heart, Home, LayoutGrid, MapPin, Receipt, Search, ShoppingCart, Store, User } from "lucide-react";
 import { Logo } from "./bits";
 import { useApp } from "@/lib/app-state";
 import { townshipsQuery } from "@/lib/queries";
@@ -176,6 +176,9 @@ export function Header() {
           <MyShopLink />
           <span className="mx-1 hidden h-6 w-px bg-border sm:block" />
           <LangSwitch className="hidden sm:inline-flex" />
+          <Link to="/wishlist" aria-label={t("wish.title")} className="inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent">
+            <Heart className="size-4" /><span className="hidden lg:inline">{t("wish.title")}</span>
+          </Link>
           <span className="hidden md:inline-flex"><AccountMenu /></span>
           <span className="hidden md:inline-flex"><CartLink /></span>
         </nav>

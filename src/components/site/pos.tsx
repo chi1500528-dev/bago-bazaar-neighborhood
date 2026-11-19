@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 type Line = { productId: string; name: string; image: string | null; unitPrice: number; quantity: number; stock: number };
 const newKey = () => crypto.randomUUID();
 /** No answer from the server (dropped connection, timeout, relay error): outcome unknown. */
-const isNetwork = (e: { message: string; code?: string }) => /failed to fetch|networkerror|network request failed|load failed|timeout|aborted/i.test(e.message ?? "");
+const isNetwork = (e: { message: string; code?: string }) => !e.code && /failed to fetch|networkerror|network request failed|load failed|aborted/i.test(e.message ?? "");
 
 export function PosSell({ shopId }: { shopId: string }) {
   const { t, lang } = useApp();
@@ -107,7 +107,7 @@ export function PosSell({ shopId }: { shopId: string }) {
     } catch (e) {
       console.error("pos_checkout network", e);
       setUncertain(true); // key and cart kept as-is: retry returns the saved sale instead of a second one
-      toast.error(t("pos.retrying"));
+      toast.error(`${t("pos.retrying")} (${e instanceof Error ? e.message : (e as { message?: string })?.message ?? ""})`);
     } finally { setBusy(false); }
   };
 
