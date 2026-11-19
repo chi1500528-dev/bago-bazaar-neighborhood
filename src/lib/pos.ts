@@ -4,9 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { PayMethod } from "@/lib/domain/rules";
 
 type Res<T> = Promise<{ data: T | null; error: { message: string; code?: string } | null }>;
-const rpc = supabase.rpc as unknown as <T>(fn: string, args: Record<string, unknown>) => Res<T>;
+const rpc = supabase.rpc.bind(supabase) as unknown as <T>(fn: string, args: Record<string, unknown>) => Res<T>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const from = (t: string) => (supabase.from as any)(t);
+const from = (t: string) => (supabase.from as any).call(supabase, t);
 
 export type DaySale = { id: string; sale_number: number; status: "completed" | "voided"; payment_method: PayMethod; total: number; created_at: string };
 export type Day = { day: string; revenue: number; count: number; voided: number; by_method: Partial<Record<PayMethod, number>>; sales: DaySale[] };
