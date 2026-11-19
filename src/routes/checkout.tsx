@@ -118,7 +118,7 @@ function Checkout() {
           <div className="grid gap-3 sm:grid-cols-2">
             {([["delivery", Bike, s.offers_delivery], ["pickup", Store, s.offers_pickup]] as const).map(([m, Icon, ok]) => (
               <button key={m} disabled={!ok} onClick={() => setMethod(m)}
-                className={cn("surface flex items-start gap-3 p-4 text-left transition-colors disabled:opacity-40", method === m && "border-primary ring-2 ring-primary/15")}>
+                className={cn("surface flex min-h-16 items-start gap-3 rounded-2xl p-4 text-left transition-colors disabled:opacity-40", method === m && "border-primary ring-2 ring-primary/15")}>
                 <Icon className="mt-0.5 size-5 text-primary" />
                 <span>
                   <span className="block font-medium">{t(m === "delivery" ? "checkout.delivery" : "checkout.pickup")}</span>
@@ -128,7 +128,7 @@ function Checkout() {
             ))}
           </div>
         </section>
-        <section className="surface grid gap-4 p-5 sm:grid-cols-2">
+        <section className="surface grid gap-4 rounded-2xl p-5 sm:grid-cols-2">
           {field("name", t("checkout.name"), <Input id="name" autoComplete="name" className="h-11" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />)}
           {field("phone", t("checkout.phone"), <Input id="phone" type="tel" inputMode="tel" autoComplete="tel" className="h-11" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />)}
           {method === "delivery" ? (
@@ -166,7 +166,7 @@ function Checkout() {
           <p>{t("checkout.payment_cod")}</p>
         </section>
       </div>
-      <aside className="surface h-fit space-y-3 p-5">
+      <aside className="surface h-fit space-y-3 rounded-2xl p-5 lg:sticky lg:top-24">
         <h2 className="font-semibold">{t("checkout.summary")}</h2>
         <p className="text-sm text-muted-foreground">{s.name}</p>
         <ul className="space-y-1.5 text-sm">

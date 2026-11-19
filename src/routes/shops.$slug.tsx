@@ -50,7 +50,7 @@ function ShopPage() {
   return (
     <div className="py-5">
       {dialog}
-      <div className="overflow-hidden rounded-xl border bg-card">
+      <div className="overflow-hidden rounded-3xl border border-border/60 bg-card">
         <div className="aspect-[3/1] max-h-64 w-full bg-muted md:aspect-[4/1]">
           <MediaImg path={s.cover_url} alt={s.name} className="size-full" eager />
         </div>
@@ -59,7 +59,7 @@ function ShopPage() {
             <MediaImg path={s.logo_url} alt="" className="size-full" />
           </div>
           <div className="flex-1 space-y-2">
-            <h1 className="text-xl font-bold md:text-2xl">{s.name}</h1>
+            <h1 className="font-display text-xl font-semibold leading-relaxed md:text-2xl">{s.name}</h1>
             {s.description && <p className="whitespace-pre-line text-sm text-muted-foreground">{s.description}</p>}
             <ChatWithShop shopId={s.id} shopName={s.name} />
           </div>
@@ -82,7 +82,7 @@ function ShopPage() {
           <div className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-1">
             {[{ id: null as string | null, name: t("shop.all") }, ...cats.data!].map((c) => (
               <button key={c.id ?? "all"} onClick={() => setCat(c.id)}
-                className={cn("shrink-0 rounded-full border px-4 py-1.5 text-sm", cat === c.id ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:border-primary/40")}>{c.name}</button>
+                className={cn("inline-flex min-h-10 shrink-0 items-center rounded-full border px-4 text-sm", cat === c.id ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:border-primary/40")}>{c.name}</button>
             ))}
           </div>
         )}
