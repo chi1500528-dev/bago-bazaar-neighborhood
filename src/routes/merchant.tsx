@@ -1,7 +1,7 @@
 import { ChatInbox } from "@/components/site/chat";
 import { useUnreadCounts } from "@/lib/notify";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight, MessageCircle, Package, Receipt, Settings2, Eye, Store, Plus, Pencil, Trash2, Check, X, AlertTriangle, ShoppingBag } from "lucide-react";
+import { ChevronRight, MessageCircle, Package, Receipt, Settings2, Eye, Store, Plus, Pencil, Trash2, Check, X, AlertTriangle, ShoppingBag, BarChart3 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -17,6 +17,8 @@ import { validateProduct, draftDescription, applyDraft, type DescDetails, type D
 import type { TKey } from "@/lib/i18n/dict";
 import { OrderDetail } from "@/components/site/order-detail";
 import { PosSell, StockHistory } from "@/components/site/pos";
+import { MerchantReports } from "@/components/site/reports";
+import { ReceiptSettingsCard } from "@/components/site/receipt-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +30,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type ShopRow = Database["public"]["Tables"]["shops"]["Row"];
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
-const TABS = ["sell", "orders", "chat", "products", "shop"] as const;
+const TABS = ["sell", "orders", "chat", "products", "reports", "shop"] as const;
 type Tab = (typeof TABS)[number];
 
 export const Route = createFileRoute("/merchant")({
@@ -138,6 +140,7 @@ function Dash({ s, shops, onPick, onNew }: { s: ShopRow; shops: ShopRow[]; onPic
     { id: "orders" as const, label: t("merchant.orders"), sub: t("merchant.tile_orders"), icon: Receipt, n: alerts.newOrders },
     { id: "chat" as const, label: t("chat.title"), sub: t("merchant.tile_chat"), icon: MessageCircle, n: alerts.shopMessages },
     { id: "products" as const, label: t("merchant.products"), sub: t("merchant.tile_products"), icon: Package, n: 0 },
+    { id: "reports" as const, label: t("rep.tab"), sub: t("rep.tile"), icon: BarChart3, n: 0 },
     { id: "shop" as const, label: t("merchant.shop"), sub: t("merchant.tile_shop"), icon: Settings2, n: 0 },
   ];
   const current = tiles.find((x) => x.id === tab);
@@ -184,7 +187,8 @@ function Dash({ s, shops, onPick, onNew }: { s: ShopRow; shops: ShopRow[]; onPic
           {tab === "orders" && <MerchantOrders shopId={s.id} />}
           {tab === "chat" && <ChatInbox side="shop" shopId={s.id} />}
           {tab === "products" && <MerchantProducts shop={s} />}
-          {tab === "shop" && <ShopForm shop={s} />}
+          {tab === "reports" && <MerchantReports shopId={s.id} />}
+          {tab === "shop" && <><ShopForm shop={s} /><ReceiptSettingsCard shopId={s.id} shop={s} /></>}
         </div>
       )}
     </div>

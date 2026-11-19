@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -5,9 +6,9 @@ import { Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { RequireAuth } from "@/components/site/shell";
 import { useApp } from "@/lib/app-state";
-import { formatMMK } from "@/lib/domain/rules";
+import { normalizeReceipt } from "@/lib/domain/reports";
+import { ReceiptPaper, type PaperShop } from "@/components/site/receipt-paper";
 import { pos } from "@/lib/pos";
-import type { TKey } from "@/lib/i18n/dict";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/site/bits";
 
@@ -28,44 +29,33 @@ export const Route = createFileRoute("/receipt/$id")({
 
 function Receipt() {
   const { id } = Route.useParams();
-  const { t, lang } = useApp();
-  const [w, setW] = useState<58 | 80>(80);
+  const { t } = useApp();
+  const [w, setW] = useState<58 | 80 | null>(null);
   const q = useQuery({
     queryKey: ["receipt", id],
     queryFn: async () => {
       const r = await pos.sale(id);
-      const shop = r.sale ? (await supabase.from("shops").select("name,phone,address").eq("id", r.sale.shop_id).maybeSingle()).data : null;
-      return { ...r, shop };
+      let shop: (PaperShop & { receipt_settings?: unknown }) | null = null;
+      if (r.sale) {
+        const full = await (supabase.from("shops") as any).select("name,phone,address,logo_url,receipt_settings").eq("id", r.sale.shop_id).maybeSingle();
+        // Before the receipt-settings column exists, fall back to the plain shop fields.
+        shop = full.error ? (await supabase.from("shops").select("name,phone,address,logo_url").eq("id", r.sale.shop_id).maybeSingle()).data : full.data;
+      }
+      return { ...r, shop, settings: normalizeReceipt(shop?.receipt_settings) };
     },
   });
   if (q.isLoading) return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
   const s = q.data?.sale;
-  if (!s) return <EmptyState text={t("err.generic")} />;
+  if (!s || !q.data?.shop) return <EmptyState text={t("err.generic")} />;
+  const width = w ?? q.data.settings.paper_width;
   return (
     <div className="mx-auto max-w-md py-6">
       <div className="no-print mb-4 flex flex-wrap items-center gap-2">
         <span className="ml-auto text-sm text-muted-foreground">{t("pos.width")}</span>
-        {([58, 80] as const).map((x) => <Button key={x} size="sm" variant={w === x ? "default" : "outline"} onClick={() => setW(x)}>{x}mm</Button>)}
+        {([58, 80] as const).map((x) => <Button key={x} size="sm" variant={width === x ? "default" : "outline"} onClick={() => setW(x)}>{x}mm</Button>)}
         <Button size="sm" onClick={() => window.print()}><Printer className="size-4" />{t("pos.print")}</Button>
       </div>
-      <div className="receipt mx-auto bg-card p-3 font-mono text-xs leading-relaxed text-foreground" style={{ width: `${w}mm` }}>
-        <p className="text-center text-sm font-bold">{q.data!.shop?.name}</p>
-        {q.data!.shop?.phone && <p className="text-center">{q.data!.shop.phone}</p>}
-        <p className="mt-2">{t("pos.sale_no")} #{s.sale_number}</p>
-        <p>{new Date(s.created_at).toLocaleString(undefined, { timeZone: "Asia/Yangon" })}</p>
-        {s.status === "voided" && <p className="mt-1 text-center font-bold">*** {t("pos.voided")} ***</p>}
-        <div className="my-2 border-t border-dashed" />
-        {q.data!.items.map((i) => <div key={i.id} className="mb-1">
-          <p>{i.name}</p>
-          <p className="flex justify-between"><span>{i.quantity} × {formatMMK(i.unit_price, lang)}</span><span>{formatMMK(i.line_total, lang)}</span></p>
-        </div>)}
-        <div className="my-2 border-t border-dashed" />
-        <p className="flex justify-between font-bold"><span>{t("pos.total")}</span><span>{formatMMK(s.total, lang)}</span></p>
-        <p className="flex justify-between"><span>{t("pos.pay")}</span><span>{t(`pay.${s.payment_method}` as TKey)}</span></p>
-        {s.cash_received != null && <p className="flex justify-between"><span>{t("pos.received").split(" (")[0]}</span><span>{formatMMK(s.cash_received, lang)}</span></p>}
-        {s.change_due != null && <p className="flex justify-between"><span>{t("pos.change")}</span><span>{formatMMK(s.change_due, lang)}</span></p>}
-        <p className="mt-3 text-center">ပဲခူးဈေး · Bago Market</p>
-      </div>
+      <ReceiptPaper shop={q.data.shop} sale={s} items={q.data.items} s={q.data.settings} width={width} />
     </div>
   );
 }
