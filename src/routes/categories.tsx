@@ -29,21 +29,21 @@ function Categories() {
   return (
     <div className="py-6">
       <h1 className="mb-5 text-xl font-bold">{t("nav.categories")}</h1>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {top.map((c) => {
           const subs = all.filter((s) => s.parent_id === c.id);
           return (
-            <div key={c.id} className="lift rounded-2xl bg-card p-4">
-              <Link to="/c/$slug" params={{ slug: c.slug }} className="zoom-img flex items-center gap-3 hover:text-primary">
-                <span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-sage text-primary">
+            <div key={c.id} className="lift rounded-2xl border border-border/60 bg-card p-4">
+              <Link to="/c/$slug" params={{ slug: c.slug }} className="zoom-img flex min-h-16 items-center gap-4 hover:text-primary">
+                <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-sage text-primary">
                   {categoryImage(c.slug) ? <img src={categoryImage(c.slug)!} alt="" loading="lazy" className="size-full object-cover" /> : <CategoryIcon name={c.icon} className="size-5" />}
                 </span>
-                <span className="font-semibold">{pick(c.name_my, c.name_en)}</span>
+                <span className="text-base font-semibold leading-relaxed">{pick(c.name_my, c.name_en)}</span>
               </Link>
               {subs.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {subs.map((s) => (
-                    <Link key={s.id} to="/c/$slug" params={{ slug: s.slug }} className="rounded-full border px-2.5 py-0.5 text-xs hover:border-primary hover:text-primary">
+                    <Link key={s.id} to="/c/$slug" params={{ slug: s.slug }} className="inline-flex min-h-9 items-center rounded-full border px-3 text-xs hover:border-primary hover:text-primary">
                       {pick(s.name_my, s.name_en)}
                     </Link>
                   ))}

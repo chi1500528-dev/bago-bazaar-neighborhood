@@ -2,8 +2,7 @@ import { siteUrl } from "@/lib/site";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight } from "lucide-react";
-import heroMarket from "@/assets/hero-market.jpg";
+import { ArrowRight, Search } from "lucide-react";
 import { categoryImage } from "@/lib/category-images";
 import { useApp } from "@/lib/app-state";
 import { categoriesQuery, homeProductsQuery, homeShopsQuery, promosQuery, warm } from "@/lib/queries";
@@ -65,16 +64,34 @@ function Home() {
   return (
     <>
       {dialog}
-      {/* Hero: full-image card */}
-      <section className="relative mt-4 overflow-hidden rounded-3xl shadow-soft md:mt-5">
-        <img src={heroMarket} alt="" width={1792} height={1024} fetchPriority="high"
-          className="absolute inset-0 size-full object-cover object-[70%_center]" />
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-foreground/75 via-foreground/30 to-transparent md:bg-gradient-to-r md:from-foreground/65 md:via-foreground/25 md:to-transparent" />
-        <div className="relative flex aspect-[4/3.6] max-h-[360px] min-h-[290px] w-full flex-col justify-end gap-2.5 p-5 sm:p-7 md:aspect-[21/8] md:max-h-[420px] md:justify-center md:gap-4 md:p-12">
-          <span className="flex items-center gap-2 text-xs font-medium text-gold md:text-sm"><span className="h-px w-6 bg-gold" />{t("hero.eyebrow")}</span>
-          <h1 className="max-w-[560px] md:max-w-[680px] font-display text-[1.45rem] font-semibold leading-[1.45] text-primary-foreground sm:text-[1.75rem] md:text-[2.75rem]">{t("hero.title")}</h1>
-          <Button asChild className="mt-1 h-11 w-fit rounded-full bg-ivory px-6 text-primary shadow-soft hover:bg-ivory/90 md:h-12 md:px-8"><Link to="/categories">{t("hero.shop")}</Link></Button>
-        </div>
+      {/* Search-led start: calm, no heavy imagery */}
+      <section className="mt-4 rounded-3xl border border-border/70 bg-sage/60 px-5 py-8 md:mt-6 md:px-12 md:py-14">
+        <span className="eyebrow">{t("hero.eyebrow")}</span>
+        <h1 className="mt-2 max-w-[680px] font-display text-[1.5rem] font-semibold leading-[1.6] text-foreground md:text-[2.4rem]">{t("hero.title")}</h1>
+        <p className="mt-2 max-w-[560px] text-sm leading-relaxed text-muted-foreground md:text-base">{t("hero.sub")}</p>
+        <form
+          role="search"
+          className="mt-5 flex max-w-[640px] items-center gap-2 rounded-full border border-border bg-card p-1.5 shadow-soft focus-within:border-primary"
+          onSubmit={(e) => { e.preventDefault(); const q = String(new FormData(e.currentTarget).get("q") ?? "").trim(); navigate({ to: "/search", search: { q } }); }}
+        >
+          <Search className="ml-3 size-5 shrink-0 text-muted-foreground" aria-hidden />
+          <input name="q" type="search" aria-label={t("nav.search_placeholder")} placeholder={t("nav.search_placeholder")}
+            className="h-11 min-w-0 flex-1 bg-transparent text-base outline-none" />
+          <Button type="submit" className="h-11 shrink-0 rounded-full px-5">{t("hero.search_go")}</Button>
+        </form>
+        {top.length > 0 && (
+          <div className="mt-5">
+            <p className="mb-2 text-xs font-medium text-muted-foreground">{t("home.quick")}</p>
+            <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 md:mx-0 md:flex-wrap md:px-0">
+              {top.slice(0, 8).map((c) => (
+                <Link key={c.id} to="/c/$slug" params={{ slug: c.slug }}
+                  className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm hover:border-primary hover:text-primary">
+                  <CategoryIcon name={c.icon} className="size-4 text-primary" />{pick(c.name_my, c.name_en)}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <Section title={t("home.categories")} action={<SeeAll to="/categories" />}>

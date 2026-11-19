@@ -65,7 +65,7 @@ export function ProductCard({ p, onAdd }: { p: Product; onAdd: (p: Product) => v
   const off = discountPercent(p);
   const out = p.stock <= 0;
   return (
-    <div className="group lift zoom-img flex flex-col overflow-hidden rounded-xl bg-card">
+    <div className="group lift zoom-img flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card">
       <Link to="/p/$id" params={{ id: p.id }} className="relative block aspect-square overflow-hidden bg-muted">
         <MediaImg path={p.images[0]} alt={p.name} className="size-full" />
         <HeartButton productId={p.id} className="absolute right-2 top-2" />
@@ -76,18 +76,20 @@ export function ProductCard({ p, onAdd }: { p: Product; onAdd: (p: Product) => v
         )}
       </Link>
       <div className="flex flex-1 flex-col gap-1 p-3.5">
-        <Link to="/p/$id" params={{ id: p.id }} className="line-clamp-2 text-sm font-medium hover:text-primary">
+        <Link to="/p/$id" params={{ id: p.id }} className="line-clamp-2 min-h-[2.9em] text-sm font-medium leading-[1.45] hover:text-primary">
           {p.name}
         </Link>
         <Link to="/shops/$slug" params={{ slug: p.shops.slug }} className="truncate text-xs text-muted-foreground hover:underline">
           {p.shops.name}
         </Link>
         <div className="mt-auto flex flex-wrap items-baseline gap-x-2 pt-1">
-          <span className="text-[15px] font-semibold text-primary">{formatMMK(effectivePrice(p), lang)}</span>
+          <span className="text-[15px] font-semibold tabular-nums text-primary">{formatMMK(effectivePrice(p), lang)}</span>
           {off > 0 && <span className="text-xs text-muted-foreground line-through">{formatMMK(p.price, lang)}</span>}
         </div>
-        {!out && <span className="text-[11px] text-success">{t("product.in_stock")}</span>}
-        <Button size="sm" variant={out ? "secondary" : "default"} disabled={out} onClick={() => onAdd(p)} className="mt-2 h-auto min-h-9 whitespace-normal rounded-full py-1.5 transition-colors">
+        <span className={`text-[11px] ${out ? "text-destructive" : p.stock <= 5 ? "text-warning" : "text-success"}`}>
+          {out ? t("product.out_of_stock") : p.stock <= 5 ? t("product.low_stock", { n: p.stock }) : t("product.in_stock")}
+        </span>
+        <Button size="sm" variant={out ? "secondary" : "default"} disabled={out} onClick={() => onAdd(p)} className="mt-2 h-auto min-h-11 whitespace-normal rounded-full py-1.5 transition-colors">
           {out ? t("product.out_of_stock") : t("product.add_to_cart")}
         </Button>
       </div>

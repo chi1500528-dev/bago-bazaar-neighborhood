@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Store, Trash2 } from "lucide-react";
 import { useCartShop } from "@/lib/queries";
 import { useApp } from "@/lib/app-state";
 import { cartTotals, formatMMK } from "@/lib/domain/rules";
@@ -28,14 +28,20 @@ function CartPage() {
     <div className="grid gap-6 py-6 lg:grid-cols-[1fr_22rem]">
       <div>
         <h1 className="mb-1 text-xl font-bold">{t("cart.title")}</h1>
-        {shop.data && <Link to="/shops/$slug" params={{ slug: shop.data.slug }} className="text-sm text-primary hover:underline">{shop.data.name}</Link>}
-        <ul className="mt-4 divide-y rounded-lg border bg-card">
+        {shop.data && (
+          <Link to="/shops/$slug" params={{ slug: shop.data.slug }} className="mt-3 flex min-h-14 items-center gap-3 rounded-2xl border border-border/60 bg-sage/60 p-3 hover:border-primary/40">
+            <Store className="size-5 shrink-0 text-primary" />
+            <span className="min-w-0 flex-1"><span className="block text-xs text-muted-foreground">{t("cart.from_shop")}</span><span className="block truncate font-medium">{shop.data.name}</span></span>
+          </Link>
+        )}
+        <p className="mt-2 text-xs text-muted-foreground">{t("cart.one_shop_hint")}</p>
+        <ul className="mt-4 divide-y rounded-2xl border bg-card">
           {cart.map((l) => (
             <li key={l.productId} className="flex gap-3 p-3">
               <MediaImg path={l.image} alt={l.name} className="size-20 shrink-0 rounded-md" />
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <Link to="/p/$id" params={{ id: l.productId }} className="line-clamp-2 text-sm font-medium">{l.name}</Link>
-                <span className="text-sm text-primary">{formatMMK(l.unitPrice, lang)}</span>
+                <span className="text-sm tabular-nums text-primary">{formatMMK(l.unitPrice, lang)}</span>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center rounded-md border">
                     <button className="grid size-11 place-items-center" onClick={() => setQty(l.productId, l.quantity - 1)} aria-label="-"><Minus className="size-4" /></button>

@@ -3,7 +3,7 @@ import { siteUrl } from "@/lib/site";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Minus, Plus, Store } from "lucide-react";
+import { ChevronRight, Minus, Plus, Store } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
 import { PRODUCT_FIELDS, type Product } from "@/lib/queries";
@@ -47,7 +47,7 @@ function ProductPage() {
     <div className="grid gap-6 py-6 md:grid-cols-2 md:gap-10">
       {dialog}
       <div className="space-y-3">
-        <div className="relative aspect-square overflow-hidden rounded-xl border bg-muted">
+        <div className="relative aspect-square overflow-hidden rounded-2xl border bg-muted">
           <MediaImg path={p.images[img]} alt={p.name} className="size-full" eager />
           <HeartButton productId={p.id} className="absolute right-3 top-3 size-11" />
         </div>
@@ -64,15 +64,16 @@ function ProductPage() {
       <div className="space-y-4">
         <h1 className="break-words text-xl font-bold md:text-2xl">{p.name}</h1>
         <div className="flex flex-wrap items-baseline gap-3">
-          <span className="text-2xl font-bold text-primary">{formatMMK(effectivePrice(p), lang)}</span>
+          <span className="text-2xl font-bold tabular-nums text-primary">{formatMMK(effectivePrice(p), lang)}</span>
           {off > 0 && <><span className="text-muted-foreground line-through">{formatMMK(p.price, lang)}</span><span className="rounded bg-gold px-2 py-0.5 text-xs font-semibold text-gold-foreground">-{off}%</span></>}
         </div>
         <p className={cn("text-sm font-medium", out ? "text-destructive" : p.stock <= 5 ? "text-warning" : "text-success")}>
           {out ? t("product.out_of_stock") : p.stock <= 5 ? t("product.low_stock", { n: p.stock }) : t("product.in_stock")}
         </p>
-        <Link to="/shops/$slug" params={{ slug: p.shops.slug }} className="surface flex items-center gap-3 p-3 hover:border-primary/40">
-          <Store className="size-5 text-primary" />
-          <div className="text-sm"><span className="text-muted-foreground">{t("product.sold_by")}: </span><span className="font-medium">{p.shops.name}</span></div>
+        <Link to="/shops/$slug" params={{ slug: p.shops.slug }} className="surface flex min-h-14 items-center gap-3 p-3 hover:border-primary/40">
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sage text-primary"><Store className="size-5" /></span>
+          <div className="min-w-0 flex-1 text-sm"><span className="block text-xs text-muted-foreground">{t("product.sold_by")}</span><span className="block truncate font-medium">{p.shops.name}</span></div>
+          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary">{t("product.visit_shop")}<ChevronRight className="size-4" /></span>
         </Link>
         {!out && (
           <div className="flex flex-wrap items-center gap-3">

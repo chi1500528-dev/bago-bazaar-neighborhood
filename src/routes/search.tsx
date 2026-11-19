@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { z } from "zod";
+import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
 import { categoriesQuery, SHOP_FIELDS, type Shop } from "@/lib/queries";
@@ -56,14 +57,17 @@ function SearchPage() {
   return (
     <div className="py-6">
       <h1 className="mb-3 text-xl font-bold">{t("search.title")}</h1>
+      <div className="relative">
+      <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden />
       <input
-        autoFocus value={input} onChange={(e) => setInput(e.target.value)} placeholder={t("nav.search_placeholder")}
-        className="h-11 w-full rounded-lg border bg-card px-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+        type="search" aria-label={t("nav.search_placeholder")} autoFocus value={input} onChange={(e) => setInput(e.target.value)} placeholder={t("nav.search_placeholder")}
+        className="h-12 w-full rounded-full border bg-card pl-12 pr-4 text-base shadow-soft outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
       />
+      </div>
       {matchedCats.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2">
           {matchedCats.map((c) => (
-            <Link key={c.id} to="/c/$slug" params={{ slug: c.slug }} className="rounded-full bg-primary-soft px-3 py-1 text-sm text-primary">{pick(c.name_my, c.name_en)}</Link>
+            <Link key={c.id} to="/c/$slug" params={{ slug: c.slug }} className="inline-flex min-h-10 items-center rounded-full bg-primary-soft px-4 text-sm text-primary">{pick(c.name_my, c.name_en)}</Link>
           ))}
         </div>
       )}
