@@ -17,7 +17,7 @@
   - [x] Database Part A applied (approved).
   - [x] Screens: Receive stock, Correct count, Set cost, profit section in Reports; CSV stock changes use corrections.
   - [ ] Signed-in owner check in Preview — pending (owner).
-  - [ ] Part B stock-typing block — after VPS runs new code (owner approval).
+  - [x] Part B stock-typing block — applied 2026-11-19 after the VPS was updated (owner approved).
 
 ## Future candidates (not approved for build)
 Phase 3 and Phase 4 are future candidates to validate with Bago shop owners first. They are not current build approval and have no dates.
