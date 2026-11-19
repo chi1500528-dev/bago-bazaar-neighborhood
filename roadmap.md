@@ -12,6 +12,11 @@
   - [ ] Signed-in owner check in Preview — pending (owner).
 - Delivery fee stays 0 on shop save (owner decision).
 
+- [ ] Phase 3 (approved): stock receiving, corrections, cost snapshots, profit report.
+  - [x] Pure rules + tests.
+  - [ ] Database changes — waiting for owner review (not staged, not applied) and 4 decisions.
+  - [ ] Screens — after database changes are reviewed.
+
 ## Future candidates (not approved for build)
 Phase 3 and Phase 4 are future candidates to validate with Bago shop owners first. They are not current build approval and have no dates.
 

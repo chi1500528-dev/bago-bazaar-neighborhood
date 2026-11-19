@@ -29,3 +29,4 @@
 - In-store sales (`pos_sales`) are written only by `pos_checkout`/`pos_void_sale` (security definer, server-priced, idempotent); browsers only read them. Preview and the live VPS share one production database, so stage risky SQL for review before applying.
 - Shop reports read only via `pos_report_range` / `orders_report_range` (security definer, owner/admin, Yangon half-open days); report rules + PII-free CSV + receipt settings normalization live in `src/lib/domain/reports.ts` — DB stays the money authority and exports never carry customer contact data.
 - SQL awaiting owner review is staged in `supabase/pending/` (never auto-applied); it moves to a real migration only after approval — preview and live share one database.
+- Phase 3 stock receiving, corrections, cost snapshots and profit labels live in `src/lib/domain/stock.ts`; gross profit is claimed only on lines with a known cost snapshot and net profit is never computed without expense data.
