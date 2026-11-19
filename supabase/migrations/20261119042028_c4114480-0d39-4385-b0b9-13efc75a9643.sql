@@ -1,0 +1,1 @@
+UPDATE public.townships SET is_active = false WHERE slug <> 'bago';
