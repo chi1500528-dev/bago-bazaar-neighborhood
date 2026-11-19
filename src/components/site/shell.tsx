@@ -102,13 +102,13 @@ function AccountMenu() {
   const total = counts.messages + counts.shopMessages + counts.newOrders;
   if (!session)
     return (
-      <Link to="/auth" className="inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent">
+      <Link to="/auth" className="inline-flex h-11 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent">
         <User className="size-4" /> <span className="hidden sm:inline">{t("nav.signin")}</span>
       </Link>
     );
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent">
+      <DropdownMenuTrigger className="inline-flex h-11 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent">
         <User className="size-4" /> <span className="hidden sm:inline">{t("nav.account")}</span>
         {total > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">{total}</span>}
       </DropdownMenuTrigger>
@@ -139,7 +139,7 @@ function CartLink() {
   const { cart, t } = useApp();
   const n = cart.reduce((s, l) => s + l.quantity, 0);
   return (
-    <Link to="/cart" className="relative inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent" aria-label={t("nav.cart")}>
+    <Link to="/cart" className="relative inline-flex h-11 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent" aria-label={t("nav.cart")}>
       <ShoppingCart className="size-4" />
       <span className="hidden sm:inline">{t("nav.cart")}</span>
       {n > 0 && (
@@ -155,7 +155,7 @@ function MyShopLink() {
   if (!roles.includes("merchant")) return null;
   const n = c.shopMessages + c.newOrders;
   return (
-    <Link to="/merchant" search={{}} className="relative hidden h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 md:inline-flex">
+    <Link to="/merchant" search={{}} className="relative hidden h-11 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 md:inline-flex">
       <Store className="size-4" />{t("nav.my_shop")}
       {n > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">{n}</span>}
     </Link>
@@ -169,14 +169,15 @@ export function Header() {
       <div className="container-page flex h-16 items-center gap-3 md:gap-5">
         <Logo />
         <SearchBox className="hidden flex-1 md:block md:max-w-2xl" />
+        <span className="hidden items-center gap-1 rounded-full bg-primary-soft px-3 py-1 text-xs font-medium text-primary xl:inline-flex"><MapPin className="size-3.5" />{t("nav.bago_city")}</span>
         <nav className="ml-auto flex items-center gap-1 md:ml-0">
-          <Link to="/categories" className="hidden h-9 items-center rounded-md px-3 text-sm font-medium hover:bg-accent lg:inline-flex">
+          <Link to="/categories" className="hidden h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-accent lg:inline-flex">
             {t("nav.categories")}
           </Link>
           <MyShopLink />
           <span className="mx-1 hidden h-6 w-px bg-border sm:block" />
           <LangSwitch className="hidden sm:inline-flex" />
-          <Link to="/wishlist" aria-label={t("wish.title")} className="inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent">
+          <Link to="/wishlist" aria-label={t("wish.title")} className="inline-flex h-11 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent">
             <Heart className="size-4" /><span className="hidden lg:inline">{t("wish.title")}</span>
           </Link>
           <span className="hidden md:inline-flex"><AccountMenu /></span>
@@ -265,7 +266,7 @@ function BackButton() {
       <button
         type="button"
         onClick={() => (window.history.length > 1 ? router.history.back() : router.navigate({ to: "/" }))}
-        className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border/80 bg-card pl-2.5 pr-4 text-sm font-medium text-primary shadow-soft transition-colors hover:bg-accent"
+        className="inline-flex h-11 items-center gap-1.5 rounded-full border border-border/80 bg-card pl-2.5 pr-4 text-sm font-medium text-primary shadow-soft transition-colors hover:bg-accent"
       >
         <ChevronLeft className="size-4" /> {t("common.back")}
       </button>
