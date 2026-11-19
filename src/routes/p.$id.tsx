@@ -67,8 +67,8 @@ function ProductPage() {
           <span className="text-2xl font-bold tabular-nums text-primary">{formatMMK(effectivePrice(p), lang)}</span>
           {off > 0 && <><span className="text-muted-foreground line-through">{formatMMK(p.price, lang)}</span><span className="rounded bg-gold px-2 py-0.5 text-xs font-semibold text-gold-foreground">-{off}%</span></>}
         </div>
-        <p className={cn("text-sm font-medium", out ? "text-destructive" : p.stock <= 5 ? "text-warning" : "text-success")}>
-          {out ? t("product.out_of_stock") : p.stock <= 5 ? t("product.low_stock", { n: p.stock }) : t("product.in_stock")}
+        <p className={cn("text-sm font-medium", out ? "text-destructive" : "text-success")}>
+          {out ? t("product.out_of_stock") : t("product.in_stock")}
         </p>
         <Link to="/shops/$slug" params={{ slug: p.shops.slug }} className="surface flex min-h-14 items-center gap-3 p-3 hover:border-primary/40">
           <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sage text-primary"><Store className="size-5" /></span>

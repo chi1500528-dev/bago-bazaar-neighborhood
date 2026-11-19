@@ -86,8 +86,8 @@ export function ProductCard({ p, onAdd }: { p: Product; onAdd: (p: Product) => v
           <span className="text-[15px] font-semibold tabular-nums text-primary">{formatMMK(effectivePrice(p), lang)}</span>
           {off > 0 && <span className="text-xs text-muted-foreground line-through">{formatMMK(p.price, lang)}</span>}
         </div>
-        <span className={`text-[11px] ${out ? "text-destructive" : p.stock <= 5 ? "text-warning" : "text-success"}`}>
-          {out ? t("product.out_of_stock") : p.stock <= 5 ? t("product.low_stock", { n: p.stock }) : t("product.in_stock")}
+        <span className={`text-[11px] ${out ? "text-destructive" : "text-success"}`}>
+          {out ? t("product.out_of_stock") : t("product.in_stock")}
         </span>
         <Button size="sm" variant={out ? "secondary" : "default"} disabled={out} onClick={() => onAdd(p)} className="mt-2 h-auto min-h-11 whitespace-normal rounded-full py-1.5 transition-colors">
           {out ? t("product.out_of_stock") : t("product.add_to_cart")}
