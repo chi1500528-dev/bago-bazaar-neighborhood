@@ -1,6 +1,6 @@
 # Phase 3 — Proposed database changes (for review only)
 
-**Status: not applied, not staged as a migration.** This document is for reading only. Nothing here runs until you approve it. Preview and the live VPS share one database.
+**Status: Part A applied 2026-11-19 (approved). Part B NOT applied — only after the VPS runs the new app code.**
 
 ## Plain-language summary
 | What | Who can see it | Who can change it |

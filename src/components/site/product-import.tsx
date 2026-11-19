@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Download, Upload, AlertTriangle } from "lucide-react";
+import { stock, newStockKey } from "@/lib/stock";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
 import { Button } from "@/components/ui/button";
@@ -131,8 +132,15 @@ export function CsvImport({ shopId, onDone }: { shopId: string; onDone: () => vo
         const price = upd.price ?? cur.price; const sale = "sale_price" in upd ? upd.sale_price : cur.sale_price;
         if (!bad && sale != null && Number(sale) >= price) bad = "impf.sale";
         if (bad) { failed.push({ line: r.line, name: r.values.name, why: bad }); continue; }
-        const { error } = await supabase.from("products").update(upd).eq("id", r.matchId!);
-        if (error) failed.push({ line: r.line, name: r.values.name, why: reason(error) }); else updated++;
+        const newStock = upd.stock; delete upd.stock;
+        const { error } = Object.keys(upd).length ? await supabase.from("products").update(upd).eq("id", r.matchId!) : { error: null };
+        if (error) { failed.push({ line: r.line, name: r.values.name, why: reason(error) }); continue; }
+        // Stock changes go through the audited correction function (reason "import"), never a direct write.
+        if (newStock != null && newStock !== cur.stock) {
+          const { error: se } = await stock.adjust(r.matchId!, newStock, "import", file.slice(0, 120), newStockKey());
+          if (se) { failed.push({ line: r.line, name: r.values.name, why: reason(se) }); continue; }
+        }
+        updated++;
       }
       const { error: hErr } = await supabase.from("product_imports").insert({ shop_id: shopId, file_name: file.slice(0, 200), added, updated, failed: importCounts(added, updated, failed.length, skipped.length).notSaved });
       qc.invalidateQueries();

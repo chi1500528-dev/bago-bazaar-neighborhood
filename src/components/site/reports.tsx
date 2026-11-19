@@ -9,6 +9,8 @@ import {
 } from "@/lib/domain/reports";
 import { reports, type TopRow } from "@/lib/reports";
 import { notInstalled } from "@/lib/pos";
+import { stock } from "@/lib/stock";
+import { profitView } from "@/lib/domain/stock";
 import type { TKey } from "@/lib/i18n/dict";
 import { EmptyState } from "@/components/site/bits";
 import { Button } from "@/components/ui/button";
@@ -103,6 +105,7 @@ function PosReportView({ shopId, range }: { shopId: string; range: DayRange }) {
         {reasons.length > 0 && <div className="text-sm"><p className="text-xs text-muted-foreground">{t("rep.reasons")}</p><ul className="list-disc pl-5">{reasons.slice(0, 20).map((s) => <li key={s.sale_number}>#{s.sale_number} — {s.void_reason}</li>)}</ul></div>}
         <Note>{t("rep.void_note")}</Note>
       </div>
+      <ProfitPanel shopId={shopId} range={range} channel="pos" />
       <Top rows={d.top_products} />
       {d.sales.length === 0 ? <EmptyState text={t("rep.empty")} /> : (
         <div className="flex flex-wrap items-center gap-3">
@@ -147,6 +150,7 @@ function OrdersReportView({ shopId, range }: { shopId: string; range: DayRange }
         </div>
         <p className="mt-3 text-sm">{t("rep.cancelled")}: <b className="tabular-nums">{cancelled?.count ?? 0}</b> · {formatMMK(cancelled?.subtotal ?? 0, lang)}</p>
       </div>
+      <ProfitPanel shopId={shopId} range={range} channel="online" />
       <Top rows={d.top_products} />
       {d.orders.length === 0 ? <EmptyState text={t("rep.empty")} /> : (
         <div className="flex flex-wrap items-center gap-3">
@@ -155,6 +159,30 @@ function OrdersReportView({ shopId, range }: { shopId: string; range: DayRange }
           {exportLimited(d.orders.length, d.orders_row_count) && <p className="flex w-full items-center gap-1.5 text-xs text-destructive"><AlertTriangle className="size-4" />{t("rep.csv_limited", { n: d.orders.length, total: Number(d.orders_row_count), cap: EXPORT_ROW_CAP })}</p>}
         </div>
       )}
+    </div>
+  );
+}
+
+/** Gross profit only on sold lines with a saved cost; channel-separated; never net profit. */
+function ProfitPanel({ shopId, range, channel }: { shopId: string; range: DayRange; channel: "pos" | "online" }) {
+  const { t, lang } = useApp();
+  const q = useQuery({ queryKey: ["rep-profit", shopId, range.start, range.end], queryFn: () => stock.profit(shopId, range) });
+  const f = q.data?.data?.[channel];
+  if (!f) return null;
+  const v = profitView(f);
+  if (v.kind === "none" && v.reason === "no_sales") return null;
+  return (
+    <div className="surface space-y-3 p-4">
+      <h3 className="font-semibold">{t("pf.title")}</h3>
+      {v.kind === "none" ? <Note tone="gold">{t("pf.no_cost")}</Note> : <>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">{t("pf.sales")}</p><p className="font-semibold tabular-nums">{formatMMK(f.known_cost_sales, lang)}</p></div>
+          <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">{t("pf.cogs")}</p><p className="font-semibold tabular-nums">{formatMMK(f.known_cost, lang)}</p></div>
+          <div className="rounded-lg border p-3"><p className="text-xs text-muted-foreground">{t("pf.gross")}</p><p className="font-semibold tabular-nums">{formatMMK(v.grossOnKnown, lang)}</p></div>
+        </div>
+        {v.kind === "partial" && <Note tone="gold">{t("pf.unknown", { amt: formatMMK(v.uncoveredSales, lang), pct: Math.round((1 - v.coveredShare) * 100) })}</Note>}
+      </>}
+      <Note>{t("pf.no_net")}</Note>
     </div>
   );
 }

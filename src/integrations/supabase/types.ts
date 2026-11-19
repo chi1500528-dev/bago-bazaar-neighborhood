@@ -504,6 +504,45 @@ export type Database = {
           },
         ]
       }
+      product_costs: {
+        Row: {
+          cost_price: number | null
+          product_id: string
+          shop_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          cost_price?: number | null
+          product_id: string
+          shop_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          cost_price?: number | null
+          product_id?: string
+          shop_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_costs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_costs_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_imports: {
         Row: {
           added: number
@@ -743,6 +782,44 @@ export type Database = {
         }
         Relationships: []
       }
+      sale_line_costs: {
+        Row: {
+          created_at: string
+          line_id: string
+          line_type: string
+          product_id: string | null
+          quantity: number
+          shop_id: string
+          unit_cost: number | null
+        }
+        Insert: {
+          created_at?: string
+          line_id: string
+          line_type: string
+          product_id?: string | null
+          quantity: number
+          shop_id: string
+          unit_cost?: number | null
+        }
+        Update: {
+          created_at?: string
+          line_id?: string
+          line_type?: string
+          product_id?: string | null
+          quantity?: number
+          shop_id?: string
+          unit_cost?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_line_costs_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shop_categories: {
         Row: {
           created_at: string
@@ -900,6 +977,63 @@ export type Database = {
           },
         ]
       }
+      stock_adjustments: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          idempotency_key: string
+          new_count: number
+          note: string | null
+          old_count: number
+          product_id: string | null
+          product_name: string
+          reason: string
+          shop_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          idempotency_key: string
+          new_count: number
+          note?: string | null
+          old_count: number
+          product_id?: string | null
+          product_name: string
+          reason: string
+          shop_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          idempotency_key?: string
+          new_count?: number
+          note?: string | null
+          old_count?: number
+          product_id?: string | null
+          product_name?: string
+          reason?: string
+          shop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_adjustments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_adjustments_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_movements: {
         Row: {
           barcode: string | null
@@ -907,6 +1041,7 @@ export type Database = {
           created_by: string | null
           delta: number
           id: string
+          note: string | null
           product_id: string | null
           product_name: string
           reason: string
@@ -915,6 +1050,7 @@ export type Database = {
           shop_id: string
           sku: string | null
           stock_after: number
+          unit_cost: number | null
         }
         Insert: {
           barcode?: string | null
@@ -922,6 +1058,7 @@ export type Database = {
           created_by?: string | null
           delta: number
           id?: string
+          note?: string | null
           product_id?: string | null
           product_name: string
           reason: string
@@ -930,6 +1067,7 @@ export type Database = {
           shop_id: string
           sku?: string | null
           stock_after: number
+          unit_cost?: number | null
         }
         Update: {
           barcode?: string | null
@@ -937,6 +1075,7 @@ export type Database = {
           created_by?: string | null
           delta?: number
           id?: string
+          note?: string | null
           product_id?: string | null
           product_name?: string
           reason?: string
@@ -945,6 +1084,7 @@ export type Database = {
           shop_id?: string
           sku?: string | null
           stock_after?: number
+          unit_cost?: number | null
         }
         Relationships: [
           {
@@ -956,6 +1096,63 @@ export type Database = {
           },
           {
             foreignKeyName: "stock_movements_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_receipts: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          idempotency_key: string
+          product_id: string | null
+          product_name: string
+          quantity: number
+          reference: string | null
+          shop_id: string
+          supplier: string | null
+          unit_cost: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          idempotency_key: string
+          product_id?: string | null
+          product_name: string
+          quantity: number
+          reference?: string | null
+          shop_id: string
+          supplier?: string | null
+          unit_cost?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          idempotency_key?: string
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          reference?: string | null
+          shop_id?: string
+          supplier?: string | null
+          unit_cost?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_receipts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_receipts_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "shops"
@@ -1042,6 +1239,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      adjust_stock: {
+        Args: {
+          p_idempotency_key: string
+          p_new_count: number
+          p_note: string
+          p_product_id: string
+          p_reason: string
+        }
+        Returns: string
+      }
       can_access_conversation: { Args: { _id: string }; Returns: boolean }
       can_view_order: { Args: { _order_id: string }; Returns: boolean }
       has_role: {
@@ -1089,6 +1296,25 @@ export type Database = {
       }
       pos_void_sale: {
         Args: { p_items_returned: boolean; p_reason: string; p_sale_id: string }
+        Returns: undefined
+      }
+      profit_report_range: {
+        Args: { p_end: string; p_shop_id: string; p_start: string }
+        Returns: Json
+      }
+      receive_stock: {
+        Args: {
+          p_idempotency_key: string
+          p_product_id: string
+          p_qty: number
+          p_reference: string
+          p_supplier: string
+          p_unit_cost: number
+        }
+        Returns: string
+      }
+      set_product_cost: {
+        Args: { p_cost: number; p_product_id: string }
         Returns: undefined
       }
       shop_is_public: { Args: { _shop_id: string }; Returns: boolean }

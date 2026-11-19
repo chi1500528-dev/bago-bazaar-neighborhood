@@ -20,6 +20,7 @@ import { validateProduct, draftDescription, applyDraft, type DescDetails, type D
 import type { TKey } from "@/lib/i18n/dict";
 import { OrderDetail } from "@/components/site/order-detail";
 import { PosSell, StockHistory } from "@/components/site/pos";
+import { StockActions } from "@/components/site/stock-actions";
 import { MerchantReports } from "@/components/site/reports";
 import { ReceiptSettingsCard } from "@/components/site/receipt-settings";
 import { Button } from "@/components/ui/button";
@@ -374,6 +375,8 @@ function ProductForm({ shopId, product, onDone }: { shopId: string; product?: Pr
     sku: product?.sku ?? "", barcode: product?.barcode ?? "",
   });
   const [details, setDetails] = useState<DescDetails>({});
+  const live = useQuery({ queryKey: ["my-products", shopId], enabled: false, queryFn: async () => [] as ProductRow[] });
+  const liveStock = product ? (live.data as ProductRow[] | undefined)?.find((x) => x.id === product.id)?.stock : undefined;
   const [showDesc, setShowDesc] = useState(false);
   const errs = validateProduct(f);
   const [busy, setBusy] = useState(false);
@@ -385,7 +388,7 @@ function ProductForm({ shopId, product, onDone }: { shopId: string; product?: Pr
     const payload = {
       name: f.name.trim(), description: f.description || null, category_id: f.category_id || null,
       shop_category_id: f.shop_category_id || null,
-      price: Number(f.price), sale_price: f.sale_price ? Number(f.sale_price) : null, stock: Number(f.stock) || 0,
+      price: Number(f.price), sale_price: f.sale_price ? Number(f.sale_price) : null, ...(product ? {} : { stock: Number(f.stock) || 0 }),
       is_active: f.is_active, images: f.images, sku: f.sku.trim() || null, barcode: f.barcode.trim() || null,
     };
     const { error } = product
@@ -434,11 +437,12 @@ function ProductForm({ shopId, product, onDone }: { shopId: string; product?: Pr
         <select className="h-9 w-full rounded-md border bg-card px-2 text-sm" value={f.shop_category_id} onChange={(e) => setF({ ...f, shop_category_id: e.target.value })}>
           <option value="">—</option>{own.data!.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select></div>}
-      <div className="grid grid-cols-3 gap-2">
+      <div className={`grid gap-2 ${product ? "grid-cols-2" : "grid-cols-3"}`}>
         <div className="space-y-1.5"><Label className="text-xs">{t("merchant.price")}</Label><Input inputMode="numeric" value={f.price} onChange={num("price")} /></div>
         <div className="space-y-1.5"><Label className="text-xs">{t("merchant.sale_price")}</Label><Input inputMode="numeric" value={f.sale_price} onChange={num("sale_price")} /></div>
-        <div className="space-y-1.5"><Label className="text-xs">{t("merchant.stock")}</Label><Input inputMode="numeric" value={f.stock} onChange={num("stock")} /></div>
+        {!product && <div className="space-y-1.5"><Label className="text-xs">{t("merchant.stock")}</Label><Input inputMode="numeric" value={f.stock} onChange={num("stock")} /></div>}
       </div>
+      {product && <><StockActions product={{ id: product.id, name: product.name, stock: liveStock ?? product.stock }} /><p className="text-xs text-muted-foreground">{t("stk.stock_locked")}</p></>}
       {errs.filter((e) => e !== "name_required" && e !== "price_required").map((e) => <p key={e} className="text-sm text-destructive">{t(`pe.${e}` as TKey)}</p>)}
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1.5"><Label className="text-xs">{t("merchant.sku")}</Label><Input value={f.sku} onChange={(e) => setF({ ...f, sku: e.target.value })} /></div>
