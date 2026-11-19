@@ -1,6 +1,6 @@
 # Phase 3 — Proposed database changes (for review only)
 
-**Status: Part A applied 2026-11-19 (approved). Part B NOT applied — only after the VPS runs the new app code.**
+**Status: Part A applied 2026-11-19 (approved). VPS updated to the new app code; Part B stock guard applied 2026-11-19 (approved, migration 20261119142826).**
 
 ## Plain-language summary
 | What | Who can see it | Who can change it |
@@ -267,7 +267,7 @@ grant execute on function public.set_product_cost(uuid,integer) to authenticated
 grant execute on function public.profit_report_range(uuid,date,date) to authenticated;
 ```
 
-## Part B — Stock guard (apply only after the VPS runs the new app code)
+## Part B — Stock guard (applied 2026-11-19, after the VPS was updated)
 ```sql
 create or replace function public.products_stock_guard() returns trigger
 language plpgsql set search_path = public as $$
