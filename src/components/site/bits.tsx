@@ -129,9 +129,9 @@ export function StatusBadge({ status, kind = "order" }: { status: string; kind?:
 export function StickyActionBar({ children }: { children: ReactNode }) {
   return (
     <>
-      <div className="h-20 md:hidden" aria-hidden />
-      <div className="fixed inset-x-0 z-30 border-t bg-card/95 px-4 py-3 shadow-lg backdrop-blur md:hidden" style={{ bottom: "calc(3.5rem + 1px + env(safe-area-inset-bottom))" }}>
-        <div className="flex items-center gap-3">{children}</div>
+      <div className="h-24 md:hidden" aria-hidden />
+      <div className="fixed inset-x-0 z-30 border-t bg-card/95 px-4 py-3 shadow-lg backdrop-blur md:hidden" style={{ bottom: "calc(3.5rem + 1px + max(0.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))))" }}>
+        <div className="mx-auto flex min-w-0 max-w-full items-center gap-3">{children}</div>
       </div>
     </>
   );

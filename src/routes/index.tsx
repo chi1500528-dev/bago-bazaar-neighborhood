@@ -67,17 +67,17 @@ function Home() {
       {/* Search-led start: calm, no heavy imagery */}
       <section className="mt-4 rounded-3xl border border-border/70 bg-sage/60 px-5 py-8 md:mt-6 md:px-12 md:py-14">
         <span className="eyebrow">{t("hero.eyebrow")}</span>
-        <h1 className="mt-2 max-w-[680px] font-display text-[1.5rem] font-semibold leading-[1.6] text-foreground md:text-[2.4rem]">{t("hero.title")}</h1>
+        <h1 className="mt-2 max-w-[680px] break-words font-display text-[1.5rem] font-semibold leading-[1.6] text-foreground md:text-[2.4rem]">{t("hero.title")}</h1>
         <p className="mt-2 max-w-[560px] text-sm leading-relaxed text-muted-foreground md:text-base">{t("hero.sub")}</p>
         <form
           role="search"
-          className="mt-5 flex max-w-[640px] items-center gap-2 rounded-full border border-border bg-card p-1.5 shadow-soft focus-within:border-primary"
+          className="mt-5 flex w-full min-w-0 max-w-[640px] items-center gap-2 rounded-full border border-border bg-card p-1.5 shadow-soft focus-within:border-primary"
           onSubmit={(e) => { e.preventDefault(); const q = String(new FormData(e.currentTarget).get("q") ?? "").trim(); navigate({ to: "/search", search: { q } }); }}
         >
           <Search className="ml-3 size-5 shrink-0 text-muted-foreground" aria-hidden />
           <input name="q" type="search" aria-label={t("nav.search_placeholder")} placeholder={t("nav.search_placeholder")}
             className="h-11 min-w-0 flex-1 bg-transparent text-base outline-none" />
-          <Button type="submit" className="h-11 shrink-0 rounded-full px-5">{t("hero.search_go")}</Button>
+          <Button type="submit" className="h-11 shrink-0 rounded-full px-4 sm:px-5">{t("hero.search_go")}</Button>
         </form>
         {top.length > 0 && (
           <div className="mt-5">

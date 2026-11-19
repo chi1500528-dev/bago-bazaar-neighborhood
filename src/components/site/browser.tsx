@@ -50,12 +50,12 @@ export function ProductBrowser({ categoryIds, q }: { categoryIds?: string[]; q?:
     },
   });
   const items = query.data?.pages.flat() ?? [];
-  const sel = "h-9 rounded-md border bg-card px-2 text-sm";
+  const sel = "h-11 min-w-0 w-full rounded-md border bg-card px-2 text-sm sm:h-9 sm:w-auto";
 
   return (
     <div>
       {dialog}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="mb-4 grid grid-cols-2 items-center gap-2 sm:flex sm:flex-wrap">
         <select className={sel} value={tw} onChange={(e) => setTw(e.target.value)} aria-label={t("nav.township")}>
           <option value="">{t("nav.all_townships")}</option>
           {townships.data?.map((x) => <option key={x.id} value={x.id}>{pick(x.name_my, x.name_en)}</option>)}
@@ -65,13 +65,13 @@ export function ProductBrowser({ categoryIds, q }: { categoryIds?: string[]; q?:
           <option value="delivery">{t("shop.delivery")}</option>
           <option value="pickup">{t("shop.pickup")}</option>
         </select>
-        <input className={`${sel} w-24`} inputMode="numeric" placeholder={t("filter.min")} value={min} onChange={(e) => setMin(e.target.value.replace(/\D/g, ""))} />
-        <input className={`${sel} w-24`} inputMode="numeric" placeholder={t("filter.max")} value={max} onChange={(e) => setMax(e.target.value.replace(/\D/g, ""))} />
-        <label className="flex items-center gap-1.5 text-sm">
+        <input className={`${sel} sm:w-24`} inputMode="numeric" placeholder={t("filter.min")} value={min} onChange={(e) => setMin(e.target.value.replace(/\D/g, ""))} />
+        <input className={`${sel} sm:w-24`} inputMode="numeric" placeholder={t("filter.max")} value={max} onChange={(e) => setMax(e.target.value.replace(/\D/g, ""))} />
+        <label className="flex min-h-11 min-w-0 items-center gap-1.5 text-sm sm:min-h-0">
           <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} className="accent-[var(--primary)]" />
           {t("filter.in_stock")}
         </label>
-        <select className={`${sel} ml-auto`} value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label={t("filter.sort")}>
+        <select className={`${sel} sm:ml-auto`} value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label={t("filter.sort")}>
           <option value="relevance">{t("filter.relevance")}</option>
           <option value="newest">{t("filter.newest")}</option>
           <option value="price_asc">{t("filter.price_asc")}</option>

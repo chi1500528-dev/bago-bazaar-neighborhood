@@ -276,9 +276,9 @@ function BackButton() {
 
 export function PageShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col overflow-x-clip">
       <Header />
-      <main className="container-page flex-1 pb-24 md:pb-8"><BackButton />{children}</main>
+      <main className="container-page min-w-0 flex-1 pb-24 md:pb-8"><BackButton />{children}</main>
       <Footer />
       <BottomNav />
     </div>
