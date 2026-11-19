@@ -825,6 +825,7 @@ export type Database = {
           owner_id: string
           phone: string | null
           pickup_info: string | null
+          receipt_settings: Json
           slug: string
           status: Database["public"]["Enums"]["shop_status"]
           township_id: string | null
@@ -850,6 +851,7 @@ export type Database = {
           owner_id: string
           phone?: string | null
           pickup_info?: string | null
+          receipt_settings?: Json
           slug: string
           status?: Database["public"]["Enums"]["shop_status"]
           township_id?: string | null
@@ -875,6 +877,7 @@ export type Database = {
           owner_id?: string
           phone?: string | null
           pickup_info?: string | null
+          receipt_settings?: Json
           slug?: string
           status?: Database["public"]["Enums"]["shop_status"]
           township_id?: string | null
@@ -1050,6 +1053,10 @@ export type Database = {
       }
       is_shop_owner: { Args: { _shop_id: string }; Returns: boolean }
       media_is_public: { Args: { _path: string }; Returns: boolean }
+      orders_report_range: {
+        Args: { p_end: string; p_shop_id: string; p_start: string }
+        Returns: Json
+      }
       place_order: {
         Args: {
           p_address: string
@@ -1076,6 +1083,10 @@ export type Database = {
         Returns: Json
       }
       pos_day: { Args: { p_day?: string; p_shop_id: string }; Returns: Json }
+      pos_report_range: {
+        Args: { p_end: string; p_shop_id: string; p_start: string }
+        Returns: Json
+      }
       pos_void_sale: {
         Args: { p_items_returned: boolean; p_reason: string; p_sale_id: string }
         Returns: undefined
