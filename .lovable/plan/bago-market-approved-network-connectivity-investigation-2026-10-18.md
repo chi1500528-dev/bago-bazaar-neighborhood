@@ -29,15 +29,15 @@ No application code, database, environment variables, hosting, or Supabase setti
 HTTPS origin: `https://rvgqgtjkqmvjauqofsgt.supabase.co` (port 443).
 Realtime uses the same hostname over WSS (port 443).
 
-| Dependency | Endpoint paths under that origin | Use |
-|---|---|---|
-| Database REST | `/rest/v1/{table}` | Tables: `townships`, `categories`, `shops`, `products`, `promotions`, `profiles`, `user_roles`, `orders`; order detail embeds `order_items` and `order_status_history` |
-| Order functions | `/rest/v1/rpc/place_order`, `/rest/v1/rpc/update_order_status` | Create orders, calculate authoritative prices, decrement/restore stock, validate status transitions |
-| Auth | `/auth/v1/token?grant_type=password`, `/auth/v1/token?grant_type=refresh_token`, `/auth/v1/signup`, `/auth/v1/logout` | Email/password login, refresh, signup, logout; SDK may also use `/auth/v1/user` and `/auth/v1/verify` for user/confirmation flows |
-| Private media upload | `/storage/v1/object/media/{userId}/{filename}` | Merchant/admin uploads; paths, not generated signed URLs, are stored in the database |
-| Signed media | `/storage/v1/object/sign/media/{path}` | POST to obtain a signed URL, then GET to display the image; signed URLs are temporary credentials and must be redacted |
-| Realtime | `wss://rvgqgtjkqmvjauqofsgt.supabase.co/realtime/v1/websocket` | Customer order UPDATE events and merchant shop-order events; SDK adds query parameters |
-| Edge Functions | SDK supports `/functions/v1/{name}` | No app invocation or function source was found; deployed-but-unused functions were not inventoried through management access |
+| Dependency           | Endpoint paths under that origin                                                                                      | Use                                                                                                                                                                    |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Database REST        | `/rest/v1/{table}`                                                                                                    | Tables: `townships`, `categories`, `shops`, `products`, `promotions`, `profiles`, `user_roles`, `orders`; order detail embeds `order_items` and `order_status_history` |
+| Order functions      | `/rest/v1/rpc/place_order`, `/rest/v1/rpc/update_order_status`                                                        | Create orders, calculate authoritative prices, decrement/restore stock, validate status transitions                                                                    |
+| Auth                 | `/auth/v1/token?grant_type=password`, `/auth/v1/token?grant_type=refresh_token`, `/auth/v1/signup`, `/auth/v1/logout` | Email/password login, refresh, signup, logout; SDK may also use `/auth/v1/user` and `/auth/v1/verify` for user/confirmation flows                                      |
+| Private media upload | `/storage/v1/object/media/{userId}/{filename}`                                                                        | Merchant/admin uploads; paths, not generated signed URLs, are stored in the database                                                                                   |
+| Signed media         | `/storage/v1/object/sign/media/{path}`                                                                                | POST to obtain a signed URL, then GET to display the image; signed URLs are temporary credentials and must be redacted                                                 |
+| Realtime             | `wss://rvgqgtjkqmvjauqofsgt.supabase.co/realtime/v1/websocket`                                                        | Customer order UPDATE events and merchant shop-order events; SDK adds query parameters                                                                                 |
+| Edge Functions       | SDK supports `/functions/v1/{name}`                                                                                   | No app invocation or function source was found; deployed-but-unused functions were not inventoried through management access                                           |
 
 The frontend currently connects **directly from the browser** using Supabase + React Query. Hosting the frontend on Netlify does not move these requests to Netlify.
 
@@ -63,20 +63,20 @@ Other hosts: the preview frontend is on `id-preview--6e6eef8d-326f-46b0-8e8e-909
 
 ## What fails when Supabase is unreachable
 
-| Surface | Current behavior / risk |
-|---|---|
-| Website frame, bundled imagery, local language/cart | Can still load; this explains a healthy-looking website with broken data |
-| Featured shops, products, search | Main queries throw errors and some views offer a generic retry |
-| Categories, promotions, food/nearby sections | Home/category-index category lists offer retry; other category lookups can resemble no results. Promotions and food/nearby sections can show empty-state messages instead of explaining connection errors |
-| Roles | The role query ignores returned errors and defaults to `[]`; Admin access can appear to disappear, without deleting the actual role |
-| Login/signup/token refresh | Cannot complete online; a cached session may remain temporarily, but is not proof of reachable Auth or valid server access |
-| Profile loading / language saving | Some returned errors are ignored; forms may stay blank or language persistence may silently fail |
-| Cart-shop / checkout | Cart-shop read ignores errors; checkout can keep showing “loading” when no shop data arrives |
-| Place order | Reports a generic error and keeps the cart if no successful response arrives. If the request committed but its response was lost, the outcome is uncertain; reuse the same idempotency key and reconcile the order before retrying |
-| Order detail | A failed read can look like “forbidden” rather than a connectivity problem |
-| Merchant / admin | Failed reads can appear as no shop, no orders/products, or zero counts. Some toggle/delete actions ignore returned errors |
-| Uploaded photos | Signing failures become placeholders. Already cached signed images may display until expiry/cache loss; uploads fail |
-| Live order updates | Both subscriptions clean up correctly, but subscription failures are not surfaced; status can become stale without a warning |
+| Surface                                             | Current behavior / risk                                                                                                                                                                                                            |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Website frame, bundled imagery, local language/cart | Can still load; this explains a healthy-looking website with broken data                                                                                                                                                           |
+| Featured shops, products, search                    | Main queries throw errors and some views offer a generic retry                                                                                                                                                                     |
+| Categories, promotions, food/nearby sections        | Home/category-index category lists offer retry; other category lookups can resemble no results. Promotions and food/nearby sections can show empty-state messages instead of explaining connection errors                          |
+| Roles                                               | The role query ignores returned errors and defaults to `[]`; Admin access can appear to disappear, without deleting the actual role                                                                                                |
+| Login/signup/token refresh                          | Cannot complete online; a cached session may remain temporarily, but is not proof of reachable Auth or valid server access                                                                                                         |
+| Profile loading / language saving                   | Some returned errors are ignored; forms may stay blank or language persistence may silently fail                                                                                                                                   |
+| Cart-shop / checkout                                | Cart-shop read ignores errors; checkout can keep showing “loading” when no shop data arrives                                                                                                                                       |
+| Place order                                         | Reports a generic error and keeps the cart if no successful response arrives. If the request committed but its response was lost, the outcome is uncertain; reuse the same idempotency key and reconcile the order before retrying |
+| Order detail                                        | A failed read can look like “forbidden” rather than a connectivity problem                                                                                                                                                         |
+| Merchant / admin                                    | Failed reads can appear as no shop, no orders/products, or zero counts. Some toggle/delete actions ignore returned errors                                                                                                          |
+| Uploaded photos                                     | Signing failures become placeholders. Already cached signed images may display until expiry/cache loss; uploads fail                                                                                                               |
+| Live order updates                                  | Both subscriptions clean up correctly, but subscription failures are not surfaced; status can become stale without a warning                                                                                                       |
 
 Storage policy observation: `media` is a private bucket, but its SELECT policy allows reading/signing objects in that bucket; writes are user-folder restricted. “Private” does not mean every image is owner-only. Preserve existing policy behavior; any privacy review would be a separate task.
 

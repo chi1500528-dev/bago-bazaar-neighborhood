@@ -11,7 +11,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Figtree", "Noto Sans Myanmar", "Padauk", "Pyidaungsu", "Myanmar Text", system-ui, sans-serif;
+  --font-sans:
+    "Figtree", "Noto Sans Myanmar", "Padauk", "Pyidaungsu", "Myanmar Text", system-ui, sans-serif;
   --font-display: "Fraunces", "Noto Sans Myanmar", "Padauk", "Pyidaungsu", system-ui, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -63,8 +64,10 @@
   --background: oklch(0.983 0.007 85);
   --ivory: oklch(0.965 0.02 85);
   --sage: oklch(0.93 0.028 150);
-  --shadow-soft-v: 0 1px 2px oklch(0.3 0.03 160 / 0.05), 0 8px 24px -12px oklch(0.3 0.04 160 / 0.18);
-  --shadow-lift-v: 0 2px 4px oklch(0.3 0.03 160 / 0.06), 0 22px 44px -18px oklch(0.3 0.05 160 / 0.32);
+  --shadow-soft-v:
+    0 1px 2px oklch(0.3 0.03 160 / 0.05), 0 8px 24px -12px oklch(0.3 0.04 160 / 0.18);
+  --shadow-lift-v:
+    0 2px 4px oklch(0.3 0.03 160 / 0.06), 0 22px 44px -18px oklch(0.3 0.05 160 / 0.32);
   --foreground: oklch(0.22 0.01 160);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.24 0.012 160);
@@ -116,11 +119,32 @@
     line-height: 1.8;
   }
   /* Noto Sans Myanmar ships a real 400 weight; keep stacked marks from colliding. */
-  html:lang(my) body { font-weight: 400; font-size: 15px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-  html:lang(my) h1, html:lang(my) h2, html:lang(my) h3, html:lang(my) h4 { letter-spacing: normal; line-height: 1.6; font-weight: 600; }
-  html:lang(my) .text-xs { font-size: 0.8rem; }
-  input::placeholder, textarea::placeholder { color: var(--color-muted-foreground); opacity: 1; }
-  h1, h2, h3, h4 {
+  html:lang(my) body {
+    font-weight: 400;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  html:lang(my) h1,
+  html:lang(my) h2,
+  html:lang(my) h3,
+  html:lang(my) h4 {
+    letter-spacing: normal;
+    line-height: 1.6;
+    font-weight: 600;
+  }
+  html:lang(my) .text-xs {
+    font-size: 0.8rem;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-muted-foreground);
+    opacity: 1;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-display);
     letter-spacing: -0.01em;
     line-height: 1.45;
@@ -144,32 +168,76 @@
 }
 
 @utility lift {
-  transition: transform 300ms cubic-bezier(.2,.7,.2,1), box-shadow 300ms;
+  transition:
+    transform 300ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 300ms;
   box-shadow: var(--shadow-soft-v);
-  &:hover { transform: translateY(-3px); box-shadow: var(--shadow-lift-v); }
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lift-v);
+  }
 }
 @utility zoom-img {
-  & img { transition: transform 700ms cubic-bezier(.2,.7,.2,1); }
-  &:hover img { transform: scale(1.05); }
+  & img {
+    transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  &:hover img {
+    transform: scale(1.05);
+  }
 }
 @utility float-slow {
   animation: float-slow 7s ease-in-out infinite;
 }
-@keyframes float-slow { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
-@utility tabular { font-variant-numeric: tabular-nums; }
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
 @utility eyebrow {
-  font-size: 0.82rem; font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; color: var(--color-muted-foreground);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
 }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* Keep focused fields clear of the phone keyboard and the sticky bars. */
-input, textarea, select { scroll-margin-bottom: 9rem; }
+input,
+textarea,
+select {
+  scroll-margin-bottom: 9rem;
+}
 
 @media print {
-  body * { visibility: hidden; }
-  .receipt, .receipt * { visibility: visible; }
-  .receipt { position: absolute; left: 0; top: 0; padding: 0; }
-  .no-print { display: none; }
+  body * {
+    visibility: hidden;
+  }
+  .receipt,
+  .receipt * {
+    visibility: visible;
+  }
+  .receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 0;
+  }
+  .no-print {
+    display: none;
+  }
 }

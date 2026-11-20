@@ -18,14 +18,21 @@ export const Route = createFileRoute("/shops/$slug")({
     meta: [
       { property: "og:url", content: siteUrl(`/shops/${params.slug}`) },
       { title: "Shop · Bago Market" },
-      { name: "description", content: "A local shop on Bago Market — browse products, delivery and pickup options." },
+      {
+        name: "description",
+        content: "A local shop on Bago Market — browse products, delivery and pickup options.",
+      },
       { property: "og:title", content: "Shop · Bago Market" },
       { property: "og:description", content: "Browse this shop's products on Bago Market." },
     ],
     links: [{ rel: "canonical", href: siteUrl(`/shops/${params.slug}`) }],
   }),
   loader: ({ params, context: { queryClient: qc } }) =>
-    warm([qc.fetchQuery(shopQuery(params.slug)).then((s) => s && qc.prefetchQuery(shopProductsQuery(s.id)))]),
+    warm([
+      qc
+        .fetchQuery(shopQuery(params.slug))
+        .then((s) => s && qc.prefetchQuery(shopProductsQuery(s.id))),
+    ]),
   component: ShopPage,
 });
 
@@ -40,12 +47,19 @@ function ShopPage() {
   const [cat, setCat] = useState<string | null>(null);
   const navigate = useNavigate();
   useEffect(() => {
-    if (shop.data && shop.data.slug !== slug) navigate({ to: "/shops/$slug", params: { slug: shop.data.slug }, replace: true });
+    if (shop.data && shop.data.slug !== slug)
+      navigate({ to: "/shops/$slug", params: { slug: shop.data.slug }, replace: true });
   }, [shop.data, slug, navigate]);
 
-  if (shop.isLoading) return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
+  if (shop.isLoading)
+    return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
   const s = shop.data;
-  if (!s) return <div className="py-10"><EmptyState text={t("search.none")} /></div>;
+  if (!s)
+    return (
+      <div className="py-10">
+        <EmptyState text={t("search.none")} />
+      </div>
+    );
 
   return (
     <div className="py-5">
@@ -59,21 +73,57 @@ function ShopPage() {
             <MediaImg path={s.logo_url} alt="" className="size-full" />
           </div>
           <div className="flex-1 space-y-2">
-            <h1 className="font-display text-xl font-semibold leading-relaxed md:text-2xl">{s.name}</h1>
-            {s.description && <p className="whitespace-pre-line text-sm text-muted-foreground">{s.description}</p>}
+            <h1 className="font-display text-xl font-semibold leading-relaxed md:text-2xl">
+              {s.name}
+            </h1>
+            {s.description && (
+              <p className="whitespace-pre-line text-sm text-muted-foreground">{s.description}</p>
+            )}
             <ChatWithShop shopId={s.id} shopName={s.name} />
           </div>
         </div>
         <dl className="grid gap-3 border-t p-5 text-sm sm:grid-cols-2 lg:grid-cols-4">
           {(s.township_id || s.address) && (
-            <div className="flex gap-2"><MapPin className="mt-0.5 size-4 shrink-0 text-primary" /><div><dt className="sr-only">{t("shop.address")}</dt><dd>{[s.address, tw(s.township_id)].filter(Boolean).join(", ")}</dd></div></div>
+            <div className="flex gap-2">
+              <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
+              <div>
+                <dt className="sr-only">{t("shop.address")}</dt>
+                <dd>{[s.address, tw(s.township_id)].filter(Boolean).join(", ")}</dd>
+              </div>
+            </div>
           )}
-          {s.opening_hours && <div className="flex gap-2"><Clock className="mt-0.5 size-4 shrink-0 text-primary" /><dd>{s.opening_hours}</dd></div>}
-          {s.phone && <div className="flex gap-2"><Phone className="mt-0.5 size-4 shrink-0 text-primary" /><dd><a href={`tel:${s.phone}`} className="hover:underline">{s.phone}</a></dd></div>}
+          {s.opening_hours && (
+            <div className="flex gap-2">
+              <Clock className="mt-0.5 size-4 shrink-0 text-primary" />
+              <dd>{s.opening_hours}</dd>
+            </div>
+          )}
+          {s.phone && (
+            <div className="flex gap-2">
+              <Phone className="mt-0.5 size-4 shrink-0 text-primary" />
+              <dd>
+                <a href={`tel:${s.phone}`} className="hover:underline">
+                  {s.phone}
+                </a>
+              </dd>
+            </div>
+          )}
           <div className="flex flex-col gap-1">
-            {s.offers_delivery && <span className="flex gap-2"><Bike className="size-4 text-primary" />{t("shop.delivery")}</span>}
-            {s.offers_pickup && <span className="flex gap-2"><Store className="size-4 text-primary" />{t("shop.pickup")}</span>}
-            {s.delivery_note && <span className="text-xs text-muted-foreground">{s.delivery_note}</span>}
+            {s.offers_delivery && (
+              <span className="flex gap-2">
+                <Bike className="size-4 text-primary" />
+                {t("shop.delivery")}
+              </span>
+            )}
+            {s.offers_pickup && (
+              <span className="flex gap-2">
+                <Store className="size-4 text-primary" />
+                {t("shop.pickup")}
+              </span>
+            )}
+            {s.delivery_note && (
+              <span className="text-xs text-muted-foreground">{s.delivery_note}</span>
+            )}
           </div>
         </dl>
       </div>
@@ -81,13 +131,33 @@ function ShopPage() {
         {(cats.data ?? []).length > 0 && (
           <div className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-1">
             {[{ id: null as string | null, name: t("shop.all") }, ...cats.data!].map((c) => (
-              <button key={c.id ?? "all"} onClick={() => setCat(c.id)}
-                className={cn("inline-flex min-h-10 shrink-0 items-center rounded-full border px-4 text-sm", cat === c.id ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:border-primary/40")}>{c.name}</button>
+              <button
+                key={c.id ?? "all"}
+                onClick={() => setCat(c.id)}
+                className={cn(
+                  "inline-flex min-h-10 shrink-0 items-center rounded-full border px-4 text-sm",
+                  cat === c.id
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "bg-card hover:border-primary/40",
+                )}
+              >
+                {c.name}
+              </button>
             ))}
           </div>
         )}
-        {products.isLoading ? <LoadingGrid /> : (products.data ?? []).filter((p) => !cat || p.shop_category_id === cat).length === 0 ? <EmptyState text={t("shop.no_products")} /> : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{products.data!.filter((p) => !cat || p.shop_category_id === cat).map((p) => <ProductCard key={p.id} p={p} onAdd={add} />)}</div>
+        {products.isLoading ? (
+          <LoadingGrid />
+        ) : (products.data ?? []).filter((p) => !cat || p.shop_category_id === cat).length === 0 ? (
+          <EmptyState text={t("shop.no_products")} />
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {products
+              .data!.filter((p) => !cat || p.shop_category_id === cat)
+              .map((p) => (
+                <ProductCard key={p.id} p={p} onAdd={add} />
+              ))}
+          </div>
         )}
       </Section>
     </div>

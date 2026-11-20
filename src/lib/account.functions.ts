@@ -3,7 +3,8 @@ import { createServerFn } from "@tanstack/react-start";
 /** Permanently deletes the caller's own account. The caller is identified by their access token, verified server-side. */
 export const deleteOwnAccount = createServerFn({ method: "POST" })
   .validator((d: { token: string }) => {
-    if (!d || typeof d.token !== "string" || d.token.length < 20) throw new Error("Invalid request");
+    if (!d || typeof d.token !== "string" || d.token.length < 20)
+      throw new Error("Invalid request");
     return d;
   })
   .handler(async ({ data }) => {

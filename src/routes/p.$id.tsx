@@ -22,11 +22,15 @@ export const Route = createFileRoute("/p/$id")({
       { title: "Product · Bago Market" },
       { name: "description", content: "Product details, price and availability on Bago Market." },
       { property: "og:title", content: "Product · Bago Market" },
-      { property: "og:description", content: "See price, stock and the shop selling this product." },
+      {
+        property: "og:description",
+        content: "See price, stock and the shop selling this product.",
+      },
     ],
     links: [{ rel: "canonical", href: siteUrl(`/p/${params.id}`) }],
   }),
-  loader: ({ params, context }) => warm([context.queryClient.prefetchQuery(productQuery(params.id))]),
+  loader: ({ params, context }) =>
+    warm([context.queryClient.prefetchQuery(productQuery(params.id))]),
   component: ProductPage,
 });
 
@@ -37,9 +41,15 @@ function ProductPage() {
   const [img, setImg] = useState(0);
   const [qty, setQty] = useState(1);
   const q = useQuery(productQuery(id));
-  if (q.isLoading) return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
+  if (q.isLoading)
+    return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
   const p = q.data;
-  if (!p) return <div className="py-10"><EmptyState text={t("product.not_found")} /></div>;
+  if (!p)
+    return (
+      <div className="py-10">
+        <EmptyState text={t("product.not_found")} />
+      </div>
+    );
   const off = discountPercent(p);
   const out = p.stock <= 0;
 
@@ -54,7 +64,14 @@ function ProductPage() {
         {p.images.length > 1 && (
           <div className="flex gap-2 overflow-x-auto">
             {p.images.map((im, i) => (
-              <button key={im} onClick={() => setImg(i)} className={cn("size-16 shrink-0 overflow-hidden rounded-md border-2", i === img ? "border-primary" : "border-transparent")}>
+              <button
+                key={im}
+                onClick={() => setImg(i)}
+                className={cn(
+                  "size-16 shrink-0 overflow-hidden rounded-md border-2",
+                  i === img ? "border-primary" : "border-transparent",
+                )}
+              >
                 <MediaImg path={im} alt="" className="size-full" />
               </button>
             ))}
@@ -64,37 +81,97 @@ function ProductPage() {
       <div className="min-w-0 space-y-4">
         <h1 className="break-words text-xl font-bold md:text-2xl">{p.name}</h1>
         <div className="flex flex-wrap items-baseline gap-3">
-          <span className="text-2xl font-bold tabular-nums text-primary">{formatMMK(effectivePrice(p), lang)}</span>
-          {off > 0 && <><span className="text-muted-foreground line-through">{formatMMK(p.price, lang)}</span><span className="rounded bg-gold px-2 py-0.5 text-xs font-semibold text-gold-foreground">-{off}%</span></>}
+          <span className="text-2xl font-bold tabular-nums text-primary">
+            {formatMMK(effectivePrice(p), lang)}
+          </span>
+          {off > 0 && (
+            <>
+              <span className="text-muted-foreground line-through">{formatMMK(p.price, lang)}</span>
+              <span className="rounded bg-gold px-2 py-0.5 text-xs font-semibold text-gold-foreground">
+                -{off}%
+              </span>
+            </>
+          )}
         </div>
         <p className={cn("text-sm font-medium", out ? "text-destructive" : "text-success")}>
           {out ? t("product.out_of_stock") : t("product.in_stock")}
         </p>
-        <Link to="/shops/$slug" params={{ slug: p.shops.slug }} className="surface flex min-h-14 items-center gap-3 p-3 hover:border-primary/40">
-          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sage text-primary"><Store className="size-5" /></span>
-          <div className="min-w-0 flex-1 text-sm"><span className="block text-xs text-muted-foreground">{t("product.sold_by")}</span><span className="block truncate font-medium">{p.shops.name}</span></div>
-          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary">{t("product.visit_shop")}<ChevronRight className="size-4" /></span>
+        <Link
+          to="/shops/$slug"
+          params={{ slug: p.shops.slug }}
+          className="surface flex min-h-14 items-center gap-3 p-3 hover:border-primary/40"
+        >
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sage text-primary">
+            <Store className="size-5" />
+          </span>
+          <div className="min-w-0 flex-1 text-sm">
+            <span className="block text-xs text-muted-foreground">{t("product.sold_by")}</span>
+            <span className="block truncate font-medium">{p.shops.name}</span>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary">
+            {t("product.visit_shop")}
+            <ChevronRight className="size-4" />
+          </span>
         </Link>
         {!out && (
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm">{t("product.quantity")}</span>
             <div className="flex items-center rounded-md border">
-              <button className="grid size-11 place-items-center" onClick={() => setQty((x) => Math.max(1, x - 1))} aria-label="-"><Minus className="size-4" /></button>
+              <button
+                className="grid size-11 place-items-center"
+                onClick={() => setQty((x) => Math.max(1, x - 1))}
+                aria-label="-"
+              >
+                <Minus className="size-4" />
+              </button>
               <span className="w-10 text-center font-medium">{qty}</span>
-              <button className="grid size-11 place-items-center" onClick={() => setQty((x) => Math.min(p.stock, x + 1))} aria-label="+"><Plus className="size-4" /></button>
+              <button
+                className="grid size-11 place-items-center"
+                onClick={() => setQty((x) => Math.min(p.stock, x + 1))}
+                aria-label="+"
+              >
+                <Plus className="size-4" />
+              </button>
             </div>
           </div>
         )}
-        <Button size="lg" className="hidden md:inline-flex" disabled={out} onClick={() => add(p, qty)}>
+        <Button
+          size="lg"
+          className="hidden md:inline-flex"
+          disabled={out}
+          onClick={() => add(p, qty)}
+        >
           {out ? t("product.out_of_stock") : t("product.add_to_cart")}
         </Button>
-        <ChatWithShop shopId={p.shops.id} shopName={p.shops.name} product={{ id: p.id, name: p.name }} className="hidden md:ml-3 md:inline-flex" />
-        {p.description && <p className="whitespace-pre-line break-words border-t pt-4 text-sm leading-relaxed">{p.description}</p>}
+        <ChatWithShop
+          shopId={p.shops.id}
+          shopName={p.shops.name}
+          product={{ id: p.id, name: p.name }}
+          className="hidden md:ml-3 md:inline-flex"
+        />
+        {p.description && (
+          <p className="whitespace-pre-line break-words border-t pt-4 text-sm leading-relaxed">
+            {p.description}
+          </p>
+        )}
       </div>
       <StickyActionBar>
-        <ChatWithShop iconOnly shopId={p.shops.id} shopName={p.shops.name} product={{ id: p.id, name: p.name }} className="size-11 shrink-0 text-primary" />
-        <span className="min-w-0 flex-1 truncate text-base font-bold tabular-nums text-primary sm:text-lg">{formatMMK(effectivePrice(p) * (out ? 1 : qty), lang)}</span>
-        <Button size="lg" className="h-12 min-w-0 max-w-[60%] shrink whitespace-normal break-words px-3 text-xs leading-tight sm:px-4 sm:text-sm" disabled={out} onClick={() => add(p, qty)}>
+        <ChatWithShop
+          iconOnly
+          shopId={p.shops.id}
+          shopName={p.shops.name}
+          product={{ id: p.id, name: p.name }}
+          className="size-11 shrink-0 text-primary"
+        />
+        <span className="min-w-0 flex-1 truncate text-base font-bold tabular-nums text-primary sm:text-lg">
+          {formatMMK(effectivePrice(p) * (out ? 1 : qty), lang)}
+        </span>
+        <Button
+          size="lg"
+          className="h-12 min-w-0 max-w-[60%] shrink whitespace-normal break-words px-3 text-xs leading-tight sm:px-4 sm:text-sm"
+          disabled={out}
+          onClick={() => add(p, qty)}
+        >
           {out ? t("product.out_of_stock") : t("product.add_to_cart")}
         </Button>
       </StickyActionBar>

@@ -3,13 +3,14 @@
 **Status: Part A applied 2026-11-19 (approved). VPS updated to the new app code; Part B stock guard applied 2026-11-19 (approved, migration 20261119142826).**
 
 ## Plain-language summary
-| What | Who can see it | Who can change it |
-|---|---|---|
-| Product cost (new, separate table) | Shop owner, admin | Only "Receive stock" or "Set cost" |
-| Stock received records (new) | Shop owner, admin | Only "Receive stock" |
-| Count corrections (new) | Shop owner, admin | Only "Correct count" |
-| Cost saved on each sold line (new) | Shop owner, admin | Saved automatically at sale; never edited |
-| Stock number on products | unchanged | Only through Receive, Correct, sales, cancels and voids; typing it directly is refused |
+
+| What                               | Who can see it    | Who can change it                                                                      |
+| ---------------------------------- | ----------------- | -------------------------------------------------------------------------------------- |
+| Product cost (new, separate table) | Shop owner, admin | Only "Receive stock" or "Set cost"                                                     |
+| Stock received records (new)       | Shop owner, admin | Only "Receive stock"                                                                   |
+| Count corrections (new)            | Shop owner, admin | Only "Correct count"                                                                   |
+| Cost saved on each sold line (new) | Shop owner, admin | Saved automatically at sale; never edited                                              |
+| Stock number on products           | unchanged         | Only through Receive, Correct, sales, cancels and voids; typing it directly is refused |
 
 - Customers and signed-out visitors can't read any cost.
 - Existing product, order and POS tables keep their current access rules.
@@ -17,11 +18,13 @@
 - No existing data is changed or deleted. Past sales stay "cost unknown".
 
 ## Affected app code (moved to the new functions before the stock guard is switched on)
+
 - Product form: the stock box becomes read-only, with "Receive stock" and "Correct count" buttons.
 - CSV re-import: stock changes go through `adjust_stock` with reason `import`.
 - New products (form, CSV, template) still set opening stock on create — allowed.
 
 ## Rollout order (each step reviewed)
+
 1. Part A: tables, functions, cost snapshot triggers, report. Harmless to the current app.
 2. Update app code (preview, then VPS).
 3. Part B: stock guard. Only after the VPS runs the new code; old code that types stock would be refused.
@@ -29,6 +32,7 @@
 ---
 
 ## Part A — SQL
+
 ```sql
 -- 1. Ledger: new reasons, optional note and unit cost
 alter table public.stock_movements drop constraint if exists stock_movements_reason_check;
@@ -268,6 +272,7 @@ grant execute on function public.profit_report_range(uuid,date,date) to authenti
 ```
 
 ## Part B — Stock guard (applied 2026-11-19, after the VPS was updated)
+
 ```sql
 create or replace function public.products_stock_guard() returns trigger
 language plpgsql set search_path = public as $$
@@ -279,14 +284,17 @@ begin
 end $$;
 create trigger products_stock_guard_trg before update on public.products for each row execute function public.products_stock_guard();
 ```
+
 Existing order, cancel, POS and void functions already set `bm.stock_reason`, so they keep working.
 
 ## Risks
+
 - **Part B too early:** old app code (including the VPS) that saves the product form would get "STOCK_DIRECT_EDIT" on stock changes. That is why Part B goes last.
 - **Cost triggers on sale lines:** they run inside checkout and POS. If one failed, the sale would fail too. They only read one row and insert one row, and are tested on preview first.
 - **Report speed:** the completion-date lookup is the same as the existing online report, so it is fine for small shops.
 
 ## Undo
+
 - **Part B:** `drop trigger products_stock_guard_trg on public.products; drop function public.products_stock_guard();`
 - **Part A:**
   - Drop the two cost triggers and the five new functions.

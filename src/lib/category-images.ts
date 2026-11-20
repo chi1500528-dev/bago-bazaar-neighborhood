@@ -13,7 +13,18 @@ import stationery from "@/assets/cat-stationery.jpg";
 import other from "@/assets/cat-other.jpg";
 
 const MAP: Record<string, string> = {
-  food, groceries, fashion, beauty, electronics, phones, home, kitchen, health, baby, stationery, other,
+  food,
+  groceries,
+  fashion,
+  beauty,
+  electronics,
+  phones,
+  home,
+  kitchen,
+  health,
+  baby,
+  stationery,
+  other,
 };
 
 export function categoryImage(slug: string | null | undefined): string | null {

@@ -1,9 +1,21 @@
 // Pure product onboarding rules (single form, CSV import, description draft).
 // The database re-checks price/sale price/zero-price-visible; these give instant feedback.
 
-export type ProductErr = "name_required" | "price_required" | "price_invalid" | "sale_invalid" | "stock_invalid" | "zero_price_visible";
+export type ProductErr =
+  | "name_required"
+  | "price_required"
+  | "price_invalid"
+  | "sale_invalid"
+  | "stock_invalid"
+  | "zero_price_visible";
 
-export interface ProductInput { name: string; price: string; sale_price: string; stock: string; is_active: boolean }
+export interface ProductInput {
+  name: string;
+  price: string;
+  sale_price: string;
+  stock: string;
+  is_active: boolean;
+}
 
 const isWhole = (s: string) => /^\d+$/.test(s.trim());
 
@@ -14,17 +26,29 @@ export function validateProduct(p: ProductInput): ProductErr[] {
   if (!price) e.push("price_required");
   else if (!isWhole(price)) e.push("price_invalid");
   const sale = p.sale_price.trim();
-  if (sale && (!isWhole(sale) || (isWhole(price) && Number(sale) >= Number(price)))) e.push("sale_invalid");
+  if (sale && (!isWhole(sale) || (isWhole(price) && Number(sale) >= Number(price))))
+    e.push("sale_invalid");
   if (p.stock.trim() && !isWhole(p.stock)) e.push("stock_invalid");
   if (p.is_active && isWhole(price) && Number(price) <= 0) e.push("zero_price_visible");
   return e;
 }
 
-export interface DescDetails { brand?: string; size?: string; color?: string; model?: string; material?: string; condition?: string }
+export interface DescDetails {
+  brand?: string;
+  size?: string;
+  color?: string;
+  model?: string;
+  material?: string;
+  condition?: string;
+}
 export type DraftLang = "my" | "en";
 const LABELS: Record<keyof DescDetails, Record<DraftLang, string>> = {
-  brand: { my: "အမှတ်တံဆိပ်", en: "Brand" }, model: { my: "မော်ဒယ်", en: "Model" }, size: { my: "အရွယ်အစား", en: "Size" },
-  color: { my: "အရောင်", en: "Colour" }, material: { my: "ပစ္စည်းသား", en: "Material" }, condition: { my: "အခြေအနေ", en: "Condition" },
+  brand: { my: "အမှတ်တံဆိပ်", en: "Brand" },
+  model: { my: "မော်ဒယ်", en: "Model" },
+  size: { my: "အရွယ်အစား", en: "Size" },
+  color: { my: "အရောင်", en: "Colour" },
+  material: { my: "ပစ္စည်းသား", en: "Material" },
+  condition: { my: "အခြေအနေ", en: "Condition" },
 };
 const HEADING: Record<DraftLang, string> = { my: "အသေးစိတ်အချက်အလက်များ", en: "Product details" };
 
@@ -33,7 +57,8 @@ export function conditionText(v: string, lang: DraftLang): string {
   if (lang !== "my") return v;
   const n = v.trim().toLowerCase();
   if (n === "new" || n === "အသစ်") return "အသစ် (New)";
-  if (["used", "second-hand", "second hand", "secondhand", "တစ်ပတ်ရစ်"].includes(n)) return "တစ်ပတ်ရစ်";
+  if (["used", "second-hand", "second hand", "secondhand", "တစ်ပတ်ရစ်"].includes(n))
+    return "တစ်ပတ်ရစ်";
   return v.trim();
 }
 
@@ -42,7 +67,10 @@ export function draftDescription(d: DescDetails, lang: DraftLang = "my", name = 
   const keys = (Object.keys(LABELS) as (keyof DescDetails)[]).filter((k) => d[k]?.trim());
   if (!keys.length) return "";
   const intro = name.trim() ? `${name.trim()} — ${HEADING[lang]}` : HEADING[lang];
-  const lines = keys.map((k) => `• ${LABELS[k][lang]} - ${k === "condition" ? conditionText(d[k]!, lang) : d[k]!.trim()}`);
+  const lines = keys.map(
+    (k) =>
+      `• ${LABELS[k][lang]} - ${k === "condition" ? conditionText(d[k]!, lang) : d[k]!.trim()}`,
+  );
   return `${intro}\n\n${lines.join("\n")}`;
 }
 
@@ -54,18 +82,28 @@ export function applyDraft(existing: string, draft: string): string {
 
 /** Minimal RFC4180 CSV parser (quotes, commas, newlines in quotes, BOM). */
 export function parseCsv(text: string): string[][] {
-  const rows: string[][] = []; let row: string[] = []; let cell = ""; let q = false;
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let q = false;
   const s = text.replace(/^\uFEFF/, "");
   for (let i = 0; i < s.length; i++) {
     const c = s[i]!;
     if (q) {
-      if (c === '"') { if (s[i + 1] === '"') { cell += '"'; i++; } else q = false; }
-      else cell += c;
+      if (c === '"') {
+        if (s[i + 1] === '"') {
+          cell += '"';
+          i++;
+        } else q = false;
+      } else cell += c;
     } else if (c === '"') q = true;
-    else if (c === ",") { row.push(cell); cell = ""; }
-    else if (c === "\n" || c === "\r") {
+    else if (c === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (c === "\n" || c === "\r") {
       if (c === "\r" && s[i + 1] === "\n") i++;
-      row.push(cell); cell = "";
+      row.push(cell);
+      cell = "";
       if (row.some((x) => x.trim())) rows.push(row);
       row = [];
     } else cell += c;
@@ -75,10 +113,20 @@ export function parseCsv(text: string): string[][] {
   return rows;
 }
 
-export const CSV_FIELDS = ["name", "price", "sale_price", "stock", "sku", "barcode", "category", "description"] as const;
+export const CSV_FIELDS = [
+  "name",
+  "price",
+  "sale_price",
+  "stock",
+  "sku",
+  "barcode",
+  "category",
+  "description",
+] as const;
 export type CsvField = (typeof CSV_FIELDS)[number];
 export const CSV_MAX_ROWS = 500;
-export const CSV_EXAMPLE = "name,price,sale_price,stock,sku,barcode,category,description\nBaby wet wipes 80 pcs,3500,,24,BW-80,8851234567890,Baby care,\nPhone case (iPhone 13),8000,6500,10,PC-13,,Accessories,Clear silicone\n";
+export const CSV_EXAMPLE =
+  "name,price,sale_price,stock,sku,barcode,category,description\nBaby wet wipes 80 pcs,3500,,24,BW-80,8851234567890,Baby care,\nPhone case (iPhone 13),8000,6500,10,PC-13,,Accessories,Clear silicone\n";
 
 const ALIASES: Record<CsvField, string[]> = {
   name: ["name", "product", "product name", "item", "title", "အမည်", "ပစ္စည်းအမည်"],
@@ -94,25 +142,63 @@ export function autoMap(headers: string[]): Partial<Record<CsvField, number>> {
   const m: Partial<Record<CsvField, number>> = {};
   headers.forEach((h, i) => {
     const n = h.trim().toLowerCase().replace(/_/g, " ");
-    for (const f of CSV_FIELDS) if (m[f] === undefined && ALIASES[f].some((a) => a.replace(/_/g, " ") === n)) m[f] = i;
+    for (const f of CSV_FIELDS)
+      if (m[f] === undefined && ALIASES[f].some((a) => a.replace(/_/g, " ") === n)) m[f] = i;
   });
   return m;
 }
 
-export interface ExistingProduct { id: string; name: string; price: number; sale_price: number | null; stock: number; sku: string | null; barcode: string | null; description: string | null; shop_category_id?: string | null }
+export interface ExistingProduct {
+  id: string;
+  name: string;
+  price: number;
+  sale_price: number | null;
+  stock: number;
+  sku: string | null;
+  barcode: string | null;
+  description: string | null;
+  shop_category_id?: string | null;
+}
 export type RowErr = ProductErr | "dup_in_file" | "code_conflict";
-export interface RowValues { name: string; price: string; sale_price: string; stock: string; sku: string; barcode: string; category: string; description: string }
-export type ChangeField = "name" | "price" | "sale_price" | "stock" | "description" | "sku" | "barcode" | "category";
+export interface RowValues {
+  name: string;
+  price: string;
+  sale_price: string;
+  stock: string;
+  sku: string;
+  barcode: string;
+  category: string;
+  description: string;
+}
+export type ChangeField =
+  "name" | "price" | "sale_price" | "stock" | "description" | "sku" | "barcode" | "category";
 export interface ImportRow {
-  line: number; values: RowValues; errors: RowErr[];
-  matchId: string | null; possibleDuplicate: boolean;
+  line: number;
+  values: RowValues;
+  errors: RowErr[];
+  matchId: string | null;
+  possibleDuplicate: boolean;
   changes: { field: ChangeField; from: string; to: string }[];
 }
-export interface AnalyzeOpts { firstLine?: number; clearEmpty?: boolean; mapped?: CsvField[]; categoryNames?: Record<string, string> }
+export interface AnalyzeOpts {
+  firstLine?: number;
+  clearEmpty?: boolean;
+  mapped?: CsvField[];
+  categoryNames?: Record<string, string>;
+}
 
 export function rowValues(cells: string[], map: Partial<Record<CsvField, number>>): RowValues {
   const g = (f: CsvField) => (map[f] !== undefined ? (cells[map[f]!] ?? "").trim() : "");
-  return { name: g("name"), price: g("price").replace(/,/g, ""), sale_price: g("sale_price").replace(/,/g, ""), stock: g("stock").replace(/,/g, ""), sku: g("sku"), barcode: g("barcode"), category: g("category"), description: g("description") };
+  return {
+    name: g("name"),
+    price: g("price").replace(/,/g, ""),
+    sale_price: g("sale_price").replace(/,/g, ""),
+    stock: g("stock").replace(/,/g, ""),
+    sku: g("sku"),
+    barcode: g("barcode"),
+    category: g("category"),
+    description: g("description"),
+  };
 }
 
 /** Same normalisation as the database unique indexes: SKU trimmed + case-insensitive, barcode trimmed. */
@@ -123,19 +209,34 @@ export const barcodeKey = (s: string | null | undefined) => (s ?? "").trim();
 export const CLEARABLE: ChangeField[] = ["sale_price", "description", "category"];
 
 /** Validates rows and matches to existing products by barcode or SKU. Imports are hidden, so zero price is a warning not an error. */
-export function analyzeRows(rows: RowValues[], existing: ExistingProduct[], opts: AnalyzeOpts | number = {}): ImportRow[] {
+export function analyzeRows(
+  rows: RowValues[],
+  existing: ExistingProduct[],
+  opts: AnalyzeOpts | number = {},
+): ImportRow[] {
   const o: AnalyzeOpts = typeof opts === "number" ? { firstLine: opts } : opts;
   const firstLine = o.firstLine ?? 2;
   const mapped = new Set(o.mapped ?? CSV_FIELDS);
-  const catName = (id: string | null | undefined) => (id ? o.categoryNames?.[id] ?? "" : "");
-  const count = (k: (r: RowValues) => string) => { const m = new Map<string, number>(); rows.forEach((r) => { const v = k(r); if (v) m.set(v, (m.get(v) ?? 0) + 1); }); return m; };
-  const bc = count((r) => barcodeKey(r.barcode)); const sk = count((r) => skuKey(r.sku));
-  const byBarcode = new Map(existing.filter((p) => barcodeKey(p.barcode)).map((p) => [barcodeKey(p.barcode), p]));
+  const catName = (id: string | null | undefined) => (id ? (o.categoryNames?.[id] ?? "") : "");
+  const count = (k: (r: RowValues) => string) => {
+    const m = new Map<string, number>();
+    rows.forEach((r) => {
+      const v = k(r);
+      if (v) m.set(v, (m.get(v) ?? 0) + 1);
+    });
+    return m;
+  };
+  const bc = count((r) => barcodeKey(r.barcode));
+  const sk = count((r) => skuKey(r.sku));
+  const byBarcode = new Map(
+    existing.filter((p) => barcodeKey(p.barcode)).map((p) => [barcodeKey(p.barcode), p]),
+  );
   const bySku = new Map(existing.filter((p) => skuKey(p.sku)).map((p) => [skuKey(p.sku), p]));
   const names = new Set(existing.map((p) => p.name.trim().toLowerCase()));
   return rows.map((v, i) => {
     const errors: RowErr[] = validateProduct({ ...v, is_active: false });
-    const vb = barcodeKey(v.barcode), vs = skuKey(v.sku);
+    const vb = barcodeKey(v.barcode),
+      vs = skuKey(v.sku);
     if ((vb && bc.get(vb)! > 1) || (vs && sk.get(vs)! > 1)) errors.push("dup_in_file");
     const a = vb ? byBarcode.get(vb) : undefined;
     const b = vs ? bySku.get(vs) : undefined;
@@ -146,29 +247,64 @@ export function analyzeRows(rows: RowValues[], existing: ExistingProduct[], opts
       const cmp = (field: ChangeField, from: string, to: string, same = from === to) => {
         if (same) return;
         if (to !== "") changes.push({ field, from, to });
-        else if (o.clearEmpty && from !== "" && CLEARABLE.includes(field) && mapped.has(field as CsvField)) changes.push({ field, from, to: "" });
+        else if (
+          o.clearEmpty &&
+          from !== "" &&
+          CLEARABLE.includes(field) &&
+          mapped.has(field as CsvField)
+        )
+          changes.push({ field, from, to: "" });
       };
-      cmp("name", match.name, v.name); cmp("price", String(match.price), v.price);
+      cmp("name", match.name, v.name);
+      cmp("price", String(match.price), v.price);
       cmp("sale_price", match.sale_price == null ? "" : String(match.sale_price), v.sale_price);
-      cmp("stock", String(match.stock), v.stock); cmp("description", match.description ?? "", v.description);
+      cmp("stock", String(match.stock), v.stock);
+      cmp("description", match.description ?? "", v.description);
       cmp("sku", match.sku ?? "", v.sku, skuKey(match.sku) === vs);
       cmp("barcode", match.barcode ?? "", v.barcode, barcodeKey(match.barcode) === vb);
       const cur = catName(match.shop_category_id);
-      cmp("category", cur, v.category, cur.trim().toLowerCase() === v.category.trim().toLowerCase());
+      cmp(
+        "category",
+        cur,
+        v.category,
+        cur.trim().toLowerCase() === v.category.trim().toLowerCase(),
+      );
     }
-    return { line: firstLine + i, values: v, errors, matchId: match?.id ?? null, possibleDuplicate: !match && !vb && !vs && names.has(v.name.trim().toLowerCase()), changes };
+    return {
+      line: firstLine + i,
+      values: v,
+      errors,
+      matchId: match?.id ?? null,
+      possibleDuplicate: !match && !vb && !vs && names.has(v.name.trim().toLowerCase()),
+      changes,
+    };
   });
 }
 
 /** Rows the owner must decide on before saving: errors or unconfirmed same-name rows, unless explicitly skipped. Never skip silently. */
-export function unresolvedRows(rows: ImportRow[], dupOk: Record<number, boolean>, skip: Record<number, boolean>): number[] {
-  return rows.filter((r) => !skip[r.line] && (r.errors.length > 0 || (!r.matchId && r.possibleDuplicate && !dupOk[r.line]))).map((r) => r.line);
+export function unresolvedRows(
+  rows: ImportRow[],
+  dupOk: Record<number, boolean>,
+  skip: Record<number, boolean>,
+): number[] {
+  return rows
+    .filter(
+      (r) =>
+        !skip[r.line] &&
+        (r.errors.length > 0 || (!r.matchId && r.possibleDuplicate && !dupOk[r.line])),
+    )
+    .map((r) => r.line);
 }
 
 /** A skip only sticks while the row still needs a decision; once an edit makes it valid, the skip is cleared. */
-export function activeSkips(rows: ImportRow[], skip: Record<number, boolean>): Record<number, boolean> {
+export function activeSkips(
+  rows: ImportRow[],
+  skip: Record<number, boolean>,
+): Record<number, boolean> {
   const out: Record<number, boolean> = {};
-  for (const r of rows) if (skip[r.line] && (r.errors.length > 0 || (!r.matchId && r.possibleDuplicate))) out[r.line] = true;
+  for (const r of rows)
+    if (skip[r.line] && (r.errors.length > 0 || (!r.matchId && r.possibleDuplicate)))
+      out[r.line] = true;
   return out;
 }
 

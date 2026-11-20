@@ -1,8 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { addToCart, cartTotals, merchantNextStatuses, customerCanCancel, type CartLine } from "@/lib/domain/rules";
+import {
+  addToCart,
+  cartTotals,
+  merchantNextStatuses,
+  customerCanCancel,
+  type CartLine,
+} from "@/lib/domain/rules";
 
 const line = (o: Partial<CartLine> = {}): CartLine => ({
-  productId: "p1", shopId: "s1", name: "x", image: null, unitPrice: 1000, quantity: 1, stock: 5, ...o,
+  productId: "p1",
+  shopId: "s1",
+  name: "x",
+  image: null,
+  unitPrice: 1000,
+  quantity: 1,
+  stock: 5,
+  ...o,
 });
 
 describe("one-shop cart", () => {

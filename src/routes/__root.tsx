@@ -88,7 +88,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-title", content: "ပဲခူးဈေး" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { title: "Bago Market · ပဲခူးဈေး" },
-      { name: "description", content: "Bago Region's marketplace for local shops, food and groceries." },
+      {
+        name: "description",
+        content: "Bago Region's marketplace for local shops, food and groceries.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

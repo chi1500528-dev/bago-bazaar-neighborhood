@@ -23,7 +23,8 @@ function remember(path: string, u: string) {
     const c = readCache();
     c[path] = { u, t: Date.now() };
     const keys = Object.keys(c);
-    if (keys.length > 800) for (const k of keys.sort((a, b) => c[a]!.t - c[b]!.t).slice(0, 200)) delete c[k];
+    if (keys.length > 800)
+      for (const k of keys.sort((a, b) => c[a]!.t - c[b]!.t).slice(0, 200)) delete c[k];
     localStorage.setItem(LS_KEY, JSON.stringify(c));
   } catch {
     /* storage full or blocked */
@@ -55,7 +56,8 @@ export function useMediaUrl(path: string | null | undefined) {
 // Shrink photos in the browser before upload so customers download ~100 KB
 // instead of multi-MB camera files.
 async function compressImage(file: File, maxSide = 1400, quality = 0.82): Promise<Blob> {
-  if (!file.type.startsWith("image/") || file.type === "image/gif" || file.type === "image/svg+xml") return file;
+  if (!file.type.startsWith("image/") || file.type === "image/gif" || file.type === "image/svg+xml")
+    return file;
   try {
     const bmp = await createImageBitmap(file);
     const scale = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
@@ -79,9 +81,10 @@ export async function uploadMedia(userId: string, file: File) {
   const isWebp = out !== file;
   const ext = isWebp ? "webp" : file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage
-    .from("media")
-    .upload(path, out, { contentType: isWebp ? "image/webp" : file.type, cacheControl: "31536000" });
+  const { error } = await supabase.storage.from("media").upload(path, out, {
+    contentType: isWebp ? "image/webp" : file.type,
+    cacheControl: "31536000",
+  });
   if (error) throw error;
   return path;
 }

@@ -17,16 +17,21 @@ export const Route = createFileRoute("/c/$slug")({
       { title: "Shop by category · Bago Market" },
       { name: "description", content: "Products and shops in this category on Bago Market." },
       { property: "og:title", content: "Shop by category · Bago Market" },
-      { property: "og:description", content: "Browse products and shops by category across Bago Region." },
+      {
+        property: "og:description",
+        content: "Browse products and shops by category across Bago Region.",
+      },
     ],
     links: [{ rel: "canonical", href: siteUrl(`/c/${params.slug}`) }],
   }),
   loader: ({ params, context: { queryClient: qc } }) =>
-    warm([qc.fetchQuery(categoriesQuery).then((all) => {
-      const cat = all.find((c) => c.slug === params.slug);
-      const parentId = cat?.parent_id ?? cat?.id;
-      return parentId ? qc.prefetchQuery(categoryShopsQuery(parentId)) : undefined;
-    })]),
+    warm([
+      qc.fetchQuery(categoriesQuery).then((all) => {
+        const cat = all.find((c) => c.slug === params.slug);
+        const parentId = cat?.parent_id ?? cat?.id;
+        return parentId ? qc.prefetchQuery(categoryShopsQuery(parentId)) : undefined;
+      }),
+    ]),
   component: CategoryPage,
 });
 
@@ -42,25 +47,60 @@ function CategoryPage() {
 
   const shops = useQuery(categoryShopsQuery(parent?.id));
 
-  if (cats.isLoading) return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
-  if (!cat) return <div className="py-10"><EmptyState text={t("search.none")} /></div>;
+  if (cats.isLoading)
+    return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
+  if (!cat)
+    return (
+      <div className="py-10">
+        <EmptyState text={t("search.none")} />
+      </div>
+    );
 
   return (
     <div className="py-6">
       <nav className="mb-2 text-xs text-muted-foreground">
-        <Link to="/categories" className="hover:underline">{t("nav.categories")}</Link>
-        {cat.parent_id && parent && <> / <Link to="/c/$slug" params={{ slug: parent.slug }} className="hover:underline">{pick(parent.name_my, parent.name_en)}</Link></>}
+        <Link to="/categories" className="hover:underline">
+          {t("nav.categories")}
+        </Link>
+        {cat.parent_id && parent && (
+          <>
+            {" "}
+            /{" "}
+            <Link to="/c/$slug" params={{ slug: parent.slug }} className="hover:underline">
+              {pick(parent.name_my, parent.name_en)}
+            </Link>
+          </>
+        )}
       </nav>
       <h1 className="text-xl font-bold md:text-2xl">{pick(cat.name_my, cat.name_en)}</h1>
       {subs.length > 0 && (
         <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
           {parent && (
-            <Link to="/c/$slug" params={{ slug: parent.slug }} className={cn("shrink-0 rounded-full border px-3 py-1 text-sm", cat.id === parent.id ? "border-primary bg-primary text-primary-foreground" : "hover:border-primary")}>
+            <Link
+              to="/c/$slug"
+              params={{ slug: parent.slug }}
+              className={cn(
+                "shrink-0 rounded-full border px-3 py-1 text-sm",
+                cat.id === parent.id
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "hover:border-primary",
+              )}
+            >
               {t("filter.all")}
             </Link>
           )}
           {subs.map((s) => (
-            <Link key={s.id} to="/c/$slug" params={{ slug: s.slug }} className={cn("shrink-0 rounded-full border px-3 py-1 text-sm", s.id === cat.id ? "border-primary bg-primary text-primary-foreground" : "hover:border-primary")}>
+            <Link
+              key={s.id}
+              to="/c/$slug"
+              params={{ slug: s.slug }}
+              className={cn(
+                "shrink-0 rounded-full border px-3 py-1 text-sm",
+                s.id === cat.id
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "hover:border-primary",
+              )}
+            >
               {pick(s.name_my, s.name_en)}
             </Link>
           ))}
@@ -68,7 +108,11 @@ function CategoryPage() {
       )}
       {(shops.data?.length ?? 0) > 0 && (
         <Section title={t("search.shops")}>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{shops.data!.map((s) => <ShopCard key={s.id} s={s} />)}</div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {shops.data!.map((s) => (
+              <ShopCard key={s.id} s={s} />
+            ))}
+          </div>
         </Section>
       )}
       <Section title={t("search.products")}>

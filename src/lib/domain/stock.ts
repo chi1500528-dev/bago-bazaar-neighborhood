@@ -8,11 +8,18 @@ export const NOTE_MAX = 200;
 export const SUPPLIER_MAX = 80;
 export const REFERENCE_MAX = 60;
 
-const intOrNull = (s: string) => (s.trim() === "" ? null : /^\d+$/.test(s.trim()) ? Number(s.trim()) : NaN);
+const intOrNull = (s: string) =>
+  s.trim() === "" ? null : /^\d+$/.test(s.trim()) ? Number(s.trim()) : NaN;
 
-export type ReceiveErr = "qty_required" | "qty_range" | "cost_invalid" | "supplier_long" | "reference_long";
+export type ReceiveErr =
+  "qty_required" | "qty_range" | "cost_invalid" | "supplier_long" | "reference_long";
 /** Quantity 1–99,999; unit cost optional (blank = unknown, never 0 by default). */
-export function validateReceive(f: { qty: string; unitCost: string; supplier?: string; reference?: string }): ReceiveErr[] {
+export function validateReceive(f: {
+  qty: string;
+  unitCost: string;
+  supplier?: string;
+  reference?: string;
+}): ReceiveErr[] {
   const e: ReceiveErr[] = [];
   const q = intOrNull(f.qty);
   if (q === null) e.push("qty_required");
@@ -28,9 +35,18 @@ export function parseUnitCost(s: string): number | null {
   return c === null || Number.isNaN(c) ? null : c;
 }
 
-export type AdjustErr = "count_required" | "count_range" | "reason_required" | "note_required" | "note_long" | "no_change";
+export type AdjustErr =
+  | "count_required"
+  | "count_range"
+  | "reason_required"
+  | "note_required"
+  | "note_long"
+  | "no_change";
 /** Counted quantity replaces stock; a reason is always required, "other" also needs a note. */
-export function validateAdjust(f: { count: string; reason: AdjustReason | ""; note: string }, currentStock: number): AdjustErr[] {
+export function validateAdjust(
+  f: { count: string; reason: AdjustReason | ""; note: string },
+  currentStock: number,
+): AdjustErr[] {
   const e: AdjustErr[] = [];
   const n = intOrNull(f.count);
   if (n === null) e.push("count_required");
@@ -43,10 +59,21 @@ export function validateAdjust(f: { count: string; reason: AdjustReason | ""; no
 }
 
 /* ---------- Profit labelling (figures come from the database; this only decides what may be claimed) ---------- */
-export type CostFigures = { sales: number; known_cost_sales: number; known_cost: number; unknown_cost_sales: number; unknown_lines: number };
+export type CostFigures = {
+  sales: number;
+  known_cost_sales: number;
+  known_cost: number;
+  unknown_cost_sales: number;
+  unknown_lines: number;
+};
 export type ProfitView =
   | { kind: "none"; reason: "no_sales" | "no_cost" }
-  | { kind: "partial" | "complete"; grossOnKnown: number; coveredShare: number; uncoveredSales: number };
+  | {
+      kind: "partial" | "complete";
+      grossOnKnown: number;
+      coveredShare: number;
+      uncoveredSales: number;
+    };
 
 /** Gross profit only on lines with a known cost snapshot; never on the full sales total. Net profit is never produced (no expense data). */
 export function profitView(f: CostFigures): ProfitView {

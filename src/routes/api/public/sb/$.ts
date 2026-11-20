@@ -3,7 +3,15 @@ import { createFileRoute } from "@tanstack/react-router";
 // Same-origin relay to Supabase so phones on networks that block *.supabase.co
 // still work. It forwards the caller's own apikey/bearer, so RLS still decides access.
 const ALLOWED = /^(rest|auth|storage)\/v1\//;
-const DROP = ["host", "cookie", "origin", "referer", "content-length", "accept-encoding", "connection"];
+const DROP = [
+  "host",
+  "cookie",
+  "origin",
+  "referer",
+  "content-length",
+  "accept-encoding",
+  "connection",
+];
 
 async function relay({ request, params }: { request: Request; params: { _splat?: string } }) {
   const path = params._splat ?? "";
@@ -18,7 +26,8 @@ async function relay({ request, params }: { request: Request; params: { _splat?:
   const url = new URL(request.url);
   const headers = new Headers(request.headers);
   for (const h of DROP) headers.delete(h);
-  for (const h of [...headers.keys()]) if (h.startsWith("cf-") || h.startsWith("x-forwarded")) headers.delete(h);
+  for (const h of [...headers.keys()])
+    if (h.startsWith("cf-") || h.startsWith("x-forwarded")) headers.delete(h);
   const hasBody = !["GET", "HEAD"].includes(request.method);
   const res = await fetch(`${base}/${path}${url.search}`, {
     method: request.method,
@@ -31,7 +40,11 @@ async function relay({ request, params }: { request: Request; params: { _splat?:
   out.delete("content-length");
   out.delete("transfer-encoding");
   // Signed image URLs carry their own token, so the picture can be cached by the phone.
-  if (request.method === "GET" && res.status === 200 && path.startsWith("storage/v1/object/sign/")) {
+  if (
+    request.method === "GET" &&
+    res.status === 200 &&
+    path.startsWith("storage/v1/object/sign/")
+  ) {
     out.set("Cache-Control", "public, max-age=604800, immutable");
     out.delete("set-cookie");
   }

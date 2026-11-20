@@ -26,7 +26,11 @@ export const Route = createFileRoute("/checkout")({
       { property: "og:description", content: "Complete your Bago Market order." },
     ],
   }),
-  component: () => <RequireAuth><Checkout /></RequireAuth>,
+  component: () => (
+    <RequireAuth>
+      <Checkout />
+    </RequireAuth>
+  ),
 });
 
 function Checkout() {
@@ -36,14 +40,35 @@ function Checkout() {
   const towns = useQuery(townshipsQuery);
   const twName = useTownshipName();
   const [method, setMethod] = useState<DeliveryMethod | null>(null);
-  const [form, setForm] = useState({ name: "", phone: "", township: township ?? "", address: "", note: "" });
-  const [errors, setErrors] = useState<Partial<Record<"name"|"phone"|"township"|"address"|"note", string>>>({});
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    township: township ?? "",
+    address: "",
+    note: "",
+  });
+  const [errors, setErrors] = useState<
+    Partial<Record<"name" | "phone" | "township" | "address" | "note", string>>
+  >({});
   const [busy, setBusy] = useState(false);
   const [saveAddr, setSaveAddr] = useState(false);
   const [addrId, setAddrId] = useState<string | null>(null);
-  const addrs = useQuery({ queryKey: addressesQueryKey(session?.user.id), enabled: !!session, queryFn: fetchAddresses });
+  const addrs = useQuery({
+    queryKey: addressesQueryKey(session?.user.id),
+    enabled: !!session,
+    queryFn: fetchAddresses,
+  });
   const key = useRef<string>("");
-  const pickAddr = (a: Address) => { setAddrId(a.id); setForm((f) => ({ ...f, name: a.recipient_name, phone: a.phone, township: a.township_id ?? "", address: a.address })); };
+  const pickAddr = (a: Address) => {
+    setAddrId(a.id);
+    setForm((f) => ({
+      ...f,
+      name: a.recipient_name,
+      phone: a.phone,
+      township: a.township_id ?? "",
+      address: a.address,
+    }));
+  };
   useEffect(() => {
     const d = addrs.data?.find((a) => a.is_default) ?? addrs.data?.[0];
     if (d && addrId === null) pickAddr(d);
@@ -58,13 +83,29 @@ function Checkout() {
   }, [shop.data, method]);
   useEffect(() => {
     if (!session) return;
-    supabase.from("profiles").select("full_name, phone").eq("id", session.user.id).maybeSingle().then(({ data }) => {
-      if (data) setForm((f) => ({ ...f, name: f.name || data.full_name || "", phone: f.phone || data.phone || "" }));
-    });
+    supabase
+      .from("profiles")
+      .select("full_name, phone")
+      .eq("id", session.user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data)
+          setForm((f) => ({
+            ...f,
+            name: f.name || data.full_name || "",
+            phone: f.phone || data.phone || "",
+          }));
+      });
   }, [session]);
 
-  if (cart.length === 0) return <div className="py-10"><EmptyState text={t("cart.empty")} /></div>;
-  if (!shop.data) return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
+  if (cart.length === 0)
+    return (
+      <div className="py-10">
+        <EmptyState text={t("cart.empty")} />
+      </div>
+    );
+  if (!shop.data)
+    return <p className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</p>;
   const s = shop.data;
   const totals = cartTotals(cart);
 
@@ -83,7 +124,8 @@ function Checkout() {
       p_method: method,
       p_recipient_name: form.name,
       p_phone: form.phone,
-      p_township_id: (method === "delivery" ? form.township : s.township_id) || (null as unknown as string),
+      p_township_id:
+        (method === "delivery" ? form.township : s.township_id) || (null as unknown as string),
       p_address: method === "delivery" ? form.address : "",
       p_note: form.note,
       p_idempotency_key: key.current,
@@ -94,7 +136,14 @@ function Checkout() {
       return;
     }
     if (saveAddr && method === "delivery" && session) {
-      await addressesTable().insert({ user_id: session.user.id, recipient_name: form.name.trim(), phone: form.phone.trim(), township_id: form.township || null, address: form.address.trim(), is_default: !(addrs.data ?? []).length });
+      await addressesTable().insert({
+        user_id: session.user.id,
+        recipient_name: form.name.trim(),
+        phone: form.phone.trim(),
+        township_id: form.township || null,
+        address: form.address.trim(),
+        is_default: !(addrs.data ?? []).length,
+      });
     }
     clearCart();
     toast.success(t("checkout.success"));
@@ -116,40 +165,126 @@ function Checkout() {
         <section className="space-y-3">
           <h2 className="font-semibold">{t("checkout.method")}</h2>
           <div className="grid gap-3 sm:grid-cols-2">
-            {([["delivery", Bike, s.offers_delivery], ["pickup", Store, s.offers_pickup]] as const).map(([m, Icon, ok]) => (
-              <button key={m} disabled={!ok} onClick={() => setMethod(m)}
-                className={cn("surface flex min-h-16 items-start gap-3 rounded-2xl p-4 text-left transition-colors disabled:opacity-40", method === m && "border-primary ring-2 ring-primary/15")}>
+            {(
+              [
+                ["delivery", Bike, s.offers_delivery],
+                ["pickup", Store, s.offers_pickup],
+              ] as const
+            ).map(([m, Icon, ok]) => (
+              <button
+                key={m}
+                disabled={!ok}
+                onClick={() => setMethod(m)}
+                className={cn(
+                  "surface flex min-h-16 items-start gap-3 rounded-2xl p-4 text-left transition-colors disabled:opacity-40",
+                  method === m && "border-primary ring-2 ring-primary/15",
+                )}
+              >
                 <Icon className="mt-0.5 size-5 text-primary" />
                 <span>
-                  <span className="block font-medium">{t(m === "delivery" ? "checkout.delivery" : "checkout.pickup")}</span>
-                  <span className="text-xs text-muted-foreground">{m === "delivery" ? t("cart.delivery_fee_note") : s.name}</span>
+                  <span className="block font-medium">
+                    {t(m === "delivery" ? "checkout.delivery" : "checkout.pickup")}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {m === "delivery" ? t("cart.delivery_fee_note") : s.name}
+                  </span>
                 </span>
               </button>
             ))}
           </div>
         </section>
         <section className="surface grid gap-4 rounded-2xl p-5 sm:grid-cols-2">
-          {field("name", t("checkout.name"), <Input id="name" autoComplete="name" className="h-11" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />)}
-          {field("phone", t("checkout.phone"), <Input id="phone" type="tel" inputMode="tel" autoComplete="tel" className="h-11" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />)}
+          {field(
+            "name",
+            t("checkout.name"),
+            <Input
+              id="name"
+              autoComplete="name"
+              className="h-11"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />,
+          )}
+          {field(
+            "phone",
+            t("checkout.phone"),
+            <Input
+              id="phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              className="h-11"
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            />,
+          )}
           {method === "delivery" ? (
             <>
               {(addrs.data ?? []).length > 0 && (
                 <div className="space-y-1.5 sm:col-span-2">
                   <Label>{t("addr.saved")}</Label>
                   <div className="flex flex-wrap gap-2">
-                    {addrs.data!.map((a) => <button key={a.id} type="button" onClick={() => pickAddr(a)}
-                      className={cn("rounded-full border px-3 py-1.5 text-xs", addrId === a.id ? "border-primary bg-primary-soft text-primary" : "bg-card")}>{a.label || a.recipient_name}</button>)}
+                    {addrs.data!.map((a) => (
+                      <button
+                        key={a.id}
+                        type="button"
+                        onClick={() => pickAddr(a)}
+                        className={cn(
+                          "rounded-full border px-3 py-1.5 text-xs",
+                          addrId === a.id
+                            ? "border-primary bg-primary-soft text-primary"
+                            : "bg-card",
+                        )}
+                      >
+                        {a.label || a.recipient_name}
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
-              {field("township", t("checkout.township"), (
-                <select id="township" value={form.township} onChange={(e) => setForm({ ...form, township: e.target.value })} className="h-11 w-full rounded-md border bg-card px-2 text-sm">
+              {field(
+                "township",
+                t("checkout.township"),
+                <select
+                  id="township"
+                  value={form.township}
+                  onChange={(e) => setForm({ ...form, township: e.target.value })}
+                  className="h-11 w-full rounded-md border bg-card px-2 text-sm"
+                >
                   <option value="">—</option>
-                  {towns.data?.map((x) => <option key={x.id} value={x.id}>{pick(x.name_my, x.name_en)}</option>)}
-                </select>
-              ))}
-              <div className="sm:col-span-2">{field("address", t("checkout.address"), <Textarea id="address" autoComplete="street-address" rows={2} value={form.address} onChange={(e) => { setAddrId(""); setForm({ ...form, address: e.target.value }); }} />)}</div>
-              {addrId === "" || !(addrs.data ?? []).length ? <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" checked={saveAddr} onChange={(e) => setSaveAddr(e.target.checked)} />{t("addr.save_this")}</label> : null}
+                  {towns.data?.map((x) => (
+                    <option key={x.id} value={x.id}>
+                      {pick(x.name_my, x.name_en)}
+                    </option>
+                  ))}
+                </select>,
+              )}
+              <div className="sm:col-span-2">
+                {field(
+                  "address",
+                  t("checkout.address"),
+                  <Textarea
+                    id="address"
+                    autoComplete="street-address"
+                    rows={2}
+                    value={form.address}
+                    onChange={(e) => {
+                      setAddrId("");
+                      setForm({ ...form, address: e.target.value });
+                    }}
+                  />,
+                )}
+              </div>
+              {addrId === "" || !(addrs.data ?? []).length ? (
+                <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                  <input
+                    type="checkbox"
+                    checked={saveAddr}
+                    onChange={(e) => setSaveAddr(e.target.checked)}
+                  />
+                  {t("addr.save_this")}
+                </label>
+              ) : null}
             </>
           ) : (
             <div className="rounded-md bg-primary-soft p-3 text-sm sm:col-span-2">
@@ -159,7 +294,18 @@ function Checkout() {
               {s.phone && <p>{s.phone}</p>}
             </div>
           )}
-          <div className="sm:col-span-2">{field("note", `${t("checkout.note")} ${t("common.optional")}`, <Textarea id="note" rows={2} value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />)}</div>
+          <div className="sm:col-span-2">
+            {field(
+              "note",
+              `${t("checkout.note")} ${t("common.optional")}`,
+              <Textarea
+                id="note"
+                rows={2}
+                value={form.note}
+                onChange={(e) => setForm({ ...form, note: e.target.value })}
+              />,
+            )}
+          </div>
         </section>
         <section className="rounded-lg border border-gold/40 bg-gold-soft p-4 text-sm text-gold-foreground">
           <p className="font-medium">{t("checkout.payment")}</p>
@@ -171,20 +317,50 @@ function Checkout() {
         <p className="text-sm text-muted-foreground">{s.name}</p>
         <ul className="space-y-1.5 text-sm">
           {cart.map((l) => (
-            <li key={l.productId} className="flex justify-between gap-3"><span className="line-clamp-1">{l.quantity} × {l.name}</span><span className="shrink-0">{formatMMK(l.unitPrice * l.quantity, lang)}</span></li>
+            <li key={l.productId} className="flex justify-between gap-3">
+              <span className="line-clamp-1">
+                {l.quantity} × {l.name}
+              </span>
+              <span className="shrink-0">{formatMMK(l.unitPrice * l.quantity, lang)}</span>
+            </li>
           ))}
         </ul>
         <div className="space-y-1 border-t pt-3 text-sm">
-          <div className="flex justify-between"><span>{t("cart.subtotal")}</span><span>{formatMMK(totals.subtotal, lang)}</span></div>
-          {method === "delivery" && <p className="text-xs text-muted-foreground">{t("cart.delivery_fee_note")}</p>}
-          <div className="flex justify-between pt-1 text-base font-bold"><span>{t("cart.total")}</span><span className="text-primary">{formatMMK(totals.total, lang)}</span></div>
+          <div className="flex justify-between">
+            <span>{t("cart.subtotal")}</span>
+            <span>{formatMMK(totals.subtotal, lang)}</span>
+          </div>
+          {method === "delivery" && (
+            <p className="text-xs text-muted-foreground">{t("cart.delivery_fee_note")}</p>
+          )}
+          <div className="flex justify-between pt-1 text-base font-bold">
+            <span>{t("cart.total")}</span>
+            <span className="text-primary">{formatMMK(totals.total, lang)}</span>
+          </div>
         </div>
-        <Button size="lg" className="hidden w-full md:inline-flex" disabled={busy || !method} onClick={submit}>{busy ? t("checkout.placing") : t("checkout.place")}</Button>
-        <Link to="/cart" className="block py-2 text-center text-xs text-muted-foreground hover:underline">{t("common.back")}</Link>
+        <Button
+          size="lg"
+          className="hidden w-full md:inline-flex"
+          disabled={busy || !method}
+          onClick={submit}
+        >
+          {busy ? t("checkout.placing") : t("checkout.place")}
+        </Button>
+        <Link
+          to="/cart"
+          className="block py-2 text-center text-xs text-muted-foreground hover:underline"
+        >
+          {t("common.back")}
+        </Link>
       </aside>
       <StickyActionBar>
-        <span className="min-w-0 flex-1"><span className="block text-xs text-muted-foreground">{t("cart.total")}</span><span className="text-lg font-bold text-primary">{formatMMK(totals.total, lang)}</span></span>
-        <Button size="lg" className="h-12 shrink-0" disabled={busy || !method} onClick={submit}>{busy ? t("checkout.placing") : t("checkout.place")}</Button>
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs text-muted-foreground">{t("cart.total")}</span>
+          <span className="text-lg font-bold text-primary">{formatMMK(totals.total, lang)}</span>
+        </span>
+        <Button size="lg" className="h-12 shrink-0" disabled={busy || !method} onClick={submit}>
+          {busy ? t("checkout.placing") : t("checkout.place")}
+        </Button>
       </StickyActionBar>
     </div>
   );

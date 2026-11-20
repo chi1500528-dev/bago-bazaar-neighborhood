@@ -17,9 +17,15 @@ export const Route = createFileRoute("/search")({
     meta: [
       { property: "og:url", content: siteUrl("/search") },
       { title: "Search · Bago Market" },
-      { name: "description", content: "Search products and shops on Bago Market in Myanmar or English." },
+      {
+        name: "description",
+        content: "Search products and shops on Bago Market in Myanmar or English.",
+      },
       { property: "og:title", content: "Search · Bago Market" },
-      { property: "og:description", content: "Find products, shops and categories across Bago Region." },
+      {
+        property: "og:description",
+        content: "Find products, shops and categories across Bago Region.",
+      },
     ],
     links: [{ rel: "canonical", href: siteUrl("/search") }],
   }),
@@ -43,7 +49,11 @@ function SearchPage() {
   const shops = useQuery({
     queryKey: ["search-shops", q],
     queryFn: async () => {
-      let b = supabase.from("shops").select(SHOP_FIELDS).eq("status", "approved").eq("is_active", true);
+      let b = supabase
+        .from("shops")
+        .select(SHOP_FIELDS)
+        .eq("status", "approved")
+        .eq("is_active", true);
       if (term) b = b.or(`name.ilike.%${term}%,description.ilike.%${term}%`);
       const { data, error } = await b.order("is_featured", { ascending: false }).limit(8);
       if (error) throw error;
@@ -52,28 +62,51 @@ function SearchPage() {
   });
   const cats = useQuery(categoriesQuery);
   const lower = q.toLowerCase();
-  const matchedCats = q ? (cats.data ?? []).filter((c) => c.name_my.includes(q) || c.name_en.toLowerCase().includes(lower)) : [];
+  const matchedCats = q
+    ? (cats.data ?? []).filter(
+        (c) => c.name_my.includes(q) || c.name_en.toLowerCase().includes(lower),
+      )
+    : [];
 
   return (
     <div className="py-6">
       <h1 className="mb-3 text-xl font-bold">{t("search.title")}</h1>
       <div className="relative">
-      <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden />
-      <input
-        type="search" aria-label={t("nav.search_placeholder")} autoFocus value={input} onChange={(e) => setInput(e.target.value)} placeholder={t("nav.search_placeholder")}
-        className="h-12 w-full rounded-full border bg-card pl-12 pr-4 text-base shadow-soft outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
-      />
+        <Search
+          className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground"
+          aria-hidden
+        />
+        <input
+          type="search"
+          aria-label={t("nav.search_placeholder")}
+          autoFocus
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder={t("nav.search_placeholder")}
+          className="h-12 w-full rounded-full border bg-card pl-12 pr-4 text-base shadow-soft outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+        />
       </div>
       {matchedCats.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2">
           {matchedCats.map((c) => (
-            <Link key={c.id} to="/c/$slug" params={{ slug: c.slug }} className="inline-flex min-h-10 items-center rounded-full bg-primary-soft px-4 text-sm text-primary">{pick(c.name_my, c.name_en)}</Link>
+            <Link
+              key={c.id}
+              to="/c/$slug"
+              params={{ slug: c.slug }}
+              className="inline-flex min-h-10 items-center rounded-full bg-primary-soft px-4 text-sm text-primary"
+            >
+              {pick(c.name_my, c.name_en)}
+            </Link>
           ))}
         </div>
       )}
       {(shops.data?.length ?? 0) > 0 && (
         <Section title={t("search.shops")}>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{shops.data!.map((s) => <ShopCard key={s.id} s={s} />)}</div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {shops.data!.map((s) => (
+              <ShopCard key={s.id} s={s} />
+            ))}
+          </div>
         </Section>
       )}
       <Section title={t("search.products")}>

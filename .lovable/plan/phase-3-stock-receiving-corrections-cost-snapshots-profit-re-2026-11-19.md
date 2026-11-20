@@ -1,6 +1,7 @@
 # Phase 3: Stock Receiving, Corrections, Cost Snapshots, Profit Report
 
 ## 1. What is already present
+
 - **Stock ledger (`stock_movements`)**: the `products_stock_ledger` trigger writes one row in the same transaction as every `products.stock` change, labelled by `bm.stock_reason` / `bm.stock_ref`. Allowed reasons: opening_balance, new_product, manual_edit, online_order, order_cancelled, pos_sale, pos_void. Owners and admins can only read it; there is no direct insert, update or delete.
 - **Stock-changing functions**: `place_order`, `update_order_status` (cancel restocks), `pos_checkout`, `pos_void_sale`.
 - **Owner stock edit today**: the product form writes the new stock total straight to `products` (allowed by the "products owner update" policy), so the trigger logs it as `manual_edit` with no reason, quantity or cost.
@@ -9,13 +10,16 @@
 - **Missing entirely**: no product cost, no receiving record, no supplier/reference, no correction reason, no expense data.
 
 ## 2. Gaps
+
 1. No way to record "received N at X MMK each".
 2. Corrections have no required reason. Typing a stock total bypasses any reason, because owners can update `products.stock` directly.
 3. No cost on products or on sold lines, so cost of goods and gross profit cannot be known.
 4. No expense records, so net profit cannot be calculated.
 
 ## 3. Smallest safe scope (proposed)
+
 **3A — Receiving and corrections (database first)**
+
 - New table `stock_receipts`: shop, product, quantity (>0), `unit_cost` (integer MMK, **nullable** = unknown), optional supplier text and reference text, created_by, created_at. Rows can only be written through the function below.
 - New RPC `receive_stock(p_product_id, p_qty, p_unit_cost, p_supplier, p_reference, p_idempotency_key)`: owner/admin only. It locks the product, adds stock with `bm.stock_reason='stock_received'`, writes the receipt and returns it. Idempotent, so a retry on a dropped connection does not add stock twice.
 - New RPC `adjust_stock(p_product_id, p_new_count, p_reason_code, p_note, p_idempotency_key)`: sets the counted quantity. Reason codes: count_correction, damaged, expired, lost, other (other needs a note). The ledger gets `stock_adjusted` plus the reason and note.
@@ -25,11 +29,13 @@
   - Risk: any other code path that writes stock (CSV import, template picker) must be moved to these functions first. The audit in Build will list each one. CSV re-import that updates stock becomes an `adjust_stock` call with reason `import`.
 
 **3B — Cost snapshots**
+
 - `products.cost_price integer NULL` (current cost, never defaulted to 0). It is updated by `receive_stock` when a cost is given; the owner can also edit it.
 - Add `unit_cost integer NULL` to `order_items` and `pos_sale_items`. `place_order` and `pos_checkout` copy `products.cost_price` into each line at sale time. Changing cost later never touches past lines. Past sales stay NULL (unknown) and are never backfilled with guesses.
 - Cost method: last known cost at time of sale (simple, explainable). FIFO/average costing is out of scope.
 
 **3C — Profit report (read-only)**
+
 - Extend `pos_report_range` and `orders_report_range`, or add `profit_report_range`, returning per channel:
   - **Sales**: POS completed total; online merchandise subtotal (delivery fees shown separately, never in sales).
   - **Cost of goods (known)**: sum of `quantity * unit_cost` for lines with known cost.
@@ -42,6 +48,7 @@
 **Out of scope**: expenses and net profit, supplier management, purchase orders, FIFO costing, returns/refunds, low-stock reminders/notifications (the low-stock list from the last phase stays).
 
 ## 4. Database changes required (for your review; nothing staged or applied)
+
 - Tables: new `stock_receipts`. `stock_movements` gets `note` and `unit_cost` plus an extended reason check. `products` gets `cost_price`. `order_items` and `pos_sale_items` get `unit_cost`.
 - `stock_receipts` security:
   - Signed-in users can read it, and only for shops they own (admins can read all). The public cannot read it.
@@ -61,6 +68,7 @@
   - Rollout order: 3A/3B SQL is applied only after code is ready, and the guard trigger is applied last.
 
 ## 5. Acceptance checks (390 px phone and 1280 px desktop, Myanmar and English, MMK)
+
 - Receive 10 at 1,500 MMK: stock +10, one ledger row "Stock received" with the cost, one receipt row. Retrying with the same key does not add stock again.
 - Correct count from 12 to 9 as "damaged": stock 9, ledger delta -3 with the reason. "Other" without a note is rejected.
 - Typing a stock number directly (old code path) is rejected by the database. POS, online order, cancel and void still change stock and log as before.
@@ -71,6 +79,7 @@
 - Forms fit at 320–430 px, number fields use the numeric keypad, and all labels exist in Myanmar and English.
 
 ## Decisions for you
+
 1. Cost privacy: separate owner-only cost tables (recommended) vs. columns on existing tables.
 2. Block direct stock typing (recommended) vs. keep it but require a reason in the form only (weaker).
 3. Cost method: last known cost at sale (recommended) vs. average cost.

@@ -20,7 +20,10 @@ export function addDays(day: string, n: number) {
 export function presetRange(p: Exclude<RangePreset, "custom">, now: Date = new Date()): DayRange {
   const today = yangonToday(now);
   if (p === "today") return { start: today, end: today };
-  if (p === "yesterday") { const y = addDays(today, -1); return { start: y, end: y }; }
+  if (p === "yesterday") {
+    const y = addDays(today, -1);
+    return { start: y, end: y };
+  }
   return { start: addDays(today, p === "last7" ? -6 : -29), end: today };
 }
 /** UTC instants for a Yangon range: from = start 00:00 Yangon (inclusive), to = midnight after end (exclusive). */
@@ -53,7 +56,9 @@ export function exportLimited(exported: number, total: number | null | undefined
 }
 /** Top products ordered by quantity as a number (then amount), never as text. */
 export function sortTop<T extends { qty: number | string; total: number | string }>(rows: T[]) {
-  return [...rows].sort((a, b) => Number(b.qty) - Number(a.qty) || Number(b.total) - Number(a.total));
+  return [...rows].sort(
+    (a, b) => Number(b.qty) - Number(a.qty) || Number(b.total) - Number(a.total),
+  );
 }
 
 /* ---------- CSV (no customer names, phones or addresses) ---------- */
@@ -66,38 +71,108 @@ export function toCsv(header: string[], rows: unknown[][]) {
   return "\uFEFF" + [header, ...rows].map((r) => r.map(cell).join(",")).join("\r\n");
 }
 export function yangonStamp(iso: string) {
-  return new Date(new Date(iso).getTime() + YANGON_OFFSET_MIN * 60000).toISOString().slice(0, 19).replace("T", " ");
+  return new Date(new Date(iso).getTime() + YANGON_OFFSET_MIN * 60000)
+    .toISOString()
+    .slice(0, 19)
+    .replace("T", " ");
 }
-export type PosCsvSale = { sale_number: number; created_at: string; status: string; payment_method: string; total: number; void_reason: string | null };
-export const POS_CSV_HEADER = ["sale_number", "date_time_yangon", "status", "payment_method", "total_mmk", "void_reason"];
+export type PosCsvSale = {
+  sale_number: number;
+  created_at: string;
+  status: string;
+  payment_method: string;
+  total: number;
+  void_reason: string | null;
+};
+export const POS_CSV_HEADER = [
+  "sale_number",
+  "date_time_yangon",
+  "status",
+  "payment_method",
+  "total_mmk",
+  "void_reason",
+];
 export function posCsv(sales: PosCsvSale[]) {
-  return toCsv(POS_CSV_HEADER, sales.map((s) => [s.sale_number, yangonStamp(s.created_at), s.status, s.payment_method, s.total, s.void_reason ?? ""]));
+  return toCsv(
+    POS_CSV_HEADER,
+    sales.map((s) => [
+      s.sale_number,
+      yangonStamp(s.created_at),
+      s.status,
+      s.payment_method,
+      s.total,
+      s.void_reason ?? "",
+    ]),
+  );
 }
-export type OrderCsvRow = { order_no: number; at: string; status: string; township: string | null; subtotal: number; delivery_fee: number; total: number };
-export const ORDER_CSV_HEADER = ["order_no", "date_time_yangon", "status", "township", "merchandise_subtotal_mmk", "delivery_fee_mmk", "order_value_mmk"];
+export type OrderCsvRow = {
+  order_no: number;
+  at: string;
+  status: string;
+  township: string | null;
+  subtotal: number;
+  delivery_fee: number;
+  total: number;
+};
+export const ORDER_CSV_HEADER = [
+  "order_no",
+  "date_time_yangon",
+  "status",
+  "township",
+  "merchandise_subtotal_mmk",
+  "delivery_fee_mmk",
+  "order_value_mmk",
+];
 export function ordersCsv(rows: OrderCsvRow[]) {
-  return toCsv(ORDER_CSV_HEADER, rows.map((o) => [o.order_no, yangonStamp(o.at), o.status, o.township ?? "", o.subtotal, o.delivery_fee, o.total]));
+  return toCsv(
+    ORDER_CSV_HEADER,
+    rows.map((o) => [
+      o.order_no,
+      yangonStamp(o.at),
+      o.status,
+      o.township ?? "",
+      o.subtotal,
+      o.delivery_fee,
+      o.total,
+    ]),
+  );
 }
 
 /* ---------- Receipt settings ---------- */
 export type ReceiptSettings = {
-  show_logo: boolean; lang: "my" | "en"; header_note: string; footer_note: string;
-  paper_width: 58 | 80; show_phone: boolean; show_address: boolean;
+  show_logo: boolean;
+  lang: "my" | "en";
+  header_note: string;
+  footer_note: string;
+  paper_width: 58 | 80;
+  show_phone: boolean;
+  show_address: boolean;
 };
 export const RECEIPT_DEFAULTS: ReceiptSettings = {
-  show_logo: true, lang: "my", header_note: "", footer_note: "", paper_width: 58, show_phone: true, show_address: false,
+  show_logo: true,
+  lang: "my",
+  header_note: "",
+  footer_note: "",
+  paper_width: 58,
+  show_phone: true,
+  show_address: false,
 };
 export const HEADER_MAX = 120;
 export const FOOTER_MAX = 200;
 /** Reads stored JSON safely; unknown or bad values fall back to defaults. */
 export function normalizeReceipt(raw: unknown): ReceiptSettings {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
-  const b = (k: keyof ReceiptSettings) => (typeof r[k] === "boolean" ? (r[k] as boolean) : (RECEIPT_DEFAULTS[k] as boolean));
-  const s = (k: "header_note" | "footer_note", max: number) => (typeof r[k] === "string" ? (r[k] as string).trim().slice(0, max) : "");
+  const b = (k: keyof ReceiptSettings) =>
+    typeof r[k] === "boolean" ? (r[k] as boolean) : (RECEIPT_DEFAULTS[k] as boolean);
+  const s = (k: "header_note" | "footer_note", max: number) =>
+    typeof r[k] === "string" ? (r[k] as string).trim().slice(0, max) : "";
   return {
-    show_logo: b("show_logo"), show_phone: b("show_phone"), show_address: b("show_address"),
+    show_logo: b("show_logo"),
+    show_phone: b("show_phone"),
+    show_address: b("show_address"),
     lang: r["lang"] === "en" ? "en" : "my",
     paper_width: r["paper_width"] === 80 ? 80 : 58,
-    header_note: s("header_note", HEADER_MAX), footer_note: s("footer_note", FOOTER_MAX),
+    header_note: s("header_note", HEADER_MAX),
+    footer_note: s("footer_note", FOOTER_MAX),
   };
 }

@@ -2,13 +2,7 @@
 // re-enforces every rule here; these exist for instant UI feedback.
 
 export type OrderStatus =
-  | "pending"
-  | "confirmed"
-  | "preparing"
-  | "ready"
-  | "out_for_delivery"
-  | "completed"
-  | "cancelled";
+  "pending" | "confirmed" | "preparing" | "ready" | "out_for_delivery" | "completed" | "cancelled";
 export type DeliveryMethod = "delivery" | "pickup";
 
 export function formatMMK(n: number, lang: "my" | "en" = "my") {
@@ -36,18 +30,20 @@ export interface CartLine {
 }
 
 export type AddResult =
-  | { ok: true; lines: CartLine[] }
-  | { ok: false; reason: "other_shop" | "out_of_stock" };
+  { ok: true; lines: CartLine[] } | { ok: false; reason: "other_shop" | "out_of_stock" };
 
 export function addToCart(lines: CartLine[], item: CartLine): AddResult {
-  if (lines.length > 0 && lines[0]!.shopId !== item.shopId) return { ok: false, reason: "other_shop" };
+  if (lines.length > 0 && lines[0]!.shopId !== item.shopId)
+    return { ok: false, reason: "other_shop" };
   const existing = lines.find((l) => l.productId === item.productId);
   const nextQty = (existing?.quantity ?? 0) + item.quantity;
   if (nextQty > item.stock) return { ok: false, reason: "out_of_stock" };
   if (existing)
     return {
       ok: true,
-      lines: lines.map((l) => (l.productId === item.productId ? { ...l, ...item, quantity: nextQty } : l)),
+      lines: lines.map((l) =>
+        l.productId === item.productId ? { ...l, ...item, quantity: nextQty } : l,
+      ),
     };
   return { ok: true, lines: [...lines, item] };
 }
@@ -81,8 +77,20 @@ export function customerCanCancel(status: OrderStatus) {
 
 export function errorKey(message: string | undefined) {
   const code = (message ?? "").split(":")[0]!.trim();
-  const known = ["SHOP_UNAVAILABLE", "METHOD_UNAVAILABLE", "OUT_OF_STOCK", "PRODUCT_UNAVAILABLE", "INVALID_TRANSITION"];
-  type K = "err.SHOP_UNAVAILABLE" | "err.METHOD_UNAVAILABLE" | "err.OUT_OF_STOCK" | "err.PRODUCT_UNAVAILABLE" | "err.INVALID_TRANSITION" | "err.generic";
+  const known = [
+    "SHOP_UNAVAILABLE",
+    "METHOD_UNAVAILABLE",
+    "OUT_OF_STOCK",
+    "PRODUCT_UNAVAILABLE",
+    "INVALID_TRANSITION",
+  ];
+  type K =
+    | "err.SHOP_UNAVAILABLE"
+    | "err.METHOD_UNAVAILABLE"
+    | "err.OUT_OF_STOCK"
+    | "err.PRODUCT_UNAVAILABLE"
+    | "err.INVALID_TRANSITION"
+    | "err.generic";
   return (known.includes(code) ? `err.${code}` : "err.generic") as K;
 }
 
@@ -109,27 +117,43 @@ export function isLowStock(p: { stock: number; is_active: boolean }) {
 export const PAY_METHODS = ["cash", "kbzpay", "wave", "other"] as const;
 export type PayMethod = (typeof PAY_METHODS)[number];
 
-
 /** Change for cash sales. null = no cash amount entered or not a cash sale; "too_low" = less than total. */
-export function cashChange(method: PayMethod, total: number, received: number | null): number | null | "too_low" {
+export function cashChange(
+  method: PayMethod,
+  total: number,
+  received: number | null,
+): number | null | "too_low" {
   if (method !== "cash" || received == null) return null;
   return received < total ? "too_low" : received - total;
 }
 
 /** Lines whose current price differs from the price shown when they were added. */
-export function changedPrices<T extends { productId: string; unitPrice: number }>(lines: T[], current: Record<string, number>) {
-  return lines.filter((l) => current[l.productId] !== undefined && current[l.productId] !== l.unitPrice);
+export function changedPrices<T extends { productId: string; unitPrice: number }>(
+  lines: T[],
+  current: Record<string, number>,
+) {
+  return lines.filter(
+    (l) => current[l.productId] !== undefined && current[l.productId] !== l.unitPrice,
+  );
 }
 
 /** Calendar date (YYYY-MM-DD) in Myanmar time — "today" for daily sales. */
 export function yangonDay(d: Date = new Date()) {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Yangon", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Yangon",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
 }
 
 /** Owner order-list filter groups (by order status). */
 export const ORDER_FILTERS = {
-  pending: ["pending"], active: ["confirmed", "preparing"], ready: ["ready", "out_for_delivery"],
-  completed: ["completed"], cancelled: ["cancelled"],
+  pending: ["pending"],
+  active: ["confirmed", "preparing"],
+  ready: ["ready", "out_for_delivery"],
+  completed: ["completed"],
+  cancelled: ["cancelled"],
 } as const;
 export type OrderFilter = keyof typeof ORDER_FILTERS;
 /** Active products at or below the low-stock line, lowest stock first. */

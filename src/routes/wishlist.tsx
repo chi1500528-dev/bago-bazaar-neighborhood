@@ -18,7 +18,11 @@ export const Route = createFileRoute("/wishlist")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: () => <RequireAuth><Wishlist /></RequireAuth>,
+  component: () => (
+    <RequireAuth>
+      <Wishlist />
+    </RequireAuth>
+  ),
 });
 
 function Wishlist() {
@@ -29,18 +33,29 @@ function Wishlist() {
     queryFn: async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await (supabase.from as any)("wishlist_items")
-        .select(`created_at, products(${PRODUCT_FIELDS})`).order("created_at", { ascending: false });
+        .select(`created_at, products(${PRODUCT_FIELDS})`)
+        .order("created_at", { ascending: false });
       if (error) throw error;
-      return ((data ?? []) as { products: Product | null }[]).map((r) => r.products).filter(Boolean) as Product[];
+      return ((data ?? []) as { products: Product | null }[])
+        .map((r) => r.products)
+        .filter(Boolean) as Product[];
     },
   });
   return (
     <div className="space-y-4 py-6">
       {dialog}
       <h1 className="text-xl font-bold">{t("wish.title")}</h1>
-      {q.isLoading ? <p className="py-10 text-center text-sm text-muted-foreground">{t("common.loading")}</p>
-        : !(q.data ?? []).length ? <EmptyState text={t("wish.empty")} />
-        : <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{q.data!.map((p) => <ProductCard key={p.id} p={p} onAdd={add} />)}</div>}
+      {q.isLoading ? (
+        <p className="py-10 text-center text-sm text-muted-foreground">{t("common.loading")}</p>
+      ) : !(q.data ?? []).length ? (
+        <EmptyState text={t("wish.empty")} />
+      ) : (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {q.data!.map((p) => (
+            <ProductCard key={p.id} p={p} onAdd={add} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -13,7 +13,10 @@ export const Route = createFileRoute("/categories")({
       { title: "Categories · Bago Market" },
       { name: "description", content: "Browse all product categories on Bago Market." },
       { property: "og:title", content: "Categories · Bago Market" },
-      { property: "og:description", content: "Food, groceries, fashion, electronics and more from Bago shops." },
+      {
+        property: "og:description",
+        content: "Food, groceries, fashion, electronics and more from Bago shops.",
+      },
     ],
     links: [{ rel: "canonical", href: siteUrl("/categories") }],
   }),
@@ -23,7 +26,12 @@ export const Route = createFileRoute("/categories")({
 function Categories() {
   const { t, pick } = useApp();
   const q = useQuery(categoriesQuery);
-  if (q.isError) return <div className="py-8"><ErrorBox onRetry={() => q.refetch()} /></div>;
+  if (q.isError)
+    return (
+      <div className="py-8">
+        <ErrorBox onRetry={() => q.refetch()} />
+      </div>
+    );
   const all = q.data ?? [];
   const top = all.filter((c) => !c.parent_id);
   return (
@@ -33,17 +41,40 @@ function Categories() {
         {top.map((c) => {
           const subs = all.filter((s) => s.parent_id === c.id);
           return (
-            <div key={c.id} className="lift min-w-0 rounded-2xl border border-border/60 bg-card p-4">
-              <Link to="/c/$slug" params={{ slug: c.slug }} className="zoom-img flex min-h-16 items-center gap-4 hover:text-primary">
+            <div
+              key={c.id}
+              className="lift min-w-0 rounded-2xl border border-border/60 bg-card p-4"
+            >
+              <Link
+                to="/c/$slug"
+                params={{ slug: c.slug }}
+                className="zoom-img flex min-h-16 items-center gap-4 hover:text-primary"
+              >
                 <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-sage text-primary">
-                  {categoryImage(c.slug) ? <img src={categoryImage(c.slug)!} alt="" loading="lazy" className="size-full object-cover" /> : <CategoryIcon name={c.icon} className="size-5" />}
+                  {categoryImage(c.slug) ? (
+                    <img
+                      src={categoryImage(c.slug)!}
+                      alt=""
+                      loading="lazy"
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <CategoryIcon name={c.icon} className="size-5" />
+                  )}
                 </span>
-                <span className="min-w-0 break-words text-base font-semibold leading-relaxed">{pick(c.name_my, c.name_en)}</span>
+                <span className="min-w-0 break-words text-base font-semibold leading-relaxed">
+                  {pick(c.name_my, c.name_en)}
+                </span>
               </Link>
               {subs.length > 0 && (
                 <div className="mt-3 flex min-w-0 flex-wrap gap-1.5">
                   {subs.map((s) => (
-                    <Link key={s.id} to="/c/$slug" params={{ slug: s.slug }} className="inline-flex min-h-9 max-w-full items-center break-words [overflow-wrap:anywhere] rounded-full border px-3 text-xs hover:border-primary hover:text-primary">
+                    <Link
+                      key={s.id}
+                      to="/c/$slug"
+                      params={{ slug: s.slug }}
+                      className="inline-flex min-h-9 max-w-full items-center break-words [overflow-wrap:anywhere] rounded-full border px-3 text-xs hover:border-primary hover:text-primary"
+                    >
                       {pick(s.name_my, s.name_en)}
                     </Link>
                   ))}

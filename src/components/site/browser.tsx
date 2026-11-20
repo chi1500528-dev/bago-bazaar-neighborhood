@@ -31,8 +31,12 @@ export function ProductBrowser({ categoryIds, q }: { categoryIds?: string[]; q?:
     initialPageParam: 0,
     getNextPageParam: (last: Product[], pages) => (last.length === PAGE ? pages.length : undefined),
     queryFn: async ({ pageParam }) => {
-      let b = supabase.from("products").select(PRODUCT_FIELDS)
-        .eq("is_active", true).eq("shops.status", "approved").eq("shops.is_active", true);
+      let b = supabase
+        .from("products")
+        .select(PRODUCT_FIELDS)
+        .eq("is_active", true)
+        .eq("shops.status", "approved")
+        .eq("shops.is_active", true);
       if (categoryIds?.length) b = b.in("category_id", categoryIds);
       if (q) b = b.or(`name.ilike.%${escapeLike(q)}%,description.ilike.%${escapeLike(q)}%`);
       if (tw) b = b.eq("shops.township_id", tw);
@@ -50,49 +54,96 @@ export function ProductBrowser({ categoryIds, q }: { categoryIds?: string[]; q?:
     },
   });
   const items = query.data?.pages.flat() ?? [];
-  const sel = "h-11 min-w-0 w-full max-w-full truncate rounded-md border bg-card px-2 text-sm sm:h-9 sm:w-auto";
+  const sel =
+    "h-11 min-w-0 w-full max-w-full truncate rounded-md border bg-card px-2 text-sm sm:h-9 sm:w-auto";
 
   return (
     <div>
       {dialog}
       <div className="mb-4 grid grid-cols-[repeat(2,minmax(0,1fr))] items-center gap-2 sm:flex sm:flex-wrap">
-        <select className={`${sel} col-span-2 sm:col-span-1`} value={tw} onChange={(e) => setTw(e.target.value)} aria-label={t("nav.township")}>
+        <select
+          className={`${sel} col-span-2 sm:col-span-1`}
+          value={tw}
+          onChange={(e) => setTw(e.target.value)}
+          aria-label={t("nav.township")}
+        >
           <option value="">{t("nav.all_townships")}</option>
-          {townships.data?.map((x) => <option key={x.id} value={x.id}>{pick(x.name_my, x.name_en)}</option>)}
+          {townships.data?.map((x) => (
+            <option key={x.id} value={x.id}>
+              {pick(x.name_my, x.name_en)}
+            </option>
+          ))}
         </select>
-        <select className={sel} value={method} onChange={(e) => setMethod(e.target.value as typeof method)}>
+        <select
+          className={sel}
+          value={method}
+          onChange={(e) => setMethod(e.target.value as typeof method)}
+        >
           <option value="">{t("filter.all")}</option>
           <option value="delivery">{t("shop.delivery")}</option>
           <option value="pickup">{t("shop.pickup")}</option>
         </select>
-        <input className={`${sel} sm:w-24`} inputMode="numeric" placeholder={t("filter.min")} value={min} onChange={(e) => setMin(e.target.value.replace(/\D/g, ""))} />
-        <input className={`${sel} sm:w-24`} inputMode="numeric" placeholder={t("filter.max")} value={max} onChange={(e) => setMax(e.target.value.replace(/\D/g, ""))} />
+        <input
+          className={`${sel} sm:w-24`}
+          inputMode="numeric"
+          placeholder={t("filter.min")}
+          value={min}
+          onChange={(e) => setMin(e.target.value.replace(/\D/g, ""))}
+        />
+        <input
+          className={`${sel} sm:w-24`}
+          inputMode="numeric"
+          placeholder={t("filter.max")}
+          value={max}
+          onChange={(e) => setMax(e.target.value.replace(/\D/g, ""))}
+        />
         <label className="flex min-h-11 min-w-0 items-center gap-1.5 text-sm sm:min-h-0">
-          <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} className="accent-[var(--primary)]" />
+          <input
+            type="checkbox"
+            checked={inStock}
+            onChange={(e) => setInStock(e.target.checked)}
+            className="accent-[var(--primary)]"
+          />
           {t("filter.in_stock")}
         </label>
-        <select className={`${sel} col-span-2 sm:col-span-1 sm:ml-auto`} value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label={t("filter.sort")}>
+        <select
+          className={`${sel} col-span-2 sm:col-span-1 sm:ml-auto`}
+          value={sort}
+          onChange={(e) => setSort(e.target.value as Sort)}
+          aria-label={t("filter.sort")}
+        >
           <option value="relevance">{t("filter.relevance")}</option>
           <option value="newest">{t("filter.newest")}</option>
           <option value="price_asc">{t("filter.price_asc")}</option>
           <option value="price_desc">{t("filter.price_desc")}</option>
         </select>
       </div>
-      {query.isLoading ? <LoadingGrid n={8} /> : query.isError ? <ErrorBox onRetry={() => query.refetch()} /> :
-        items.length === 0 ? <EmptyState text={t("search.none")} /> : (
-          <>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {items.map((p) => <ProductCard key={p.id} p={p} onAdd={add} />)}
+      {query.isLoading ? (
+        <LoadingGrid n={8} />
+      ) : query.isError ? (
+        <ErrorBox onRetry={() => query.refetch()} />
+      ) : items.length === 0 ? (
+        <EmptyState text={t("search.none")} />
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {items.map((p) => (
+              <ProductCard key={p.id} p={p} onAdd={add} />
+            ))}
+          </div>
+          {query.hasNextPage && (
+            <div className="mt-6 text-center">
+              <Button
+                variant="outline"
+                onClick={() => query.fetchNextPage()}
+                disabled={query.isFetchingNextPage}
+              >
+                {query.isFetchingNextPage ? t("common.loading") : t("common.more")}
+              </Button>
             </div>
-            {query.hasNextPage && (
-              <div className="mt-6 text-center">
-                <Button variant="outline" onClick={() => query.fetchNextPage()} disabled={query.isFetchingNextPage}>
-                  {query.isFetchingNextPage ? t("common.loading") : t("common.more")}
-                </Button>
-              </div>
-            )}
-          </>
-        )}
+          )}
+        </>
+      )}
     </div>
   );
 }

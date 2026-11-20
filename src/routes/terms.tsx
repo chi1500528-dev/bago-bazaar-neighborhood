@@ -14,6 +14,9 @@ export const Route = createFileRoute("/terms")({
     links: [{ rel: "canonical", href: siteUrl("/terms") }],
   }),
   component: () => (
-    <InfoPage my={{"title": "စည်းမျဉ်းများ", "body": ["အပြည့်အစုံ စည်းမျဉ်းများကို မကြာမီ ထုတ်ပြန်ပါမည်။"]}} en={{"title": "Terms", "body": ["Full terms of use will be published soon."]}} />
+    <InfoPage
+      my={{ title: "စည်းမျဉ်းများ", body: ["အပြည့်အစုံ စည်းမျဉ်းများကို မကြာမီ ထုတ်ပြန်ပါမည်။"] }}
+      en={{ title: "Terms", body: ["Full terms of use will be published soon."] }}
+    />
   ),
 });

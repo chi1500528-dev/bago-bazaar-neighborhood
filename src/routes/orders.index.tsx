@@ -15,7 +15,11 @@ export const Route = createFileRoute("/orders/")({
       { property: "og:description", content: "See the status of your orders." },
     ],
   }),
-  component: () => <RequireAuth><Orders /></RequireAuth>,
+  component: () => (
+    <RequireAuth>
+      <Orders />
+    </RequireAuth>
+  ),
 });
 
 function Orders() {
@@ -23,8 +27,12 @@ function Orders() {
   const q = useQuery({
     queryKey: ["my-orders", session?.user.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("orders").select("id, order_no, status, total, created_at, shops(name)")
-        .eq("customer_id", session!.user.id).order("created_at", { ascending: false }).limit(50);
+      const { data, error } = await supabase
+        .from("orders")
+        .select("id, order_no, status, total, created_at, shops(name)")
+        .eq("customer_id", session!.user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
       if (error) throw error;
       return data;
     },
@@ -32,13 +40,27 @@ function Orders() {
   return (
     <div className="py-6">
       <h1 className="mb-4 text-xl font-bold">{t("orders.title")}</h1>
-      {q.isLoading ? <p className="text-sm text-muted-foreground">{t("common.loading")}</p> : (q.data ?? []).length === 0 ? <EmptyState text={t("orders.empty")} /> : (
+      {q.isLoading ? (
+        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+      ) : (q.data ?? []).length === 0 ? (
+        <EmptyState text={t("orders.empty")} />
+      ) : (
         <ul className="divide-y rounded-lg border bg-card">
           {q.data!.map((o) => (
             <li key={o.id}>
-              <Link to="/orders/$id" params={{ id: o.id }} className="flex flex-wrap items-center justify-between gap-2 p-4 hover:bg-muted/50">
-                <div><p className="font-medium">{t("orders.number", { n: o.order_no })}</p><p className="text-xs text-muted-foreground">{o.shops?.name}</p></div>
-                <div className="flex items-center gap-3"><span className="text-sm font-medium">{formatMMK(o.total, lang)}</span><StatusBadge status={o.status} /></div>
+              <Link
+                to="/orders/$id"
+                params={{ id: o.id }}
+                className="flex flex-wrap items-center justify-between gap-2 p-4 hover:bg-muted/50"
+              >
+                <div>
+                  <p className="font-medium">{t("orders.number", { n: o.order_no })}</p>
+                  <p className="text-xs text-muted-foreground">{o.shops?.name}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium">{formatMMK(o.total, lang)}</span>
+                  <StatusBadge status={o.status} />
+                </div>
               </Link>
             </li>
           ))}

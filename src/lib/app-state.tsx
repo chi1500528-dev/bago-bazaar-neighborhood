@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import type { Session } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -107,7 +115,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (l: Lang) => {
       setLangState(l);
       localStorage.setItem("bm.lang", JSON.stringify(l));
-      if (uid) supabase.from("profiles").update({ language: l }).eq("id", uid).then(() => {});
+      if (uid)
+        supabase
+          .from("profiles")
+          .update({ language: l })
+          .eq("id", uid)
+          .then(() => {});
     },
     [uid],
   );
@@ -137,7 +150,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return "ok";
       },
       setQty: (id, q) =>
-        setCart((c) => c.map((l) => (l.productId === id ? { ...l, quantity: Math.max(1, Math.min(q, l.stock)) } : l))),
+        setCart((c) =>
+          c.map((l) =>
+            l.productId === id ? { ...l, quantity: Math.max(1, Math.min(q, l.stock)) } : l,
+          ),
+        ),
       removeLine: (id) => setCart((c) => c.filter((l) => l.productId !== id)),
       clearCart: () => setCart([]),
     }),

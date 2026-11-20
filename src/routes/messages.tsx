@@ -14,7 +14,11 @@ export const Route = createFileRoute("/messages")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: () => <RequireAuth><Messages /></RequireAuth>,
+  component: () => (
+    <RequireAuth>
+      <Messages />
+    </RequireAuth>
+  ),
 });
 
 function Messages() {

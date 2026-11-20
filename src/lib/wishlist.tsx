@@ -43,9 +43,25 @@ export function HeartButton({ productId, className }: { productId: string; class
     onError: () => toast.error(t("err.generic")),
   });
   return (
-    <button type="button" aria-label={saved ? t("wish.remove") : t("wish.add")} aria-pressed={saved} disabled={m.isPending}
-      onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!session) { navigate({ to: "/auth" }); return; } m.mutate(); }}
-      className={cn("grid size-9 place-items-center rounded-full bg-card/90 text-primary shadow-soft transition-colors hover:bg-card", className)}>
+    <button
+      type="button"
+      aria-label={saved ? t("wish.remove") : t("wish.add")}
+      aria-pressed={saved}
+      disabled={m.isPending}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!session) {
+          navigate({ to: "/auth" });
+          return;
+        }
+        m.mutate();
+      }}
+      className={cn(
+        "grid size-9 place-items-center rounded-full bg-card/90 text-primary shadow-soft transition-colors hover:bg-card",
+        className,
+      )}
+    >
       <Heart className={cn("size-[18px]", saved && "fill-current")} />
     </button>
   );

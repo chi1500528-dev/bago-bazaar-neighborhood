@@ -1,8 +1,20 @@
 import { Link } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import {
-  Baby, CookingPot, HeartPulse, Package, Pencil, Shirt, ShoppingBasket, Smartphone, Sofa, Sparkles, Tv, Utensils,
-  ImageOff, type LucideIcon,
+  Baby,
+  CookingPot,
+  HeartPulse,
+  Package,
+  Pencil,
+  Shirt,
+  ShoppingBasket,
+  Smartphone,
+  Sofa,
+  Sparkles,
+  Tv,
+  Utensils,
+  ImageOff,
+  type LucideIcon,
 } from "lucide-react";
 import { useMediaUrl } from "@/lib/media";
 import { useApp } from "@/lib/app-state";
@@ -16,13 +28,31 @@ export function Logo({ compact = false, onDark = false }: { compact?: boolean; o
         alt=""
         width={700}
         height={730}
-        className={cn("h-11 w-auto shrink-0 object-contain", onDark && "rounded-lg bg-background/95 p-1")}
+        className={cn(
+          "h-11 w-auto shrink-0 object-contain",
+          onDark && "rounded-lg bg-background/95 p-1",
+        )}
         decoding="async"
       />
       {!compact && (
         <span className="flex flex-col leading-tight">
-          <span className={cn("font-display text-[17px] font-semibold tracking-tight", onDark ? "text-primary-foreground" : "text-foreground")}>Bago Market</span>
-          <span className={cn("text-[13px] font-medium", onDark ? "text-primary-foreground" : "text-primary")} lang="my">ပဲခူးဈေး</span>
+          <span
+            className={cn(
+              "font-display text-[17px] font-semibold tracking-tight",
+              onDark ? "text-primary-foreground" : "text-foreground",
+            )}
+          >
+            Bago Market
+          </span>
+          <span
+            className={cn(
+              "text-[13px] font-medium",
+              onDark ? "text-primary-foreground" : "text-primary",
+            )}
+            lang="my"
+          >
+            ပဲခူးဈေး
+          </span>
         </span>
       )}
     </Link>
@@ -30,24 +60,47 @@ export function Logo({ compact = false, onDark = false }: { compact?: boolean; o
 }
 
 const ICONS: Record<string, LucideIcon> = {
-  utensils: Utensils, "shopping-basket": ShoppingBasket, shirt: Shirt, sparkles: Sparkles, tv: Tv,
-  smartphone: Smartphone, sofa: Sofa, "cooking-pot": CookingPot, "heart-pulse": HeartPulse, baby: Baby,
-  pencil: Pencil, package: Package,
+  utensils: Utensils,
+  "shopping-basket": ShoppingBasket,
+  shirt: Shirt,
+  sparkles: Sparkles,
+  tv: Tv,
+  smartphone: Smartphone,
+  sofa: Sofa,
+  "cooking-pot": CookingPot,
+  "heart-pulse": HeartPulse,
+  baby: Baby,
+  pencil: Pencil,
+  package: Package,
 };
 export function CategoryIcon({ name, className }: { name?: string | null; className?: string }) {
   const I = (name && ICONS[name]) || Package;
   return <I className={className} strokeWidth={1.8} />;
 }
 
-export function MediaImg({ path, alt, className, eager }: { path?: string | null | undefined; alt: string; className?: string | undefined; eager?: boolean | undefined }) {
+export function MediaImg({
+  path,
+  alt,
+  className,
+  eager,
+}: {
+  path?: string | null | undefined;
+  alt: string;
+  className?: string | undefined;
+  eager?: boolean | undefined;
+}) {
   const isUrl = !!path && path.startsWith("http");
   const { data, isPending } = useMediaUrl(isUrl ? null : path);
   const src = isUrl ? path : data;
   const [loaded, setLoaded] = useState(false);
   if (!src) {
-    if (path && isPending) return <div className={cn("animate-pulse bg-muted", className)} aria-label={alt} />;
+    if (path && isPending)
+      return <div className={cn("animate-pulse bg-muted", className)} aria-label={alt} />;
     return (
-      <div className={cn("grid place-items-center bg-muted text-muted-foreground", className)} aria-label={alt}>
+      <div
+        className={cn("grid place-items-center bg-muted text-muted-foreground", className)}
+        aria-label={alt}
+      >
         <ImageOff className="size-6 opacity-40" />
       </div>
     );
@@ -60,12 +113,24 @@ export function MediaImg({ path, alt, className, eager }: { path?: string | null
       fetchPriority={eager ? "high" : "auto"}
       decoding="async"
       onLoad={() => setLoaded(true)}
-      className={cn("object-cover bg-muted transition-opacity duration-300 motion-reduce:transition-none", loaded ? "opacity-100" : "opacity-0", className)}
+      className={cn(
+        "object-cover bg-muted transition-opacity duration-300 motion-reduce:transition-none",
+        loaded ? "opacity-100" : "opacity-0",
+        className,
+      )}
     />
   );
 }
 
-export function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
+export function Section({
+  title,
+  action,
+  children,
+}: {
+  title: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="py-8 md:py-12">
       <div className="mb-5 flex items-end justify-between gap-4 border-b border-border/70 pb-3">
@@ -111,7 +176,13 @@ export function ErrorBox({ onRetry }: { onRetry?: () => void }) {
   );
 }
 
-export function StatusBadge({ status, kind = "order" }: { status: string; kind?: "order" | "shop" }) {
+export function StatusBadge({
+  status,
+  kind = "order",
+}: {
+  status: string;
+  kind?: "order" | "shop";
+}) {
   const { t } = useApp();
   const tone =
     status === "completed" || status === "approved"
@@ -121,8 +192,14 @@ export function StatusBadge({ status, kind = "order" }: { status: string; kind?:
         : status === "pending"
           ? "bg-gold-soft text-gold-foreground"
           : "bg-accent text-accent-foreground";
-  const key = (kind === "order" ? `status.${status}` : `shopstatus.${status}`) as Parameters<typeof t>[0];
-  return <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", tone)}>{t(key)}</span>;
+  const key = (kind === "order" ? `status.${status}` : `shopstatus.${status}`) as Parameters<
+    typeof t
+  >[0];
+  return (
+    <span className={cn("inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium", tone)}>
+      {t(key)}
+    </span>
+  );
 }
 
 /** Phone-only action bar pinned just above the bottom tab menu. */
@@ -130,8 +207,16 @@ export function StickyActionBar({ children }: { children: ReactNode }) {
   return (
     <>
       <div className="h-24 md:hidden" aria-hidden />
-      <div className="fixed inset-x-0 z-30 border-t bg-card/95 px-3 py-2.5 shadow-lg backdrop-blur md:hidden sm:px-4"  style={{ bottom: "calc(3.5rem + 1px + max(0.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))))" }}>
-        <div className="mx-auto flex min-w-0 max-w-full items-center gap-2 sm:gap-3">{children}</div>
+      <div
+        className="fixed inset-x-0 z-30 border-t bg-card/95 px-3 py-2.5 shadow-lg backdrop-blur md:hidden sm:px-4"
+        style={{
+          bottom:
+            "calc(3.5rem + 1px + max(0.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))))",
+        }}
+      >
+        <div className="mx-auto flex min-w-0 max-w-full items-center gap-2 sm:gap-3">
+          {children}
+        </div>
       </div>
     </>
   );

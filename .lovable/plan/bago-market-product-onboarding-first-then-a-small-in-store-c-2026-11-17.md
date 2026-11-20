@@ -4,6 +4,7 @@ Plan only. Nothing is built, seeded or deployed until you say: "I approve this p
 Unchanged and protected: login, Resend email codes, the Supabase relay, the Google Cloud VPS setup, one mobile-friendly web app, Burmese first + English, MMK.
 
 ## 1. What the app already has
+
 - Owners land in "My Shop": Today summary, shop switcher, Orders, Messages, Products, Shop details.
 - Products: name, description, price, sale price, stock, photos, marketplace category + the shop's own categories.
 - Online orders reduce stock safely in the database (locks the product, refuses if not enough, ignores duplicate taps). Cancelling puts stock back. Order lines keep the name and price from order time.
@@ -11,17 +12,20 @@ Unchanged and protected: login, Resend email codes, the Supabase relay, the Goog
 - Install to home screen works. No offline mode.
 
 ## 2. What is missing
+
 - Only one-at-a-time product adding. No CSV import, no templates, no description helper.
 - No SKU or barcode fields.
 - No in-store sales, receipts or sales history.
 - No stock history. No cost price (so no profit).
 
 ## 3. What a CSV import is (and is not)
+
 - A **one-time copy** of the owner's product list from their other POS.
 - **Not** a live connection. Sales made later in the other POS will not change Bago Market stock.
 - To keep online stock correct, the shop should record future in-store sales in Bago Market (Milestone 2). This is shown on the import screen in Burmese and English.
 
 ## 4. Price and stock rules (checked in the current database)
+
 - Today: price is required (whole MMK, 0 or more); stock is required (default 0, never below 0); a sale price that isn't lower than the price is quietly removed on save.
 - New rule: a product needs a **price above 0 before it can be shown to customers**. It may be saved hidden with 0, but "Show to customers" is blocked — enforced in the database, not just on screen.
 - Templates and CSV rows missing required details stay **unsaved on screen** until the owner fills them. No empty or fake-price products are stored.
@@ -29,7 +33,9 @@ Unchanged and protected: login, Resend email codes, the Supabase relay, the Goog
 - **Existing products check (done read-only today):** the shop database has 2 products, and none are priced 0 (shown or hidden). Before the new rule is added, the same read-only check runs again. If any shown product is priced 0 at that time, nothing is changed automatically — the rule only applies when a product is next saved or shown, and the owner sees a "Set a price to keep this product visible" notice in their Products list. No product is hidden, deleted or edited by the app.
 
 ## 5. Milestone 1 — Product onboarding
+
 Builds:
+
 - **SKU and barcode as two separate optional fields.** A product can have both; each is unique within one shop. Search finds either. Scanning matches the barcode field only.
 - Products tab -> "Add products": Add one / From starter catalog / Import CSV.
 - **Draft description** (on the product form): owner fills optional boxes — brand, size, colour, model, material, condition — and taps "Draft description". The app joins only those words into simple Burmese and English sentences. No AI, no credits, nothing invented. The draft goes into the description box, stays editable, and saves only when the owner taps Save.
@@ -49,6 +55,7 @@ Builds:
 - Phone-friendly layout for these screens.
 
 You can review in Preview:
+
 1. Add a product with both SKU and barcode; search by each.
 2. Try to show a 0-price product to customers and see it blocked.
 3. Enter a sale price higher than the price and see the error; fix it and save.
@@ -62,7 +69,9 @@ You can review in Preview:
 11. Open the import record list and see each import's summary.
 
 ## 6. Milestone 2 — Minimal in-store checkout + shared stock
+
 Builds:
+
 - "Sell" tile: search by name, SKU or barcode (typing, or a keyboard-style scanner matching barcode), add to cart, change quantity, remove.
 - **Blocked when stock is 0 or too low**; the owner corrects the stock count first.
 - Payment method: **Cash, KBZPay, Wave, Other** (+ optional note). These are labels the owner records; Bago Market does not take or verify payments. Optional "cash received" -> change.
@@ -76,6 +85,7 @@ Builds:
 You can review in Preview: sell a test item and see stock drop on the product and shop page; print the receipt; void it and see stock return and the number not reused; try an out-of-stock item and see it blocked; tap "Complete" twice and get one sale; place an online order and see it in stock history.
 
 ## 7. Later — only after shop-owner feedback
+
 - More templates and shop types; better description drafting (AI would need your approval for credits).
 - Cost price and profit (also needs expenses: rent, staff, transport).
 - Partial refunds, staff accounts, stock-count screen, weekly/monthly reports.
@@ -83,6 +93,7 @@ You can review in Preview: sell a test item and see stock drop on the product an
 - Not in this plan: offline POS, payment processing, AI keys or paid AI.
 
 ## 8. Database, security and stock safety
+
 - Products: separate optional SKU and barcode, each unique per shop; database blocks showing a product with price 0.
 - Starter templates: read-only list for owners, admin-managed. **Not seeded** until the names are approved.
 - Milestone 2 records: in-store sales, sale items (copied name and price at sale time), stock movements, a per-shop sale-number counter.
@@ -92,9 +103,11 @@ You can review in Preview: sell a test item and see stock drop on the product an
 - Sales and stock history can't be edited or deleted directly; only the owner (and admin) can see them.
 
 ## 9. Starter catalog sample (for your review only — not seeded)
+
 Generic names, no prices, no stock, no photos. **Local Burmese-speaking shop owners must check these names before any are used.**
 
 Baby & Mum / ကလေးနှင့်မိခင်
+
 - ကလေးသေးခံ (အရွယ် S/M/L) — Baby diapers (size S/M/L)
 - ကလေးအစိုသုတ်စက္ကူ — Baby wet wipes
 - နို့ဗူး — Baby feeding bottle
@@ -103,6 +116,7 @@ Baby & Mum / ကလေးနှင့်မိခင်
 - ကလေးပေါင်ဒါ — Baby powder
 
 Phones & accessories / ဖုန်းနှင့်ဆက်စပ်ပစ္စည်း
+
 - ဖုန်းအားသွင်းကြိုး (USB-C) — Charging cable (USB-C)
 - ဖုန်းအားသွင်းခေါင်း — Phone charger adapter
 - ပါဝါဘန့် — Power bank
@@ -111,6 +125,7 @@ Phones & accessories / ဖုန်းနှင့်ဆက်စပ်ပစ္
 - မှန်ကာ — Screen protector
 
 Beauty / အလှကုန်
+
 - မျက်နှာသစ်ဆေး — Face wash
 - နေရောင်ကာခရင်မ် — Sunscreen
 - နှုတ်ခမ်းနီ — Lipstick
@@ -118,6 +133,7 @@ Beauty / အလှကုန်
 - သနပ်ခါး — Thanakha
 
 Daily goods / နေ့စဉ်သုံးပစ္စည်း
+
 - ဆန် (၁ပြည်) — Rice (1 pyi)
 - စားသုံးဆီ — Cooking oil
 - ဆား — Salt
@@ -126,12 +142,14 @@ Daily goods / နေ့စဉ်သုံးပစ္စည်း
 - ရေသန့်ဘူး — Drinking water bottle
 
 Stationery / စာရေးကိရိယာ
+
 - ဘောပင် — Ballpoint pen
 - ခဲတံ — Pencil
 - လေ့ကျင့်ခန်းစာအုပ် — Exercise book
 - ခဲဖျက် — Eraser
 
 ## 10. Final order and open decision
+
 Order: Milestone 1 (product onboarding) -> Milestone 2 (in-store checkout + shared stock) -> Later (after feedback).
 
 Your decisions recorded: 500-row limit; imports hidden by default; per-shop sale numbers, unique, never reused; payment methods Cash/KBZPay/Wave/Other; zero-stock sales blocked.
@@ -139,6 +157,7 @@ Your decisions recorded: 500-row limit; imports hidden by default; per-shop sale
 Still open: the checked Burmese names. Milestone 1 can be built without them — the template screen stays empty (or shows a "coming soon" note) until you send the approved list.
 
 ## Technical notes
+
 - `products.sku`, `products.barcode` (text, null) with partial unique indexes per shop. Pre-check query for `is_active and price <= 0`; trigger rejects showing a product with `price <= 0` only on insert/update (existing rows untouched). `products_validate` changed to raise an error for an invalid sale price instead of nulling it.
 - `product_imports` (shop, user, file name, added/updated counts), owner-only RLS.
 - `product_templates` (admin write, authenticated read), created empty. Template picks held in React state until valid; insert via existing products RLS.
