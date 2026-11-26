@@ -47,7 +47,12 @@ Not touched: `src/lib/sb-relay.ts`, `src/routes/api/public/sb/$.ts`, `src/integr
 ## Checks before reporting done
 - Tests, TypeScript, lint (0 errors) and build.
 - Screens at 360, 390 and 1280px in Myanmar and English: home, categories, product, shop, cart, merchant Sell/Orders/Products/Reports/Shop. No sideways scrolling, and tap targets at least 44px.
-- One signed-in POS sale and one stock receive in the preview, to confirm nothing changed in how they work.
+- Signed-in check of the POS and stock windows (screens, forms, validation) without submitting anything.
 
 ## Delivery
 Three commits, one per part. Part 3 goes first because it's the top priority.
+
+## Approved adjustments
+1. Opening `/merchant` with no `?tab=` goes straight to the Sell (POS) tab, shown below the compact Today strip.
+2. On phones, the fixed POS checkout bar sits above the bottom navigation bar with safe-area spacing, so it never covers it.
+3. Checking replaces the earlier test sale: no real POS sale or stock receive is sent to the live database. Only the screens, forms and their validation messages are checked, and no records are created.
