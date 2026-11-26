@@ -249,15 +249,66 @@ export function PosSell({ shopId }: { shopId: string }) {
       </div>
     );
 
+  const cartList = !lines.length ? (
+    <p className="py-6 text-center text-sm text-muted-foreground">{t("pos.empty")}</p>
+  ) : (
+    <ul className="divide-y">
+      {lines.map((l) => (
+        <li
+          key={l.productId}
+          className={`flex items-center gap-2 py-2 ${changed.includes(l.productId) ? "rounded bg-gold-soft/60 px-2" : ""}`}
+        >
+          <span className="min-w-0 flex-1">
+            <span className="line-clamp-1 text-sm font-medium">{l.name}</span>
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {formatMMK(l.unitPrice, lang)}
+            </span>
+          </span>
+          <Button
+            size="icon"
+            variant="outline"
+            className="size-9"
+            disabled={uncertain}
+            onClick={() => setQty(l.productId, l.quantity - 1)}
+            aria-label="-"
+          >
+            <Minus className="size-4" />
+          </Button>
+          <span className="w-7 text-center tabular-nums">{l.quantity}</span>
+          <Button
+            size="icon"
+            variant="outline"
+            className="size-9"
+            onClick={() => setQty(l.productId, l.quantity + 1)}
+            disabled={uncertain || l.quantity >= l.stock}
+            aria-label="+"
+          >
+            <Plus className="size-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="size-9"
+            disabled={uncertain}
+            onClick={() => setQty(l.productId, 0)}
+            aria-label="remove"
+          >
+            <Trash2 className="size-4" />
+          </Button>
+        </li>
+      ))}
+    </ul>
+  );
+  const itemCount = lines.reduce((a, l) => a + l.quantity, 0);
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 md:grid-cols-[1fr_20rem]">
-        <div className="space-y-3">
+      <div className="grid gap-4 pb-20 md:grid-cols-[1fr_22rem] md:pb-0">
+        <div className="min-w-0 space-y-3">
           <Input
             ref={searchRef}
             autoFocus
             disabled={uncertain}
-            className="h-12 text-base"
+            className="h-12 rounded-xl text-base"
             placeholder={t("pos.search")}
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -269,92 +320,59 @@ export function PosSell({ shopId }: { shopId: string }) {
             }}
           />
           {matches.length > 0 && (
-            <ul className="divide-y rounded-lg border bg-card">
+            <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {matches.map((p) => (
                 <li key={p.id}>
                   <button
                     disabled={p.stock <= 0}
                     onClick={() => add(p)}
-                    className="flex w-full items-center gap-3 p-2.5 text-left hover:bg-muted/50 disabled:opacity-50"
+                    className="flex h-full w-full flex-col gap-2 rounded-2xl border border-border/70 bg-card p-2.5 text-left transition hover:border-primary/50 disabled:opacity-50"
                   >
-                    <MediaImg path={p.images[0]} alt="" className="size-10 shrink-0 rounded" />
-                    <span className="min-w-0 flex-1">
-                      <span className="line-clamp-1 font-medium">{p.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {p.sku ?? ""} · {t("merchant.stock")}: {p.stock}
-                      </span>
+                    <MediaImg
+                      path={p.images[0]}
+                      alt=""
+                      className="aspect-square w-full rounded-xl bg-card"
+                    />
+                    <span className="line-clamp-2 min-h-[2.5rem] text-sm font-medium leading-snug">
+                      {p.name}
                     </span>
-                    <span className="text-sm font-medium tabular-nums">
-                      {formatMMK(effectivePrice(p), lang)}
+                    <span className="mt-auto flex items-center justify-between gap-1">
+                      <span className="font-semibold tabular-nums">
+                        {formatMMK(effectivePrice(p), lang)}
+                      </span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[11px] tabular-nums ${p.stock > 0 ? "bg-primary-soft text-primary" : "bg-muted text-muted-foreground"}`}
+                      >
+                        {p.stock}
+                      </span>
                     </span>
                   </button>
                 </li>
               ))}
             </ul>
           )}
-          <div className="surface p-3">
+          <div className="rounded-2xl border border-border/70 bg-card p-3 md:hidden">
             <p className="mb-2 text-sm font-semibold">{t("pos.cart")}</p>
-            {!lines.length ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">{t("pos.empty")}</p>
-            ) : (
-              <ul className="divide-y">
-                {lines.map((l) => (
-                  <li
-                    key={l.productId}
-                    className={`flex items-center gap-2 py-2 ${changed.includes(l.productId) ? "rounded bg-gold-soft/60 px-2" : ""}`}
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="line-clamp-1 text-sm font-medium">{l.name}</span>
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        {formatMMK(l.unitPrice, lang)}
-                      </span>
-                    </span>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className="size-9"
-                      disabled={uncertain}
-                      onClick={() => setQty(l.productId, l.quantity - 1)}
-                      aria-label="-"
-                    >
-                      <Minus className="size-4" />
-                    </Button>
-                    <span className="w-7 text-center tabular-nums">{l.quantity}</span>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className="size-9"
-                      onClick={() => setQty(l.productId, l.quantity + 1)}
-                      disabled={uncertain || l.quantity >= l.stock}
-                      aria-label="+"
-                    >
-                      <Plus className="size-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="size-9"
-                      disabled={uncertain}
-                      onClick={() => setQty(l.productId, 0)}
-                      aria-label="remove"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            )}
+            {cartList}
           </div>
         </div>
-        <div className="surface h-fit space-y-3 p-4">
+        <div
+          id="pos-checkout"
+          className="h-fit scroll-mt-32 space-y-3 rounded-2xl border border-border/70 bg-card p-4 md:sticky md:top-32"
+        >
+          <div className="hidden md:block">
+            <p className="mb-2 text-sm font-semibold">{t("pos.cart")}</p>
+            {cartList}
+          </div>
+          <div className="hidden border-t border-border/70 md:block" />
           <Label>{t("pos.pay")}</Label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
             {PAY_METHODS.map((m) => (
-              <Button
+              <button
                 key={m}
                 type="button"
-                variant={method === m ? "default" : "outline"}
-                className="h-11"
+                aria-pressed={method === m}
+                className={`min-h-11 rounded-lg px-2 text-sm font-medium transition disabled:opacity-50 ${method === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                 disabled={uncertain}
                 onClick={() => {
                   setMethod(m);
@@ -362,7 +380,7 @@ export function PosSell({ shopId }: { shopId: string }) {
                 }}
               >
                 {t(`pay.${m}` as TKey)}
-              </Button>
+              </button>
             ))}
           </div>
           {method === "cash" && (
@@ -401,6 +419,19 @@ export function PosSell({ shopId }: { shopId: string }) {
           </Button>
         </div>
       </div>
+      {lines.length > 0 && (
+        <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 px-3 md:hidden">
+          <a
+            href="#pos-checkout"
+            className="flex min-h-12 items-center justify-between gap-3 rounded-xl bg-primary px-4 text-primary-foreground shadow-soft"
+          >
+            <span className="text-sm tabular-nums">
+              {itemCount} · <b>{formatMMK(total, lang)}</b>
+            </span>
+            <span className="text-sm font-semibold">{t("pos.finish")}</span>
+          </a>
+        </div>
+      )}
       <PosDay shopId={shopId} />
     </div>
   );

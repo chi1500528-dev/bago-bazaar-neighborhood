@@ -31,3 +31,8 @@ Phase 4 is a future candidate to validate with Bago shop owners first. It is not
 - Printer/scanner compatibility based on devices shop owners actually use; browser printing and keyboard-emulating scanners remain the baseline.
 - Offline selling considered only after measuring need and defining conflict-safe stock sync.
 - Not committed: offline mode, cash drawer hardware, payment gateway integration.
+
+## UI/UX polish (approved 2026-11-26)
+- [ ] Part 3: merchant workspace (tab bar, default Sell tab, Today strip, POS layout + mobile bar above BottomNav, products list, reports/settings)
+- [ ] Part 1: shared look (tokens, radii, footer language switch, tabular numbers)
+- [ ] Part 2: storefront (home, cards, categories, product, shop)

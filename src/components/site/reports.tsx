@@ -44,18 +44,18 @@ export function MerchantReports({ shopId }: { shopId: string }) {
   const ok = validRange(range);
   return (
     <div className="space-y-4">
-      <div className="surface space-y-3 p-4">
-        <div className="flex flex-wrap gap-2">
+      <div className="space-y-3 rounded-2xl border border-border/70 bg-card p-4">
+        <div className="flex max-w-full gap-1 overflow-x-auto rounded-xl bg-muted p-1 [scrollbar-width:none]">
           {RANGE_PRESETS.map((p) => (
-            <Button
+            <button
               key={p}
-              size="sm"
-              variant={preset === p ? "default" : "outline"}
-              className="rounded-full"
+              type="button"
+              aria-pressed={preset === p}
+              className={`min-h-10 shrink-0 rounded-lg px-3 text-sm font-medium transition ${preset === p ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => setPreset(p)}
             >
               {t(`rep.${p}` as TKey)}
-            </Button>
+            </button>
           ))}
         </div>
         {preset === "custom" && (
@@ -85,9 +85,13 @@ export function MerchantReports({ shopId }: { shopId: string }) {
         <p className="text-sm text-destructive">{t("rep.bad_range")}</p>
       ) : (
         <Tabs defaultValue="pos">
-          <TabsList>
-            <TabsTrigger value="pos">{t("rep.pos")}</TabsTrigger>
-            <TabsTrigger value="mkt">{t("rep.mkt")}</TabsTrigger>
+          <TabsList className="h-11 rounded-xl">
+            <TabsTrigger value="pos" className="min-h-9 rounded-lg">
+              {t("rep.pos")}
+            </TabsTrigger>
+            <TabsTrigger value="mkt" className="min-h-9 rounded-lg">
+              {t("rep.mkt")}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="pos">
             <PosReportView shopId={shopId} range={range} />

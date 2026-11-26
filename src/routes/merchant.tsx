@@ -258,33 +258,17 @@ function TodaySummary({ shopId, unread }: { shopId: string; unread: number }) {
   ];
   const mmk = (n: number | undefined) => (n == null ? "–" : formatMMK(n, lang));
   return (
-    <section className="mb-5" aria-label={t("merchant.today")}>
-      <h2 className="mb-2 text-sm font-semibold text-muted-foreground">{t("merchant.today")}</h2>
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-        {cards.map((c) => (
-          <Link
-            key={c.label}
-            to="/merchant"
-            search={{ tab: c.tab, ...("low" in c ? { low: true } : {}) }}
-            className={`surface p-3 transition hover:border-primary/40 ${c.hot ? "border-gold/60 bg-gold-soft/40" : ""}`}
-          >
-            <c.icon className="mb-1 size-4 text-primary" />
-            <p className="text-2xl font-semibold tabular-nums">{c.n ?? "–"}</p>
-            <p className="text-xs leading-tight text-muted-foreground">
-              {c.label}
-              {c.sub && <span className="block opacity-80">{c.sub}</span>}
-            </p>
-          </Link>
-        ))}
-      </div>
-      <div className="mt-2 grid gap-2 sm:grid-cols-2">
-        <Link
-          to="/merchant"
-          search={{ tab: "reports" }}
-          className="surface p-4 transition hover:border-primary/40"
-        >
+    <section
+      className="mb-5 rounded-2xl border border-border/70 bg-card p-4"
+      aria-label={t("merchant.today")}
+    >
+      <h2 className="mb-3 text-sm font-semibold text-muted-foreground">{t("merchant.today")}</h2>
+      <div className="grid grid-cols-2 gap-4 divide-x divide-border/70">
+        <Link to="/merchant" search={{ tab: "reports" }} className="min-w-0 hover:text-primary">
           <p className="text-xs font-medium text-muted-foreground">{t("merchant.instore_today")}</p>
-          <p className="mt-1 text-xl font-semibold tabular-nums">{mmk(m?.pos?.revenue)}</p>
+          <p className="mt-0.5 truncate text-xl font-semibold tabular-nums md:text-2xl">
+            {mmk(m?.pos?.revenue)}
+          </p>
           <p className="text-xs text-muted-foreground">
             {t("rep.pos_total")} · {t("rep.tickets", { n: m?.pos?.count ?? 0 })}
             {(m?.pos?.voided ?? 0) > 0 ? ` · ${t("rep.voided_count")}: ${m!.pos!.voided}` : ""}
@@ -293,19 +277,34 @@ function TodaySummary({ shopId, unread }: { shopId: string; unread: number }) {
         <Link
           to="/merchant"
           search={{ tab: "reports" }}
-          className="surface p-4 transition hover:border-primary/40"
+          className="min-w-0 pl-4 hover:text-primary"
         >
           <p className="text-xs font-medium text-muted-foreground">{t("merchant.online_today")}</p>
-          <p className="mt-1 text-xl font-semibold tabular-nums">
+          <p className="mt-0.5 truncate text-xl font-semibold tabular-nums md:text-2xl">
             {mmk(m?.online?.merchandise_subtotal)}
           </p>
           <p className="text-xs text-muted-foreground">
-            {t("rep.subtotal")} · {t("rep.orders_n", { n: m?.online?.completed_count ?? 0 })}
-          </p>
-          <p className="text-xs text-muted-foreground">
+            {t("rep.subtotal")} · {t("rep.orders_n", { n: m?.online?.completed_count ?? 0 })} ·{" "}
             {t("rep.fees")}: {mmk(m?.online?.delivery_fees)}
           </p>
         </Link>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2 border-t border-border/70 pt-3">
+        {cards.map((c) => (
+          <Link
+            key={c.label}
+            to="/merchant"
+            search={{ tab: c.tab, ...("low" in c ? { low: true } : {}) }}
+            title={c.sub}
+            className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 text-sm transition hover:border-primary/40 ${
+              c.hot ? "border-gold/60 bg-gold-soft/50" : "border-border/70"
+            }`}
+          >
+            <c.icon className="size-4 text-primary" />
+            <span className="font-semibold tabular-nums">{c.n ?? "–"}</span>
+            <span className="text-muted-foreground">{c.label}</span>
+          </Link>
+        ))}
       </div>
       <p className="mt-2 text-xs text-muted-foreground">
         {t("merchant.channels_note")} {t("rep.tz_note")}
@@ -360,7 +359,7 @@ function Dash({
       n: 0,
     },
   ];
-  const current = tiles.find((x) => x.id === tab);
+  const active: Tab = tab ?? "sell";
   return (
     <div className="mx-auto max-w-4xl py-6">
       {shops.length > 1 && <ShopSwitcher s={s} shops={shops} onPick={onPick} onNew={onNew} />}
@@ -405,56 +404,47 @@ function Dash({
           {t("merchant.pending_note")}
         </p>
       )}
-      {!current && <TodaySummary shopId={s.id} unread={alerts.shopMessages} />}
-      {!current ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {tiles.map((x) => (
-            <Link
-              key={x.id}
-              to="/merchant"
-              search={{ tab: x.id }}
-              className="surface group flex items-center gap-4 p-5 transition hover:border-primary/40 hover:shadow-soft"
-            >
-              <span className="relative grid size-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                <x.icon className="size-6" />
+      <nav
+        aria-label={t("nav.my_shop")}
+        className="z-20 -mx-4 md:sticky md:top-16 mb-4 border-b border-border/70 bg-background/95 px-4 backdrop-blur"
+      >
+        <div className="flex gap-1 overflow-x-auto py-2 [scrollbar-width:none]">
+          {tiles.map((x) => {
+            const on = x.id === active;
+            return (
+              <Link
+                key={x.id}
+                to="/merchant"
+                search={{ tab: x.id }}
+                aria-current={on ? "page" : undefined}
+                className={`relative inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3.5 text-sm font-medium transition ${
+                  on
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <x.icon className="size-4" />
+                {x.label}
                 {x.n > 0 && (
-                  <span className="absolute -right-1.5 -top-1.5 grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">
+                  <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold tabular-nums text-gold-foreground">
                     {x.n}
                   </span>
                 )}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-semibold">{x.label}</span>
-                <span className="block text-sm text-muted-foreground">{x.sub}</span>
-              </span>
-              <ChevronRight className="size-5 text-muted-foreground transition group-hover:translate-x-0.5" />
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
-      ) : (
-        <div>
-          <div className="mb-4 flex items-center gap-2">
-            <Link
-              to="/merchant"
-              search={{}}
-              className="text-sm text-muted-foreground hover:text-primary"
-            >
-              {t("nav.my_shop")}
-            </Link>
-            <ChevronRight className="size-4 text-muted-foreground" />
-            <h2 className="font-semibold">{current.label}</h2>
-          </div>
-          {tab === "sell" && <PosSell shopId={s.id} />}
-          {tab === "orders" && <MerchantOrders shopId={s.id} />}
-          {tab === "chat" && <ChatInbox side="shop" shopId={s.id} />}
-          {tab === "products" && <MerchantProducts shop={s} />}
-          {tab === "reports" && <MerchantReports shopId={s.id} />}
-          {tab === "shop" && (
-            <>
-              <ShopForm shop={s} />
-              <ReceiptSettingsCard shopId={s.id} shop={s} />
-            </>
-          )}
+      </nav>
+      {active === "sell" && <TodaySummary shopId={s.id} unread={alerts.shopMessages} />}
+      {active === "sell" && <PosSell shopId={s.id} />}
+      {active === "orders" && <MerchantOrders shopId={s.id} />}
+      {active === "chat" && <ChatInbox side="shop" shopId={s.id} />}
+      {active === "products" && <MerchantProducts shop={s} />}
+      {active === "reports" && <MerchantReports shopId={s.id} />}
+      {active === "shop" && (
+        <div className="space-y-6">
+          <ShopForm shop={s} />
+          <ReceiptSettingsCard shopId={s.id} shop={s} />
         </div>
       )}
     </div>
@@ -716,14 +706,31 @@ function MerchantProducts({ shop }: { shop: ShopRow }) {
             })
             .map((p) => (
               <li key={p.id} className="flex items-center gap-3 p-3">
-                <MediaImg path={p.images[0]} alt={p.name} className="size-14 shrink-0 rounded" />
+                <MediaImg
+                  path={p.images[0]}
+                  alt={p.name}
+                  className="size-14 shrink-0 rounded-xl border border-border/70 bg-card"
+                />
                 <div className="min-w-0 flex-1">
                   <p className="line-clamp-1 font-medium">{p.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {formatMMK(p.sale_price ?? p.price, lang)} · {t("merchant.stock")}: {p.stock} ·{" "}
-                    {p.is_active ? t("common.active") : t("merchant.hidden")}
+                    <span className="font-medium text-foreground tabular-nums">
+                      {formatMMK(p.sale_price ?? p.price, lang)}
+                    </span>{" "}
+                    · {p.is_active ? t("common.active") : t("merchant.hidden")}
                     {p.sku ? ` · ${p.sku}` : ""}
                   </p>
+                  <span
+                    className={`mt-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs tabular-nums ${
+                      p.stock <= 0
+                        ? "bg-destructive/10 text-destructive"
+                        : isLowStock(p)
+                          ? "bg-gold-soft text-gold-foreground"
+                          : "bg-primary-soft text-primary"
+                    }`}
+                  >
+                    {t("merchant.stock")}: {p.stock}
+                  </span>
                   {p.is_active && p.price <= 0 && (
                     <p className="text-xs text-destructive">{t("merchant.zero_notice")}</p>
                   )}
