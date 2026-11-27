@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 type Line = {
   productId: string;
@@ -58,6 +59,7 @@ export function PosSell({ shopId }: { shopId: string }) {
   const [lines, setLines] = useState<Line[]>([]);
   const [method, setMethod] = useState<PayMethod>("cash");
   const [cash, setCash] = useState("");
+  const [cartOpen, setCartOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [changed, setChanged] = useState<string[]>([]);
   // true after a network failure with unknown outcome: the cart is frozen so the retry sends the exact same request.
@@ -267,10 +269,10 @@ export function PosSell({ shopId }: { shopId: string }) {
           <Button
             size="icon"
             variant="outline"
-            className="size-9"
+            className="size-11 rounded-xl"
             disabled={uncertain}
             onClick={() => setQty(l.productId, l.quantity - 1)}
-            aria-label="-"
+            aria-label={t("pos.decrease")}
           >
             <Minus className="size-4" />
           </Button>
@@ -278,20 +280,20 @@ export function PosSell({ shopId }: { shopId: string }) {
           <Button
             size="icon"
             variant="outline"
-            className="size-9"
+            className="size-11 rounded-xl"
             onClick={() => setQty(l.productId, l.quantity + 1)}
             disabled={uncertain || l.quantity >= l.stock}
-            aria-label="+"
+            aria-label={t("pos.increase")}
           >
             <Plus className="size-4" />
           </Button>
           <Button
             size="icon"
             variant="ghost"
-            className="size-9"
+            className="size-11 rounded-xl"
             disabled={uncertain}
             onClick={() => setQty(l.productId, 0)}
-            aria-label="remove"
+            aria-label={t("pos.remove")}
           >
             <Trash2 className="size-4" />
           </Button>
@@ -299,10 +301,77 @@ export function PosSell({ shopId }: { shopId: string }) {
       ))}
     </ul>
   );
+  const checkoutPanel = (
+    <div className="space-y-4">
+      {" "}
+      <div className="max-h-[40vh] overflow-y-auto">
+        <p className="mb-2 text-sm font-semibold">{t("pos.cart")}</p>
+        {cartList}
+      </div>
+      <div className="border-t border-border/70" />
+      <p className="text-sm font-semibold">{t("pos.pay")}</p>
+      <div className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
+        {PAY_METHODS.map((m) => (
+          <Button
+            variant="ghost"
+            key={m}
+            type="button"
+            aria-pressed={method === m}
+            className={`min-h-11 whitespace-normal rounded-xl px-2 text-sm font-medium transition disabled:opacity-50 ${method === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            disabled={uncertain}
+            onClick={() => {
+              setMethod(m);
+              if (m !== "cash") setCash("");
+            }}
+          >
+            {t(`pay.${m}` as TKey)}
+          </Button>
+        ))}
+      </div>
+      {method === "cash" && (
+        <div className="space-y-1.5">
+          <Label htmlFor="pos-cash" className="text-xs">
+            {t("pos.received")}
+          </Label>
+          <Input
+            id="pos-cash"
+            inputMode="numeric"
+            className="h-11"
+            disabled={uncertain}
+            value={cash}
+            onChange={(e) => setCash(e.target.value.replace(/\D/g, ""))}
+          />
+        </div>
+      )}
+      <div className="flex items-baseline justify-between border-t pt-3">
+        <span>{t("pos.total")}</span>
+        <b className="text-2xl tabular-nums">{formatMMK(total, lang)}</b>
+      </div>
+      {typeof change === "number" && (
+        <p className="flex justify-between text-sm">
+          <span>{t("pos.change")}</span>
+          <b className="tabular-nums">{formatMMK(change, lang)}</b>
+        </p>
+      )}
+      {change === "too_low" && <p className="text-sm text-destructive">{t("pos.too_low")}</p>}
+      {uncertain && <p className="rounded-md bg-gold-soft/60 p-2 text-sm">{t("pos.locked")}</p>}
+      {changed.length > 0 && (
+        <p className="text-sm text-gold-foreground">{t("pos.price_changed")}</p>
+      )}
+      <Button
+        className="h-12 w-full text-base"
+        disabled={busy || !lines.length || change === "too_low"}
+        onClick={finish}
+      >
+        {uncertain ? t("pos.retry") : changed.length ? t("pos.confirm_new") : t("pos.finish")}
+      </Button>
+    </div>
+  );
+  const displayedProducts = needle ? matches : (products.data ?? []);
   const itemCount = lines.reduce((a, l) => a + l.quantity, 0);
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 pb-20 md:grid-cols-[1fr_22rem] md:pb-0">
+      <div className="grid gap-4 pb-20 md:grid-cols-[minmax(0,1fr)_22rem] md:pb-0">
         <div className="min-w-0 space-y-3">
           <Input
             ref={searchRef}
@@ -319,12 +388,13 @@ export function PosSell({ shopId }: { shopId: string }) {
               }
             }}
           />
-          {matches.length > 0 && (
+          {displayedProducts.length > 0 && (
             <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {matches.map((p) => (
+              {displayedProducts.map((p) => (
                 <li key={p.id}>
                   <button
-                    disabled={p.stock <= 0}
+                    disabled={uncertain || p.stock <= 0}
+                    aria-label={t("pos.add_item", { name: p.name })}
                     onClick={() => add(p)}
                     className="flex h-full w-full flex-col gap-2 rounded-2xl border border-border/70 bg-card p-2.5 text-left transition hover:border-primary/50 disabled:opacity-50"
                   >
@@ -336,7 +406,7 @@ export function PosSell({ shopId }: { shopId: string }) {
                     <span className="line-clamp-2 min-h-[2.5rem] text-sm font-medium leading-snug">
                       {p.name}
                     </span>
-                    <span className="mt-auto flex items-center justify-between gap-1">
+                    <span className="mt-auto flex w-full flex-wrap items-center justify-between gap-1">
                       <span className="font-semibold tabular-nums">
                         {formatMMK(effectivePrice(p), lang)}
                       </span>
@@ -351,87 +421,37 @@ export function PosSell({ shopId }: { shopId: string }) {
               ))}
             </ul>
           )}
-          <div className="rounded-2xl border border-border/70 bg-card p-3 md:hidden">
-            <p className="mb-2 text-sm font-semibold">{t("pos.cart")}</p>
-            {cartList}
-          </div>
         </div>
         <div
           id="pos-checkout"
-          className="h-fit scroll-mt-32 space-y-3 rounded-2xl border border-border/70 bg-card p-4 md:sticky md:top-32"
+          className="hidden h-fit rounded-2xl border border-border/70 bg-card p-4 md:sticky md:top-36 md:block"
         >
-          <div className="hidden md:block">
-            <p className="mb-2 text-sm font-semibold">{t("pos.cart")}</p>
-            {cartList}
-          </div>
-          <div className="hidden border-t border-border/70 md:block" />
-          <Label>{t("pos.pay")}</Label>
-          <div className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
-            {PAY_METHODS.map((m) => (
-              <button
-                key={m}
-                type="button"
-                aria-pressed={method === m}
-                className={`min-h-11 rounded-lg px-2 text-sm font-medium transition disabled:opacity-50 ${method === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                disabled={uncertain}
-                onClick={() => {
-                  setMethod(m);
-                  if (m !== "cash") setCash("");
-                }}
-              >
-                {t(`pay.${m}` as TKey)}
-              </button>
-            ))}
-          </div>
-          {method === "cash" && (
-            <div className="space-y-1.5">
-              <Label className="text-xs">{t("pos.received")}</Label>
-              <Input
-                inputMode="numeric"
-                className="h-11"
-                disabled={uncertain}
-                value={cash}
-                onChange={(e) => setCash(e.target.value.replace(/\D/g, ""))}
-              />
-            </div>
-          )}
-          <div className="flex items-baseline justify-between border-t pt-3">
-            <span>{t("pos.total")}</span>
-            <b className="text-2xl tabular-nums">{formatMMK(total, lang)}</b>
-          </div>
-          {typeof change === "number" && (
-            <p className="flex justify-between text-sm">
-              <span>{t("pos.change")}</span>
-              <b className="tabular-nums">{formatMMK(change, lang)}</b>
-            </p>
-          )}
-          {change === "too_low" && <p className="text-sm text-destructive">{t("pos.too_low")}</p>}
-          {uncertain && <p className="rounded-md bg-gold-soft/60 p-2 text-sm">{t("pos.locked")}</p>}
-          {changed.length > 0 && (
-            <p className="text-sm text-gold-foreground">{t("pos.price_changed")}</p>
-          )}
-          <Button
-            className="h-12 w-full text-base"
-            disabled={busy || !lines.length || change === "too_low"}
-            onClick={finish}
-          >
-            {uncertain ? t("pos.retry") : changed.length ? t("pos.confirm_new") : t("pos.finish")}
-          </Button>
+          {checkoutPanel}
         </div>
       </div>
-      {lines.length > 0 && (
-        <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 px-3 md:hidden">
-          <a
-            href="#pos-checkout"
-            className="flex min-h-12 items-center justify-between gap-3 rounded-xl bg-primary px-4 text-primary-foreground shadow-soft"
+      <Sheet open={cartOpen} onOpenChange={setCartOpen}>
+        <div className="pos-checkout-bar fixed inset-x-0 z-30 border-t border-border bg-card p-3 md:hidden">
+          <Button
+            className="flex min-h-12 h-auto w-full flex-wrap justify-between rounded-xl px-4 py-3"
+            onClick={() => setCartOpen(true)}
           >
-            <span className="text-sm tabular-nums">
-              {itemCount} · <b>{formatMMK(total, lang)}</b>
+            <span className="tabular-nums">
+              {t("pos.items_n", { n: itemCount })} · {formatMMK(total, lang)}
             </span>
-            <span className="text-sm font-semibold">{t("pos.finish")}</span>
-          </a>
+            <span>{t("pos.finish")}</span>
+          </Button>
         </div>
-      )}
+        <SheetContent
+          side="bottom"
+          aria-describedby={undefined}
+          className="pos-payment-sheet max-h-[85dvh] overflow-y-auto rounded-t-2xl bg-card"
+        >
+          <SheetHeader className="mb-4 text-left">
+            <SheetTitle>{t("pos.cart")}</SheetTitle>
+          </SheetHeader>
+          {checkoutPanel}
+        </SheetContent>
+      </Sheet>
       <PosDay shopId={shopId} />
     </div>
   );

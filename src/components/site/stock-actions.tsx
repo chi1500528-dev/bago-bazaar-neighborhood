@@ -43,16 +43,16 @@ export function StockActions({ product, onChanged }: { product: P; onChanged?: (
   });
   const c = cost.data?.data;
   return (
-    <div className="space-y-2 rounded-md border p-3">
+    <div className="space-y-4 border-y py-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p className="text-sm">
           {t("merchant.stock")}: <b className="tabular-nums">{product.stock}</b>
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs leading-relaxed text-muted-foreground tabular-nums">
           {t("stk.cost_now")}: {c == null ? t("stk.cost_unknown") : formatMMK(c, lang)}
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Button type="button" variant="outline" className="h-11" onClick={() => setMode("receive")}>
           <PackagePlus className="size-4" />
           {t("stk.receive")}
@@ -64,7 +64,7 @@ export function StockActions({ product, onChanged }: { product: P; onChanged?: (
       </div>
       <CostEdit productId={product.id} current={c ?? null} />
       <Dialog open={!!mode} onOpenChange={(o) => !o && setMode(null)}>
-        <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto rounded-2xl">
           <DialogHeader>
             <DialogTitle>
               {mode === "receive" ? t("stk.receive") : t("stk.adjust")} · {product.name}
@@ -133,8 +133,8 @@ function ReceiveForm({ product, onDone }: { product: P; onDone: () => void }) {
     onDone();
   };
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-2">
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label>{t("stk.qty")}</Label>
           <Input
@@ -153,7 +153,9 @@ function ReceiveForm({ product, onDone }: { product: P; onDone: () => void }) {
           />
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">{t("stk.cost_hint")}</p>
+      <p className="text-xs leading-relaxed text-muted-foreground tabular-nums">
+        {t("stk.cost_hint")}
+      </p>
       <div className="space-y-1.5">
         <Label>{t("stk.supplier")}</Label>
         <Input
@@ -220,7 +222,7 @@ function AdjustForm({ product, onDone }: { product: P; onDone: () => void }) {
   };
   const diff = f.count ? Number(f.count) - product.stock : 0;
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <p className="text-sm">{t("stk.now", { n: product.stock })}</p>
       <div className="space-y-1.5">
         <Label>{t("stk.counted")}</Label>
@@ -239,15 +241,16 @@ function AdjustForm({ product, onDone }: { product: P; onDone: () => void }) {
         <Label>{t("stk.reason")}</Label>
         <div className="flex flex-wrap gap-2">
           {ADJUST_REASONS.map((r) => (
-            <button
+            <Button
+              variant="outline"
               key={r}
               type="button"
               aria-pressed={f.reason === r}
               onClick={() => setF({ ...f, reason: r })}
-              className={`min-h-9 rounded-full border px-3 text-sm ${f.reason === r ? "border-primary bg-primary/10 font-medium text-primary" : "bg-card"}`}
+              className={`min-h-11 h-auto whitespace-normal rounded-xl px-3 py-2 text-sm ${f.reason === r ? "border-primary bg-primary/10 font-medium text-primary" : "bg-card"}`}
             >
               {t(`stk.r.${r}` as TKey)}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -293,7 +296,7 @@ function CostEdit({ productId, current }: { productId: string; current: number |
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-sm font-medium text-primary"
+        className="min-h-11 rounded-xl text-sm font-medium text-primary"
       >
         {t("stk.set_cost")}
       </button>
@@ -311,7 +314,9 @@ function CostEdit({ productId, current }: { productId: string; current: number |
           {t("common.save")}
         </Button>
       </div>
-      <p className="text-xs text-muted-foreground">{t("stk.cost_future")}</p>
+      <p className="text-xs leading-relaxed text-muted-foreground tabular-nums">
+        {t("stk.cost_future")}
+      </p>
     </div>
   );
 }

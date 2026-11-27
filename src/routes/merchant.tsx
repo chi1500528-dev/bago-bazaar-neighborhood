@@ -2,7 +2,6 @@ import { ChatInbox } from "@/components/site/chat";
 import { useUnreadCounts } from "@/lib/notify";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  ChevronRight,
   MessageCircle,
   Package,
   Receipt,
@@ -64,7 +63,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type ShopRow = Database["public"]["Tables"]["shops"]["Row"];
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
-const TABS = ["sell", "orders", "chat", "products", "reports", "shop"] as const;
+const TABS = ["sell", "orders", "products", "reports", "chat", "shop"] as const;
 type Tab = (typeof TABS)[number];
 
 export const Route = createFileRoute("/merchant")({
@@ -83,7 +82,7 @@ export const Route = createFileRoute("/merchant")({
     ],
   }),
   validateSearch: (s: Record<string, unknown>): { tab?: Tab; low?: boolean } => ({
-    ...(TABS.includes(s["tab"] as Tab) ? { tab: s["tab"] as Tab } : {}),
+    tab: TABS.includes(s["tab"] as Tab) ? (s["tab"] as Tab) : "sell",
     ...(s["low"] === true || s["low"] === "1" || s["low"] === 1 ? { low: true } : {}),
   }),
   component: () => (
@@ -271,7 +270,7 @@ function TodaySummary({ shopId, unread }: { shopId: string; unread: number }) {
           </p>
           <p className="text-xs text-muted-foreground">
             {t("rep.pos_total")} · {t("rep.tickets", { n: m?.pos?.count ?? 0 })}
-            {(m?.pos?.voided ?? 0) > 0 ? ` · ${t("rep.voided_count")}: ${m!.pos!.voided}` : ""}
+            {(m?.pos?.voided ?? 0) > 0 ? ` · ${t("rep.voided_count")}: ${m?.pos?.voided}` : ""}
           </p>
         </Link>
         <Link
@@ -361,9 +360,9 @@ function Dash({
   ];
   const active: Tab = tab ?? "sell";
   return (
-    <div className="mx-auto max-w-4xl py-6">
+    <div className="mx-auto min-w-0 max-w-6xl py-6">
       {shops.length > 1 && <ShopSwitcher s={s} shops={shops} onPick={onPick} onNew={onNew} />}
-      <div className="surface mb-5 flex flex-wrap items-center gap-4 p-5">
+      <div className="mb-5 flex flex-wrap items-center gap-4 border-b pb-5">
         <div className="size-14 shrink-0 overflow-hidden rounded-xl border bg-muted">
           <MediaImg path={s.logo_url} alt="" className="size-full" />
         </div>
@@ -378,21 +377,21 @@ function Dash({
         </div>
         <div className="flex flex-wrap gap-2">
           {s.status === "approved" && (
-            <Button asChild variant="outline" size="sm" className="rounded-full">
+            <Button asChild variant="outline" size="sm" className="rounded-xl">
               <Link to="/shops/$slug" params={{ slug: s.slug }}>
                 <Eye className="size-4" />
                 {t("merchant.view_customer")}
               </Link>
             </Button>
           )}
-          <Button asChild variant="ghost" size="sm" className="rounded-full">
+          <Button asChild variant="ghost" size="sm" className="rounded-xl">
             <Link to="/search">
               <ShoppingBag className="size-4" />
               {t("merchant.shop_market")}
             </Link>
           </Button>
           {shops.length === 1 && (
-            <Button variant="ghost" size="sm" className="rounded-full" onClick={onNew}>
+            <Button variant="ghost" size="sm" className="rounded-xl" onClick={onNew}>
               <Plus className="size-4" />
               {t("merchant.new_shop")}
             </Button>
@@ -406,33 +405,35 @@ function Dash({
       )}
       <nav
         aria-label={t("nav.my_shop")}
-        className="z-20 -mx-4 md:sticky md:top-16 mb-4 border-b border-border/70 bg-background/95 px-4 backdrop-blur"
+        className="merchant-tabs sticky z-20 mb-4 min-w-0 border-b border-border/70 bg-background/95 backdrop-blur"
       >
         <div className="flex gap-1 overflow-x-auto py-2 [scrollbar-width:none]">
-          {tiles.map((x) => {
-            const on = x.id === active;
-            return (
-              <Link
-                key={x.id}
-                to="/merchant"
-                search={{ tab: x.id }}
-                aria-current={on ? "page" : undefined}
-                className={`relative inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3.5 text-sm font-medium transition ${
-                  on
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                <x.icon className="size-4" />
-                {x.label}
-                {x.n > 0 && (
-                  <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold tabular-nums text-gold-foreground">
-                    {x.n}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+          {TABS.map((id) => tiles.find((x) => x.id === id))
+            .filter((x) => x !== undefined)
+            .map((x) => {
+              const on = x.id === active;
+              return (
+                <Link
+                  key={x.id}
+                  to="/merchant"
+                  search={{ tab: x.id }}
+                  aria-current={on ? "page" : undefined}
+                  className={`relative inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3.5 text-sm font-medium transition ${
+                    on
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  <x.icon className="size-4" />
+                  {x.label}
+                  {x.n > 0 && (
+                    <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold tabular-nums text-gold-foreground">
+                      {x.n}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
         </div>
       </nav>
       {active === "sell" && <TodaySummary shopId={s.id} unread={alerts.shopMessages} />}
@@ -532,7 +533,7 @@ function ShopForm({ shop, onCreated }: { shop?: ShopRow; onCreated?: (id: string
   const top = (cats.data ?? []).filter((c) => !c.parent_id);
   const sel = "h-9 w-full rounded-md border bg-card px-2 text-sm";
   return (
-    <div className="surface grid gap-4 p-5 sm:grid-cols-2">
+    <div className="grid gap-5 border-b pb-6 sm:grid-cols-2">
       <div className="space-y-1.5 sm:col-span-2">
         <Label>{t("merchant.shop_name")}</Label>
         <Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
@@ -692,7 +693,7 @@ function MerchantProducts({ shop }: { shop: ShopRow }) {
       {(q.data ?? []).length === 0 ? (
         <EmptyState text={t("product.empty")} />
       ) : (
-        <ul className="divide-y rounded-lg border bg-card">
+        <ul className="divide-y border-y bg-card">
           {(low ? lowStockList(q.data!) : q.data!)
             .filter((p) => {
               const n = search.trim().toLowerCase();
@@ -1082,7 +1083,7 @@ function MerchantOrders({ shopId }: { shopId: string }) {
       {(q.data ?? []).length === 0 ? (
         <EmptyState text={t("merchant.no_orders")} />
       ) : (
-        <ul className="divide-y rounded-lg border bg-card">
+        <ul className="divide-y border-y bg-card">
           {q.data!.map((o) => (
             <li key={o.id}>
               <button

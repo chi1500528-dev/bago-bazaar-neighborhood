@@ -95,7 +95,7 @@ export function OrderDetail({ id, as }: { id: string; as: "customer" | "merchant
         </div>
       )}
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="surface space-y-1 p-4 text-sm">
+        <div className="space-y-2 border-t py-4 text-sm leading-relaxed">
           <p className="font-semibold">
             {t(o.delivery_method === "delivery" ? "checkout.delivery" : "checkout.pickup")}
           </p>
@@ -115,7 +115,7 @@ export function OrderDetail({ id, as }: { id: string; as: "customer" | "merchant
           {o.note && <p className="text-muted-foreground">“{o.note}”</p>}
           <p className="pt-2 text-xs text-muted-foreground">{t("checkout.payment_cod")}</p>
         </div>
-        <div className="surface p-4 text-sm">
+        <div className="border-t py-4 text-sm">
           <p className="mb-2 font-semibold">{t("orders.history")}</p>
           <ol className="space-y-1.5">
             {history.map((h) => (
@@ -129,7 +129,7 @@ export function OrderDetail({ id, as }: { id: string; as: "customer" | "merchant
           </ol>
         </div>
       </div>
-      <div className="surface p-4">
+      <div className="border-y py-4">
         <p className="mb-3 font-semibold">{t("orders.items")}</p>
         <ul className="divide-y">
           {o.order_items.map((it) => (
@@ -138,24 +138,24 @@ export function OrderDetail({ id, as }: { id: string; as: "customer" | "merchant
               <span className="flex-1">
                 {it.quantity} × {it.name}
               </span>
-              <span>{formatMMK(it.line_total, lang)}</span>
+              <span className="tabular-nums">{formatMMK(it.line_total, lang)}</span>
             </li>
           ))}
         </ul>
         <div className="mt-3 space-y-1 border-t pt-3 text-sm">
           <div className="flex justify-between">
             <span>{t("cart.subtotal")}</span>
-            <span>{formatMMK(o.subtotal, lang)}</span>
+            <span className="tabular-nums">{formatMMK(o.subtotal, lang)}</span>
           </div>
           {o.delivery_fee > 0 && (
             <div className="flex justify-between">
               <span>{t("cart.delivery_fee")}</span>
-              <span>{formatMMK(o.delivery_fee, lang)}</span>
+              <span className="tabular-nums">{formatMMK(o.delivery_fee, lang)}</span>
             </div>
           )}
           <div className="flex justify-between font-bold">
             <span>{t("cart.total").replace(/\s*\(.*\)/, "")}</span>
-            <span className="text-primary">{formatMMK(o.total, lang)}</span>
+            <span className="text-primary tabular-nums">{formatMMK(o.total, lang)}</span>
           </div>
         </div>
       </div>

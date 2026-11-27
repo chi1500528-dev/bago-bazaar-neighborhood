@@ -32,7 +32,7 @@ export function ReceiptSettingsCard({ shopId, shop }: { shopId: string; shop: Pa
   if (q.isLoading) return null;
   if (notInstalled(q.data?.error ?? null))
     return (
-      <section className="surface p-5">
+      <section className="border-t py-6">
         <h2 className="mb-1 font-semibold">{t("rcpt.title")}</h2>
         <p className="text-sm text-muted-foreground">{t("rep.setup")}</p>
       </section>
@@ -57,7 +57,7 @@ export function ReceiptSettingsCard({ shopId, shop }: { shopId: string; shop: Pa
     </label>
   );
   return (
-    <section className="surface mt-5 grid gap-5 p-5 md:grid-cols-2">
+    <section className="grid min-w-0 gap-6 border-t pt-6 md:grid-cols-2">
       <div className="space-y-4">
         <h2 className="font-semibold">{t("rcpt.title")}</h2>
         {toggle("show_logo", t("rcpt.show_logo"))}
@@ -122,7 +122,7 @@ export function ReceiptSettingsCard({ shopId, shop }: { shopId: string; shop: Pa
       </div>
       <div>
         <p className="mb-2 text-sm text-muted-foreground">{t("rcpt.preview")}</p>
-        <div className="overflow-x-auto rounded-lg border bg-muted p-3">
+        <div className="overflow-x-auto rounded-2xl border bg-muted p-3">
           <ReceiptPaper
             shop={shop}
             s={s}
