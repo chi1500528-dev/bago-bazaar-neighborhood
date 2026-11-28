@@ -33,3 +33,6 @@
 - Shop reports read only via `pos_report_range` / `orders_report_range` (security definer, owner/admin, Yangon half-open days); report rules + PII-free CSV + receipt settings normalization live in `src/lib/domain/reports.ts` — DB stays the money authority and exports never carry customer contact data.
 - SQL awaiting owner review is staged in `supabase/pending/` (never auto-applied); it moves to a real migration only after approval — preview and live share one database.
 - Phase 3 stock receiving, corrections, cost snapshots and profit labels live in `src/lib/domain/stock.ts`; gross profit is claimed only on lines with a known cost snapshot and net profit is never computed without expense data.
+
+- Merchant navigation defaults to Sell and keeps the existing query-param tabs; mobile checkout shares the desktop controls in a sheet so checkout logic cannot diverge.
+- Fixed phone checkout bars use the shared shell bar dimension tokens, including safe-area insets, so the bottom navigation never overlaps them.

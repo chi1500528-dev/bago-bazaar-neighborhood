@@ -34,7 +34,15 @@ function errText(t: (k: TKey) => string, m: string) {
 }
 
 /** Current stock (read-only), current cost, and the only two ways to change stock. */
-export function StockActions({ product, onChanged }: { product: P; onChanged?: () => void }) {
+export function StockActions({
+  product,
+  onChanged,
+  compact = false,
+}: {
+  product: P;
+  onChanged?: () => void;
+  compact?: boolean;
+}) {
   const { t, lang } = useApp();
   const [mode, setMode] = useState<"receive" | "adjust" | null>(null);
   const cost = useQuery({
@@ -43,8 +51,8 @@ export function StockActions({ product, onChanged }: { product: P; onChanged?: (
   });
   const c = cost.data?.data;
   return (
-    <div className="space-y-4 border-y py-4">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
+    <div className={compact ? "w-full space-y-2" : "space-y-4 border-y py-4"}>
+      <div className={compact ? "hidden" : "flex flex-wrap items-baseline justify-between gap-2"}>
         <p className="text-sm">
           {t("merchant.stock")}: <b className="tabular-nums">{product.stock}</b>
         </p>
@@ -52,12 +60,22 @@ export function StockActions({ product, onChanged }: { product: P; onChanged?: (
           {t("stk.cost_now")}: {c == null ? t("stk.cost_unknown") : formatMMK(c, lang)}
         </p>
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Button type="button" variant="outline" className="h-11" onClick={() => setMode("receive")}>
+      <div className={compact ? "flex flex-wrap gap-2" : "grid grid-cols-1 gap-3 sm:grid-cols-2"}>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-auto min-h-11 whitespace-normal rounded-xl"
+          onClick={() => setMode("receive")}
+        >
           <PackagePlus className="size-4" />
           {t("stk.receive")}
         </Button>
-        <Button type="button" variant="outline" className="h-11" onClick={() => setMode("adjust")}>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-auto min-h-11 whitespace-normal rounded-xl"
+          onClick={() => setMode("adjust")}
+        >
           <ClipboardCheck className="size-4" />
           {t("stk.adjust")}
         </Button>
@@ -293,13 +311,14 @@ function CostEdit({ productId, current }: { productId: string; current: number |
   };
   if (!open)
     return (
-      <button
+      <Button
+        variant="ghost"
         type="button"
         onClick={() => setOpen(true)}
-        className="min-h-11 rounded-xl text-sm font-medium text-primary"
+        className="min-h-11 rounded-xl text-primary"
       >
         {t("stk.set_cost")}
-      </button>
+      </Button>
     );
   return (
     <div className="space-y-1.5">

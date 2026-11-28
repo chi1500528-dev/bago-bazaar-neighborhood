@@ -47,15 +47,16 @@ export function MerchantReports({ shopId }: { shopId: string }) {
       <div className="space-y-3 rounded-2xl border border-border/70 bg-card p-4">
         <div className="flex max-w-full gap-1 overflow-x-auto rounded-xl bg-muted p-1 [scrollbar-width:none]">
           {RANGE_PRESETS.map((p) => (
-            <button
+            <Button
+              variant="ghost"
               key={p}
               type="button"
               aria-pressed={preset === p}
-              className={`min-h-10 shrink-0 rounded-lg px-3 text-sm font-medium transition ${preset === p ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              className={`min-h-11 shrink-0 rounded-xl px-3 text-sm font-medium transition ${preset === p ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => setPreset(p)}
             >
               {t(`rep.${p}` as TKey)}
-            </button>
+            </Button>
           ))}
         </div>
         {preset === "custom" && (
@@ -85,11 +86,11 @@ export function MerchantReports({ shopId }: { shopId: string }) {
         <p className="text-sm text-destructive">{t("rep.bad_range")}</p>
       ) : (
         <Tabs defaultValue="pos">
-          <TabsList className="h-11 rounded-xl">
-            <TabsTrigger value="pos" className="min-h-9 rounded-lg">
+          <TabsList className="h-auto rounded-xl">
+            <TabsTrigger value="pos" className="min-h-11 rounded-xl">
               {t("rep.pos")}
             </TabsTrigger>
-            <TabsTrigger value="mkt" className="min-h-9 rounded-lg">
+            <TabsTrigger value="mkt" className="min-h-11 rounded-xl">
               {t("rep.mkt")}
             </TabsTrigger>
           </TabsList>
@@ -126,7 +127,7 @@ function Top({ rows }: { rows: TopRow[] }) {
   const { t, lang } = useApp();
   if (!rows.length) return null;
   return (
-    <div className="surface p-4">
+    <div className="border-t py-5">
       <h3 className="mb-2 font-semibold">{t("rep.top")}</h3>
       <table className="w-full text-sm">
         <thead>
@@ -166,20 +167,20 @@ function PosReportView({ shopId, range }: { shopId: string; range: DayRange }) {
   const reasons = d.sales.filter((s) => s.status === "voided" && s.void_reason);
   return (
     <div className="mt-3 space-y-4">
-      <div className="surface p-5">
+      <div className="border-b pb-5">
         <p className="text-sm text-muted-foreground">{t("rep.pos_total")}</p>
         <p className="text-3xl font-semibold tabular-nums">{formatMMK(d.completed_total, lang)}</p>
         <p className="text-sm text-muted-foreground">
           {t("rep.tickets", { n: d.completed_count })}
         </p>
       </div>
-      <div className="surface space-y-3 p-4">
+      <div className="space-y-4 border-t py-5">
         <h3 className="font-semibold">{t("rep.by_method")}</h3>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {PAY_METHODS.map((k) => (
-            <div key={k} className="rounded-lg border p-3">
+            <div key={k} className="min-w-0 border-l pl-3">
               <p className="text-xs text-muted-foreground">{t(`pay.${k}` as TKey)}</p>
-              <p className="font-semibold tabular-nums">{formatMMK(m[k], lang)}</p>
+              <p className="break-words font-semibold tabular-nums">{formatMMK(m[k], lang)}</p>
             </div>
           ))}
         </div>
@@ -191,9 +192,9 @@ function PosReportView({ shopId, range }: { shopId: string; range: DayRange }) {
         </p>
         <Note tone="gold">{t("rep.method_note")}</Note>
       </div>
-      <div className="surface space-y-2 p-4">
+      <div className="space-y-3 border-t py-5">
         <h3 className="font-semibold">{t("rep.voided")}</h3>
-        <div className="flex gap-6 text-sm">
+        <div className="flex flex-wrap gap-6 text-sm">
           <span>
             {t("rep.voided_count")}: <b className="tabular-nums">{d.voided_count}</b>
           </span>
@@ -263,7 +264,7 @@ function OrdersReportView({ shopId, range }: { shopId: string; range: DayRange }
   const cancelled = d.pipeline["cancelled"];
   return (
     <div className="mt-3 space-y-4">
-      <div className="surface space-y-3 p-5">
+      <div className="space-y-4 border-b pb-5">
         <div>
           <p className="text-sm text-muted-foreground">{t("rep.mkt_value")}</p>
           <p className="text-3xl font-semibold tabular-nums">
@@ -274,25 +275,29 @@ function OrdersReportView({ shopId, range }: { shopId: string; range: DayRange }
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <div className="rounded-lg border p-3">
+          <div className="min-w-0 border-l pl-3">
             <p className="text-xs text-muted-foreground">{t("rep.subtotal")}</p>
-            <p className="font-semibold tabular-nums">{formatMMK(d.merchandise_subtotal, lang)}</p>
+            <p className="break-words font-semibold tabular-nums">
+              {formatMMK(d.merchandise_subtotal, lang)}
+            </p>
           </div>
-          <div className="rounded-lg border p-3">
+          <div className="min-w-0 border-l pl-3">
             <p className="text-xs text-muted-foreground">{t("rep.fees")}</p>
-            <p className="font-semibold tabular-nums">{formatMMK(d.delivery_fees, lang)}</p>
+            <p className="break-words font-semibold tabular-nums">
+              {formatMMK(d.delivery_fees, lang)}
+            </p>
           </div>
         </div>
         <Note tone="gold">{t("rep.mkt_note")}</Note>
         <p className="text-xs text-muted-foreground">{t("rep.mkt_dating")}</p>
       </div>
-      <div className="surface p-4">
+      <div className="border-t py-5">
         <h3 className="mb-2 font-semibold">{t("rep.pipeline")}</h3>
         <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
           {PIPE.map((s) => (
-            <div key={s} className="rounded-lg border p-2">
+            <div key={s} className="min-w-0 border-l pl-3">
               <p className="text-xs text-muted-foreground">{t(`status.${s}` as TKey)}</p>
-              <p className="font-semibold tabular-nums">{d.pipeline[s]?.count ?? 0}</p>
+              <p className="break-words font-semibold tabular-nums">{d.pipeline[s]?.count ?? 0}</p>
             </div>
           ))}
         </div>
@@ -352,24 +357,30 @@ function ProfitPanel({
   const v = profitView(f);
   if (v.kind === "none" && v.reason === "no_sales") return null;
   return (
-    <div className="surface space-y-3 p-4">
+    <div className="space-y-4 border-t py-5">
       <h3 className="font-semibold">{t("pf.title")}</h3>
       {v.kind === "none" ? (
         <Note tone="gold">{t("pf.no_cost")}</Note>
       ) : (
         <>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <div className="rounded-lg border p-3">
+            <div className="min-w-0 border-l pl-3">
               <p className="text-xs text-muted-foreground">{t("pf.sales")}</p>
-              <p className="font-semibold tabular-nums">{formatMMK(f.known_cost_sales, lang)}</p>
+              <p className="break-words font-semibold tabular-nums">
+                {formatMMK(f.known_cost_sales, lang)}
+              </p>
             </div>
-            <div className="rounded-lg border p-3">
+            <div className="min-w-0 border-l pl-3">
               <p className="text-xs text-muted-foreground">{t("pf.cogs")}</p>
-              <p className="font-semibold tabular-nums">{formatMMK(f.known_cost, lang)}</p>
+              <p className="break-words font-semibold tabular-nums">
+                {formatMMK(f.known_cost, lang)}
+              </p>
             </div>
-            <div className="rounded-lg border p-3">
+            <div className="min-w-0 border-l pl-3">
               <p className="text-xs text-muted-foreground">{t("pf.gross")}</p>
-              <p className="font-semibold tabular-nums">{formatMMK(v.grossOnKnown, lang)}</p>
+              <p className="break-words font-semibold tabular-nums">
+                {formatMMK(v.grossOnKnown, lang)}
+              </p>
             </div>
           </div>
           {v.kind === "partial" && (

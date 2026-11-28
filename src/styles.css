@@ -241,3 +241,25 @@ select {
     display: none;
   }
 }
+
+/* Shared physical bar dimensions: POS never covers the phone navigation. */
+:root {
+  --bottom-nav-height: calc(
+    3.5rem + max(0.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))
+  );
+  --shell-header-height: calc(7.5rem + var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
+}
+@media (width >= 768px) {
+  :root {
+    --shell-header-height: calc(4rem + var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
+  }
+}
+.merchant-tabs {
+  top: var(--shell-header-height);
+}
+.pos-checkout-bar {
+  bottom: var(--bottom-nav-height);
+}
+.pos-payment-sheet {
+  padding-bottom: max(1.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+}

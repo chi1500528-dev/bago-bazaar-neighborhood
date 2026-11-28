@@ -33,6 +33,9 @@ Phase 4 is a future candidate to validate with Bago shop owners first. It is not
 - Not committed: offline mode, cash drawer hardware, payment gateway integration.
 
 ## UI/UX polish (approved 2026-11-26)
-- [ ] Part 3: merchant workspace (tab bar, default Sell tab, Today strip, POS layout + mobile bar above BottomNav, products list, reports/settings)
+
+- [x] Part 3: merchant workspace (tab bar, default Sell tab, Today strip, POS layout + mobile bar above BottomNav, products list, reports/settings)
 - [ ] Part 1: shared look (tokens, radii, footer language switch, tabular numbers)
 - [ ] Part 2: storefront (home, cards, categories, product, shop)
+
+- [ ] Signed-in owner screen check — blocked: this user-managed Supabase project cannot mint a preview session; isolated POS/stock validation tests pass without writes.

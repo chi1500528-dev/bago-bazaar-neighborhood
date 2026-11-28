@@ -265,7 +265,7 @@ function TodaySummary({ shopId, unread }: { shopId: string; unread: number }) {
       <div className="grid grid-cols-2 gap-4 divide-x divide-border/70">
         <Link to="/merchant" search={{ tab: "reports" }} className="min-w-0 hover:text-primary">
           <p className="text-xs font-medium text-muted-foreground">{t("merchant.instore_today")}</p>
-          <p className="mt-0.5 truncate text-xl font-semibold tabular-nums md:text-2xl">
+          <p className="mt-0.5 break-words text-lg font-semibold tabular-nums md:text-2xl">
             {mmk(m?.pos?.revenue)}
           </p>
           <p className="text-xs text-muted-foreground">
@@ -279,7 +279,7 @@ function TodaySummary({ shopId, unread }: { shopId: string; unread: number }) {
           className="min-w-0 pl-4 hover:text-primary"
         >
           <p className="text-xs font-medium text-muted-foreground">{t("merchant.online_today")}</p>
-          <p className="mt-0.5 truncate text-xl font-semibold tabular-nums md:text-2xl">
+          <p className="mt-0.5 break-words text-lg font-semibold tabular-nums md:text-2xl">
             {mmk(m?.online?.merchandise_subtotal)}
           </p>
           <p className="text-xs text-muted-foreground">
@@ -706,7 +706,7 @@ function MerchantProducts({ shop }: { shop: ShopRow }) {
               );
             })
             .map((p) => (
-              <li key={p.id} className="flex items-center gap-3 p-3">
+              <li key={p.id} className="flex flex-wrap items-center gap-3 py-4 sm:px-3">
                 <MediaImg
                   path={p.images[0]}
                   alt={p.name}
@@ -739,6 +739,9 @@ function MerchantProducts({ shop }: { shop: ShopRow }) {
                 <Button size="sm" variant="outline" onClick={() => setEditing(p)}>
                   {t("common.edit")}
                 </Button>
+                <div className="w-full sm:pl-[4.25rem]">
+                  <StockActions product={p} compact />
+                </div>
               </li>
             ))}
         </ul>
@@ -1073,7 +1076,7 @@ function MerchantOrders({ shopId }: { shopId: string }) {
             type="button"
             aria-pressed={f === c}
             onClick={() => setFilter(c)}
-            className={`min-h-9 shrink-0 rounded-full border px-3 text-sm ${f === c ? "border-primary bg-primary/10 font-medium text-primary" : "bg-card"}`}
+            className={`min-h-11 shrink-0 rounded-xl border px-3 text-sm ${f === c ? "border-primary bg-primary/10 font-medium text-primary" : "bg-card"}`}
           >
             {c === "all" ? t("merchant.all") : t(`of.${c}` as TKey)}
             {c === "pending" && (pendingN.data ?? 0) > 0 ? ` (${pendingN.data})` : ""}
@@ -1100,7 +1103,9 @@ function MerchantOrders({ shopId }: { shopId: string }) {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium">{formatMMK(o.total, lang)}</span>
+                  <span className="text-sm font-medium tabular-nums">
+                    {formatMMK(o.total, lang)}
+                  </span>
                   <StatusBadge status={o.status} />
                 </div>
               </button>
