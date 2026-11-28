@@ -12,18 +12,21 @@ import {
   ShoppingCart,
   Store,
   User,
+  X,
 } from "lucide-react";
 import { Logo } from "./bits";
 import { useApp } from "@/lib/app-state";
 import { townshipsQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { playChime, setSoundOn, soundOn, useUnreadCounts } from "@/lib/notify";
 
 function Dot({ n }: { n: number }) {
   if (!n) return null;
   return (
-    <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">
+    <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold tabular-nums text-gold-foreground">
       {n}
     </span>
   );
@@ -62,24 +65,25 @@ export function LangSwitch({
   className?: string;
   onDark?: boolean;
 }) {
-  const { lang, setLang } = useApp();
+  const { lang, setLang, t } = useApp();
   return (
     <div
       className={cn(
-        "inline-flex rounded-full border p-0.5 text-xs font-medium",
+        "inline-flex shrink-0 rounded-xl border p-0.5 text-xs font-medium",
         onDark ? "border-primary-foreground/25 bg-primary-foreground/10" : "bg-card",
         className,
       )}
       role="group"
-      aria-label="Language"
+      aria-label={t("account.language")}
     >
       {(["my", "en"] as const).map((l) => (
-        <button
+        <Button
+          variant="ghost"
           key={l}
           onClick={() => setLang(l)}
           aria-pressed={lang === l}
           className={cn(
-            "rounded-full px-2.5 py-1 transition-colors",
+            "h-11 rounded-xl px-2 py-1 text-xs transition-colors",
             onDark
               ? lang === l
                 ? "bg-primary-foreground text-primary"
@@ -89,8 +93,8 @@ export function LangSwitch({
                 : "text-foreground/70 hover:text-foreground",
           )}
         >
-          {l === "my" ? "မြန်မာ" : "English"}
-        </button>
+          {t(l === "my" ? "language.my" : "language.en")}
+        </Button>
       ))}
     </div>
   );
@@ -119,7 +123,7 @@ export function TownshipSelect({ className }: { className?: string }) {
   );
 }
 
-function SearchBox({ className }: { className?: string }) {
+function SearchBox({ className, autoFocus = false }: { className?: string; autoFocus?: boolean }) {
   const { t } = useApp();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
@@ -133,12 +137,14 @@ function SearchBox({ className }: { className?: string }) {
       role="search"
     >
       <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-      <input
+      <Input
+        type="search"
+        autoFocus={autoFocus}
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder={t("nav.search_placeholder")}
         aria-label={t("common.search")}
-        className="h-11 w-full rounded-full border border-border/80 bg-card pl-10 shadow-soft transition-shadow pr-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+        className="h-11 min-w-0 w-full rounded-xl border border-hairline bg-surface pl-10 pr-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
       />
     </form>
   );
@@ -154,17 +160,17 @@ function AccountMenu() {
     return (
       <Link
         to="/auth"
-        className="inline-flex h-11 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent"
+        className="inline-flex h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-medium hover:bg-accent"
       >
         <User className="size-4" /> <span className="hidden sm:inline">{t("nav.signin")}</span>
       </Link>
     );
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="inline-flex h-11 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent">
+      <DropdownMenuTrigger className="inline-flex h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-medium hover:bg-accent">
         <User className="size-4" /> <span className="hidden sm:inline">{t("nav.account")}</span>
         {total > 0 && (
-          <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">
+          <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold tabular-nums text-gold-foreground">
             {total}
           </span>
         )}
@@ -216,13 +222,13 @@ function CartLink() {
   return (
     <Link
       to="/cart"
-      className="relative inline-flex h-11 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent"
+      className="relative inline-flex h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-medium hover:bg-accent"
       aria-label={t("nav.cart")}
     >
       <ShoppingCart className="size-4" />
       <span className="hidden sm:inline">{t("nav.cart")}</span>
       {n > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">
+        <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold tabular-nums text-gold-foreground">
           {n}
         </span>
       )}
@@ -239,12 +245,12 @@ function MyShopLink() {
     <Link
       to="/merchant"
       search={{}}
-      className="relative hidden h-11 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 md:inline-flex"
+      className="relative hidden h-11 items-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 lg:inline-flex"
     >
       <Store className="size-4" />
       {t("nav.my_shop")}
       {n > 0 && (
-        <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold text-gold-foreground">
+        <span className="grid min-w-5 place-items-center rounded-full bg-gold px-1 text-[11px] font-bold tabular-nums text-gold-foreground">
           {n}
         </span>
       )}
@@ -254,32 +260,69 @@ function MyShopLink() {
 
 export function Header() {
   const { t } = useApp();
+  const [searchOpen, setSearchOpen] = useState(false);
   return (
     <header
-      className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-md"
+      className="sticky top-0 z-40 border-b border-border/70 bg-surface/95 backdrop-blur-md"
       style={{ paddingTop: "var(--safe-area-inset-top, env(safe-area-inset-top, 0px))" }}
     >
       <div className="container-page flex h-16 min-w-0 items-center gap-2 sm:gap-3 md:gap-5">
-        <Logo />
-        <SearchBox className="hidden flex-1 md:block md:max-w-2xl" />
+        <div className={cn("shrink-0", searchOpen && "hidden md:block")}>
+          <div className="sm:hidden">
+            <Logo compact />
+          </div>
+          <div className="hidden sm:block">
+            <Logo />
+          </div>
+        </div>
+        <SearchBox className="hidden min-w-0 flex-1 md:block md:max-w-2xl" />
+        {searchOpen && (
+          <div className="flex min-w-0 flex-1 items-center gap-2 md:hidden">
+            <SearchBox className="min-w-0 flex-1" autoFocus />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSearchOpen(false)}
+              aria-label={t("common.cancel")}
+            >
+              <X />
+            </Button>
+          </div>
+        )}
         <span className="hidden items-center gap-1 rounded-full bg-primary-soft px-3 py-1 text-xs font-medium text-primary xl:inline-flex">
           <MapPin className="size-3.5" />
           {t("nav.bago_city")}
         </span>
-        <nav className="ml-auto flex shrink-0 items-center gap-1 md:ml-0">
+        <nav
+          className={cn(
+            "ml-auto flex shrink-0 items-center gap-1 md:ml-0",
+            searchOpen && "hidden md:flex",
+          )}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            title={t("common.search")}
+            aria-label={t("common.search")}
+            aria-expanded={searchOpen}
+            onClick={() => setSearchOpen(true)}
+          >
+            <Search />
+          </Button>
           <Link
             to="/categories"
-            className="hidden h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-accent lg:inline-flex"
+            className="hidden h-11 items-center rounded-xl px-3 text-sm font-medium hover:bg-accent lg:inline-flex"
           >
             {t("nav.categories")}
           </Link>
           <MyShopLink />
           <span className="mx-1 hidden h-6 w-px bg-border sm:block" />
-          <LangSwitch className="hidden sm:inline-flex" />
+          <LangSwitch />
           <Link
             to="/wishlist"
             aria-label={t("wish.title")}
-            className="inline-flex h-11 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent"
+            className="inline-flex h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-medium hover:bg-accent"
           >
             <Heart className="size-4" />
             <span className="hidden lg:inline">{t("wish.title")}</span>
@@ -291,10 +334,6 @@ export function Header() {
             <CartLink />
           </span>
         </nav>
-      </div>
-      <div className="container-page flex min-w-0 items-center gap-2 pb-3 md:hidden">
-        <SearchBox className="min-w-0 flex-1" />
-        <LangSwitch className="shrink-0 sm:hidden" />
       </div>
     </header>
   );
@@ -359,14 +398,14 @@ export function BottomNav() {
             <Link
               to={it.to}
               className={cn(
-                "relative flex min-h-14 flex-col items-center justify-center gap-0.5 py-1.5 text-xs leading-tight",
+                "relative flex h-16 flex-col items-center justify-center gap-0.5 py-0.5 text-xs leading-[18px]",
                 it.active ? "font-semibold text-primary" : "font-medium text-foreground/70",
               )}
             >
               <it.icon className="size-[22px]" strokeWidth={it.active ? 2.4 : 2} />
-              <span className="line-clamp-1 px-0.5">{it.label}</span>
+              <span className="line-clamp-2 max-w-full px-0.5 text-center">{it.label}</span>
               {"badge" in it && (it.badge ?? 0) > 0 && (
-                <span className="absolute right-[22%] top-1 grid min-w-4 place-items-center rounded-full bg-gold px-1 text-[10px] font-bold text-gold-foreground">
+                <span className="absolute right-[22%] top-1 grid min-w-4 place-items-center rounded-full bg-gold px-1 text-[10px] font-bold tabular-nums text-gold-foreground">
                   {it.badge}
                 </span>
               )}
@@ -386,7 +425,6 @@ export function Footer() {
         <div className="space-y-3">
           <Logo onDark />
           <p className="max-w-sm text-sm text-primary-foreground/85">{t("footer.tagline")}</p>
-          <LangSwitch onDark />
         </div>
         <ul className="space-y-2 text-sm">
           <li>
@@ -449,7 +487,7 @@ function BackButton() {
         onClick={() =>
           window.history.length > 1 ? router.history.back() : router.navigate({ to: "/" })
         }
-        className="inline-flex h-11 items-center gap-1.5 rounded-full border border-border/80 bg-card pl-2.5 pr-4 text-sm font-medium text-primary shadow-soft transition-colors hover:bg-accent"
+        className="inline-flex h-11 items-center gap-1.5 rounded-xl border border-border/80 bg-card pl-2.5 pr-4 text-sm font-medium text-primary shadow-soft transition-colors hover:bg-accent"
       >
         <ChevronLeft className="size-4" /> {t("common.back")}
       </button>
@@ -483,7 +521,7 @@ export function RequireAuth({ role, children }: { role?: "admin"; children: Reac
         <p className="mb-4 text-muted-foreground">{t("auth.required")}</p>
         <Link
           to="/auth"
-          className="inline-flex h-10 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground"
+          className="inline-flex h-10 items-center rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground"
         >
           {t("nav.signin")}
         </Link>

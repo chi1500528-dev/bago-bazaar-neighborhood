@@ -21,6 +21,10 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-hairline: var(--hairline);
+  --color-scrim: var(--scrim);
+  --color-overlay: var(--overlay);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -60,16 +64,18 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --background: oklch(0.983 0.007 85);
   --ivory: oklch(0.965 0.02 85);
   --sage: oklch(0.93 0.028 150);
-  --shadow-soft-v:
-    0 1px 2px oklch(0.3 0.03 160 / 0.05), 0 8px 24px -12px oklch(0.3 0.04 160 / 0.18);
-  --shadow-lift-v:
-    0 2px 4px oklch(0.3 0.03 160 / 0.06), 0 22px 44px -18px oklch(0.3 0.05 160 / 0.32);
+  --shadow-soft-v: 0 1px 3px oklch(0.22 0.01 160 / 0.06);
+  --shadow-lift-v: 0 3px 12px oklch(0.22 0.01 160 / 0.08);
   --foreground: oklch(0.22 0.01 160);
-  --card: oklch(1 0 0);
+  --surface: oklch(1 0 0);
+  --hairline: oklch(0.92 0.004 150);
+  --scrim: oklch(0.16 0.01 155);
+  --overlay: oklch(0.16 0.01 155 / 0.45);
+  --card: var(--surface);
   --card-foreground: oklch(0.24 0.012 160);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.24 0.012 160);
@@ -89,8 +95,8 @@
   --destructive-foreground: oklch(0.98 0 0);
   --success: oklch(0.56 0.12 150);
   --warning: oklch(0.72 0.14 70);
-  --border: oklch(0.92 0.012 85);
-  --input: oklch(0.89 0.012 90);
+  --border: var(--hairline);
+  --input: oklch(0.88 0.004 150);
   --ring: oklch(0.4 0.08 155);
   --sidebar: oklch(0.98 0.006 85);
   --sidebar-foreground: oklch(0.24 0.012 160);
@@ -146,7 +152,8 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
+    text-wrap: balance;
     line-height: 1.45;
   }
 }
@@ -164,7 +171,7 @@
 @utility surface {
   background-color: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-2xl);
 }
 
 @utility lift {
@@ -173,7 +180,7 @@
     box-shadow 300ms;
   box-shadow: var(--shadow-soft-v);
   &:hover {
-    transform: translateY(-3px);
+    transform: none;
     box-shadow: var(--shadow-lift-v);
   }
 }
@@ -197,13 +204,16 @@
     transform: translateY(-8px);
   }
 }
+@utility num {
+  font-variant-numeric: tabular-nums;
+}
 @utility tabular {
   font-variant-numeric: tabular-nums;
 }
 @utility eyebrow {
   font-size: 0.82rem;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--color-muted-foreground);
 }
@@ -245,9 +255,9 @@ select {
 /* Shared physical bar dimensions: POS never covers the phone navigation. */
 :root {
   --bottom-nav-height: calc(
-    3.5rem + max(0.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))
+    4rem + max(0.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))
   );
-  --shell-header-height: calc(7.5rem + var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
+  --shell-header-height: calc(4rem + var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
 }
 @media (width >= 768px) {
   :root {
@@ -262,4 +272,35 @@ select {
 }
 .pos-payment-sheet {
   padding-bottom: max(1.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+}
+
+.dark {
+  --background: oklch(0.17 0.008 155);
+  --surface: oklch(0.21 0.008 155);
+  --foreground: oklch(0.94 0.005 150);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.74 0.08 155);
+  --primary-foreground: oklch(0.19 0.015 155);
+  --primary-soft: oklch(0.28 0.035 155);
+  --hairline: oklch(0.32 0.006 150);
+  --input: oklch(0.38 0.008 150);
+  --muted: oklch(0.25 0.007 155);
+  --muted-foreground: oklch(0.73 0.008 150);
+  --secondary: var(--muted);
+  --secondary-foreground: var(--foreground);
+  --accent: var(--primary-soft);
+  --accent-foreground: var(--primary);
+  --sage: var(--primary-soft);
+  --ivory: var(--background);
+  --gold-soft: oklch(0.3 0.035 85);
+  --gold-foreground: oklch(0.87 0.06 85);
+  --success: oklch(0.74 0.1 150);
+  --ring: var(--primary);
+}
+input[inputmode="numeric"],
+input[type="number"],
+input[type="date"] {
+  font-variant-numeric: tabular-nums;
 }

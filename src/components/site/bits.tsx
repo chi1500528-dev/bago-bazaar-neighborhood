@@ -38,7 +38,7 @@ export function Logo({ compact = false, onDark = false }: { compact?: boolean; o
         <span className="flex flex-col leading-tight">
           <span
             className={cn(
-              "font-display text-[17px] font-semibold tracking-tight",
+              "font-display text-[17px] font-semibold tracking-normal",
               onDark ? "text-primary-foreground" : "text-foreground",
             )}
           >
@@ -207,13 +207,7 @@ export function StickyActionBar({ children }: { children: ReactNode }) {
   return (
     <>
       <div className="h-24 md:hidden" aria-hidden />
-      <div
-        className="fixed inset-x-0 z-30 border-t bg-card/95 px-3 py-2.5 shadow-lg backdrop-blur md:hidden sm:px-4"
-        style={{
-          bottom:
-            "calc(3.5rem + 1px + max(0.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))))",
-        }}
-      >
+      <div className="pos-checkout-bar fixed inset-x-0 z-30 border-t bg-card/95 px-3 py-2.5 shadow-soft backdrop-blur md:hidden sm:px-4">
         <div className="mx-auto flex min-w-0 max-w-full items-center gap-2 sm:gap-3">
           {children}
         </div>

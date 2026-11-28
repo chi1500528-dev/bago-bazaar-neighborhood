@@ -205,6 +205,8 @@ const my = {
   "merchant.shop_market": "ဈေးဝယ်ရန် သွားမည်",
   "account.title": "ကျွန်ုပ်၏အကောင့်",
   "account.language": "ဘာသာစကား",
+  "language.my": "မြန်မာ",
+  "language.en": "English",
   "account.saved": "သိမ်းပြီးပါပြီ",
   "account.delete": "အကောင့်ဖျက်မည်",
   "account.delete_hint":
@@ -785,6 +787,8 @@ const en: Record<TKey, string> = {
   "merchant.shop_market": "Go shopping",
   "account.title": "My account",
   "account.language": "Language",
+  "language.my": "မြန်မာ",
+  "language.en": "English",
   "account.saved": "Saved",
   "account.delete": "Delete my account",
   "account.delete_hint":
